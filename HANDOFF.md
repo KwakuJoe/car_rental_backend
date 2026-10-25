@@ -24,7 +24,8 @@ website later (Phase 7). Owner/dev: the user (GitHub: KwakuJoe).
 Backend `prompt-reference/`:
 - `modules.txt` — the full roadmap (Phases 1–10), conventions, permission catalog, role
   matrix, and a **PROGRESS** checklist near the top. Update PROGRESS as you finish modules.
-- `auth_module.txt`, `settings_module.txt`, `audit_module.txt` — API references for what's built.
+- `auth_module.txt`, `settings_module.txt`, `audit_module.txt`, `files_module.txt`,
+  `fleet_module.txt` — API references for what's built.
 - `setup_command.txt` — install/run instructions.
 
 Backend `http/` — one `.http` file per module (VS Code REST Client), runnable endpoint docs.
@@ -33,42 +34,72 @@ Frontend `CLAUDE.md` — architecture, auth model, module recipe, UI conventions
 Frontend `AGENTS.md` — this Next.js version has breaking changes vs. older docs; read the
 relevant guide in `node_modules/next/dist/docs/` before using a Next API you're unsure of.
 
-## What's done (Phase 1 complete except M1.5–M1.8)
+## What's done
+Phase 1 (except M1.7 numbering) and Phase 2 slice 1. PROGRESS in `modules.txt` is the source
+of truth - check it first.
 - Business + branch model (single main branch, every record will carry `branch_id`),
   opening hours, closure dates, `node ace business:create` bootstrap.
 - Six system roles (owner = super admin, manager, front-desk, fleet, driver, accountant),
   DB-driven RBAC with per-user permission overrides, owner-account protection.
 - Login rate limiting (5/min per IP+email, 15 min lockout), 7-day tokens.
-- Lookups for any staff (`/admin/lookups/business|roles|branches|staff`).
+- Lookups for any staff (`/admin/lookups/business|roles|branches|staff|categories`).
 - Business rules (M1.3): `settings` table storing overrides only; defaults + validation in
   `app/services/settings/definitions.ts`; read with `SettingsService.get(key)` — never hardcode
   policy numbers.
 - Audit log (M1.4): `AuditService.record(ctx, {action, subject, before, after, metadata}, trx)`
   — call it from controllers with intent-level actions (`<module>.<verb>`), pass the
   transaction, use `AuditService.pick()`; diffing/redaction automatic.
-- Frontend: staff login via httpOnly cookie + `/api/backend/*` proxy, Staff, Roles &
-  permissions, Settings (business profile, business rules, branches, hours & closures),
-  Audit log; Wynk branding; date/time pickers; Playwright smoke tests + visual tour.
-- Tests: backend 46 Japa tests passing; frontend 7 Playwright smoke tests passing.
+- File storage (M1.5) on **Cloudinary** (`FileService`, `files_module.txt`): upload, import
+  from a pasted image link (Cloudinary fetches it - no SSRF), signed URLs for private files.
+  Private purposes (ID scans, licences, vehicle documents) are always private, file records
+  never carry a link to a private file, and only `GET /files/:id/url` hands one out
+  (permission check + audit). Keep it that way (Act 843).
+- Fleet (M2.1–M2.4): categories (deposit only - rates come in M2.5), cars (soft archive,
+  status changes, odometer log with corrections), photos, car blocks on `car_allocations`
+  (exclusion constraint), vehicle documents with daily expiry alerts (cron calls
+  `node ace check:document-expiries`, see `setup_command.txt`), in-app notifications.
+- Frontend: staff login (httpOnly cookie + `/api/backend/*` proxy), Staff, Roles &
+  permissions, Settings, Audit log, Categories, Vehicles (table/grid toggle, add-vehicle
+  page, vehicle detail page with tabs; photos by upload, link, paste or drag-and-drop;
+  full-screen `ImageViewer`).
+- Tests: backend 89 Japa tests; frontend Playwright smoke + fleet workflow (15 passing) and
+  the visual tour.
 
-## NEXT TASK: Phase 2, slice 1 (see modules.txt for full detail)
-1. **M1.5 File storage** — `@adonisjs/drive`, local disk in dev; production planned on
-   **Cloudflare R2** (confirm with the user at deploy time). Private files (ID scans,
-   documents) only via short-lived signed URLs. A `files` table + one service for attaching.
-2. **Car categories + cars** (M2.1, M2.2) — fields, status rules and endpoints are specified
-   in modules.txt. Availability is NOT stored on the car (computed later from allocations).
-3. **Car blocks** (M2.3) — date-range blocks; they'll live in the `car_allocations` table with
-   the Postgres exclusion constraint described in M3.4 (btree_gist is already enabled).
-4. **Vehicle documents + expiry alerts** (M2.4) — needs **M1.6 jobs/scheduler** and
-   **M1.8 in-app notifications**; alerts at 30/14/7/1 days and on expiry.
-5. Then slice 2: rates, seasonal pricing, extras, protection plans, delivery zones, fees,
-   taxes, and the single `PricingService.quote()` (M2.5–M2.11).
+## Lessons from the last hand-off (read before writing UI)
+A previous agent built Phase 2 slice 1 and several things had to be redone:
+- **Follow the UI rules in the frontend `CLAUDE.md`.** Filters go in a Filter *dialog*
+  (Reset / Cancel / Apply), list pages use the standard toolbar, big records (vehicles,
+  later bookings and customers) get their own create page and detail page - not drawers.
+  No native `confirm()`, no native date inputs.
+- **Check the frontend against the real backend contract** (field names, PUT vs PATCH).
+  The category form and odometer dialog sent fields the API doesn't have; only a real
+  workflow test (`tests/e2e/fleet.spec.ts`) catches that - smoke tests don't.
+- **Never weaken a test to make it pass** (e.g. `if (await x.isVisible())` guards in the tour).
+- **ace commands must not import models/services at the top level** - it broke every
+  `node ace` command. `tests/unit/commands_imports.spec.ts` guards this.
+- Scheduled work must actually be scheduled (cron) and must not repeat itself daily -
+  use `notifications.dedupe_key`.
+
+## NEXT TASK: Phase 2, slice 2 - pricing (M2.5–M2.11, see modules.txt)
+Rates (daily / weekly / monthly per category, car overrides, chauffeur pricing), seasonal /
+weekend / holiday pricing, extras, protection plans, delivery zones, taxes, and the single
+`PricingService.quote()` that bookings will use. Money is integer pesewas everywhere.
+
+**Ask the owner first** (pricing policy is theirs to decide): rates per category and the
+weekly/monthly thresholds; chauffeur in-town vs out-of-town pricing and driver overnight
+allowance; mileage policy (unlimited vs km/day allowance + excess km charge); which taxes
+apply and how they show on receipts (confirm with their accountant). Record the answers as
+settings or rate data - never hardcode them.
+
+Small items waiting: category image upload in the category form (backend field exists);
+a periodic cleanup of uploaded files that were never attached; M8.6 usage chart is
+planned, not now.
 
 For each module: migration → model → validator (factories!) → controller (+ audit) → routes
 → permissions in `database/seed_data/role_permission_data.ts` (+ role matrix) → Japa tests →
 `http/<module>.http` → `prompt-reference/<module>_module.txt` → frontend module (copy
-`src/modules/users` pattern) → nav entry → smoke test + tour entry → screenshots reviewed →
-commit + push.
+`src/modules/users` pattern; fleet for record pages) → nav entry → smoke + workflow test +
+tour entry → screenshots reviewed → commit + push.
 
 ## Environment facts (important)
 - **Node:** the default shell PATH has an old Node 16. Always prefix:
@@ -91,7 +122,7 @@ commit + push.
   everything (this happened once; it was reverted from git).
 
 ## Browser verification (do this for every UI change)
-There is no Chrome extension connection; use **Playwright** (installed in the frontend).
+Use **Playwright** (installed in the frontend).
 Pattern used so far, always on a **throwaway** database:
 1. `createdb -h 127.0.0.1 car_rental_e2e`, run migrations against it
    (`DB_DATABASE=car_rental_e2e node ace migration:run`), bootstrap with `business:create`
@@ -102,6 +133,9 @@ Pattern used so far, always on a **throwaway** database:
 3. `E2E_BASE_URL=http://localhost:3001 E2E_EMAIL=... E2E_PASSWORD=... npm run e2e` and
    `npm run e2e:tour`, then LOOK at `test-results/tour/*.png` (light + dark).
 4. Stop both servers and `dropdb -h 127.0.0.1 car_rental_e2e` afterwards.
+5. The e2e database still uses the real Cloudinary account from `.env`. Routine tests mock
+   uploads/imports (see `fleet.spec.ts`); if you upload for real, delete the files afterwards
+   through `DELETE /admin/files/:id` so nothing is left in the owner's Cloudinary.
 
 Full-page screenshots show sticky elements mid-page — that's the capture method, not a bug.
 
@@ -139,11 +173,12 @@ right-hand drawers with a confirm step, `DatePicker`/`TimePicker`/`DateTimePicke
 native date/time inputs), `ComboSelect` options with short label + `sublabel` description.
 
 ## Git
-Both repos on `main`, tracking `origin/main`, clean at handoff. Commit with clear messages
+Both repos on `main`, tracking `origin/main`, clean at handoff. The backend tracks the generated
+`.adonisjs/` route registry - commit it when routes change. Commit with clear messages
 (what + why); push when a piece is verified. Never commit `.env`, `http/.env`,
 `.claude/settings.local.json`, `test-results/`.
 
 ## First steps
 Read `prompt-reference/modules.txt` (PROGRESS + Phase 2) and the frontend `CLAUDE.md`, run
-both test suites to confirm a green baseline, then propose your plan for Phase 2 slice 1 to
-the user before writing code.
+both test suites to confirm a green baseline, then ask the owner the pricing questions above
+and propose your plan for Phase 2 slice 2 before writing code.
