@@ -88,7 +88,8 @@ export class FileService {
     options: UploadOptions,
     trx?: TransactionClientContract
   ): Promise<File> {
-    const isPrivate = options.isPrivate ?? this.isPrivatePurpose(options.purpose)
+    // Identity and vehicle documents are always private (Act 843); other files may opt in.
+    const isPrivate = this.isPrivatePurpose(options.purpose) || options.isPrivate === true
     const folder = options.folder ?? `wynk/${options.purpose}`
     const mime = `${file.type}/${file.subtype}`
 

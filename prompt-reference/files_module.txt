@@ -36,6 +36,15 @@ Under the Ghana Data Protection Act 2012 (Act 843):
   (or superAdmin) and writes an audit log entry (`file.viewed_signed_url`).
 - Vehicle documents require `fleet.view` (or superAdmin) to generate signed URLs.
 - Signed URLs have a configurable expiry (default 1 hour / 3600 seconds).
+- Private purposes (vehicle_document, id_front, id_back, licence, ...) are ALWAYS stored
+  private; `isPrivate` in a request can only make other purposes private, never the reverse.
+- File records (upload response, GET /files/:id) carry `url: null` for private files. The
+  only way to a private file is GET /files/:id/url (permission check + audit).
+- GET /files/:id on a private file needs the same access as its signed URL (403 otherwise):
+  even the file name of an identity document is personal data.
+- Delete: owner (super admin), the uploader, or `fleet.manage` for fleet files only
+  (car_photo, category_image, vehicle_document) - never customers' identity documents.
+- Per-user permission overrides apply to all of these checks.
 
 
 SERVICE API (FileService)

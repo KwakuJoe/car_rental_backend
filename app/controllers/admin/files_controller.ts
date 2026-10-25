@@ -10,10 +10,23 @@ import {
 } from '#validators/file'
 import type User from '#models/user'
 
-async function canAccessPrivateFile(user: User, file: File): Promise<boolean> {
+const FLEET_PURPOSES: string[] = ['car_photo', 'category_image', 'vehicle_document']
+
+/** Role permission, with the user's per-user override taking precedence. Needs role.permissions loaded. */
+function hasPermission(user: User, slug: string): boolean {
+  const override = user.permissionsOverride?.[slug]
+  if (override !== undefined) return override
+  return !!user.role?.permissions.some((p) => p.slug === slug)
+}
+
+async function loadRole(user: User) {
   await user.load((preloader) =>
     preloader.load('role', (roleQuery) => roleQuery.preload('permissions'))
   )
+}
+
+async function canAccessPrivateFile(user: User, file: File): Promise<boolean> {
+  await loadRole(user)
   const role = user.role
   if (!role) return false
   if (role.isSuperAdmin) return true
@@ -21,11 +34,7 @@ async function canAccessPrivateFile(user: User, file: File): Promise<boolean> {
   // Uploader can always access their uploaded file
   if (file.uploadedBy === user.id) return true
 
-  const checkSlug = (slug: string) => {
-    const override = user.permissionsOverride?.[slug]
-    if (override !== undefined) return override
-    return role.permissions.some((p) => p.slug === slug)
-  }
+  const checkSlug = (slug: string) => hasPermission(user, slug)
 
   if (file.purpose === 'vehicle_document') {
     return checkSlug('fleet.view')
@@ -142,8 +151,15 @@ export default class FilesController {
     })
   }
 
-  async show({ params, response }: HttpContext) {
+  async show({ auth, params, response }: HttpContext) {
     const file = await File.findOrFail(params.id)
+
+    // Even the name of an identity document is personal data
+    if (file.isPrivate && !(await canAccessPrivateFile(auth.getUserOrFail(), file))) {
+      return response.forbidden({
+        message: 'You do not have permission to access this private file',
+      })
+    }
 
     return response.ok({
       message: 'File fetched successfully',
@@ -194,14 +210,14 @@ export default class FilesController {
     const user = auth.getUserOrFail()
     const file = await File.findOrFail(params.id)
 
-    await user.load((preloader) =>
-      preloader.load('role', (roleQuery) => roleQuery.preload('permissions'))
-    )
+    await loadRole(user)
     const isSuperAdmin = user.role?.isSuperAdmin
     const isUploader = file.uploadedBy === user.id
-    const hasFleetManage = user.role?.permissions.some((p) => p.slug === 'fleet.manage')
+    // fleet.manage covers fleet files only - never customers' identity documents
+    const canManageFleetFile =
+      FLEET_PURPOSES.includes(file.purpose) && hasPermission(user, 'fleet.manage')
 
-    if (!isSuperAdmin && !isUploader && !hasFleetManage) {
+    if (!isSuperAdmin && !isUploader && !canManageFleetFile) {
       return response.forbidden({
         message: 'You do not have permission to delete this file',
       })

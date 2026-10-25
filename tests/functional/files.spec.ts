@@ -316,3 +316,107 @@ test.group('files / import from a link', (group) => {
     assert.lengthOf(files, 0)
   })
 })
+
+test.group('files / private file protection', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  group.setup(() => {
+    FileService.setMockUploader(async (file, options) => ({
+      url: `https://res.cloudinary.com/test/${options.purpose}/${file.clientName}`,
+      publicId: `wynk/${options.purpose}/mock_${file.clientName}`,
+      bytes: file.size,
+      resourceType: 'image',
+    }))
+  })
+
+  group.teardown(() => {
+    FileService.setMockUploader(null)
+  })
+
+  async function uploadAs(
+    client: any,
+    user: User,
+    purpose: string,
+    fields: Record<string, string> = {}
+  ) {
+    const tempFilePath = path.join(os.tmpdir(), `${purpose}.jpg`)
+    fs.writeFileSync(tempFilePath, MINIMAL_JPEG)
+    const response = await client
+      .post('/api/v1/admin/files/upload')
+      .file('file', tempFilePath, { filename: `${purpose}.jpg`, contentType: 'image/jpeg' })
+      .fields({ purpose, ...fields })
+      .loginAs(user)
+    fs.unlinkSync(tempFilePath)
+    response.assertStatus(201)
+    return json(response).data
+  }
+
+  test('identity documents stay private even if the upload asks for public', async ({
+    client,
+    assert,
+  }) => {
+    const { owner } = await setup()
+    const data = await uploadAs(client, owner, 'id_front', { isPrivate: 'false' })
+
+    assert.isTrue(data.isPrivate)
+    const file = await File.findOrFail(data.id)
+    assert.isTrue(file.isPrivate)
+  })
+
+  test('file details never include a link to a private file', async ({ client, assert }) => {
+    const { owner } = await setup()
+    const card = await uploadAs(client, owner, 'id_front')
+    const photo = await uploadAs(client, owner, 'car_photo')
+
+    // Not even in the upload response
+    assert.isNull(card.url)
+    assert.isString(photo.url)
+
+    const details = await client.get(`/api/v1/admin/files/${card.id}`).loginAs(owner)
+    details.assertStatus(200)
+    assert.isNull(json(details).data.url)
+  })
+
+  test('staff without document access cannot read a private file record', async ({
+    client,
+    assert,
+  }) => {
+    const { owner, regularStaff, viewDocsPerm } = await setup()
+    const card = await uploadAs(client, owner, 'id_front')
+
+    const forbidden = await client.get(`/api/v1/admin/files/${card.id}`).loginAs(regularStaff)
+    forbidden.assertStatus(403)
+
+    // A per-user override grants it without changing the role
+    regularStaff.permissionsOverride = { [viewDocsPerm.slug]: true }
+    await regularStaff.save()
+    const allowed = await client.get(`/api/v1/admin/files/${card.id}`).loginAs(regularStaff)
+    allowed.assertStatus(200)
+    assert.isNull(json(allowed).data.url)
+
+    // Public files stay readable by any staff
+    const photo = await uploadAs(client, owner, 'car_photo')
+    const publicFile = await client.get(`/api/v1/admin/files/${photo.id}`).loginAs(regularStaff)
+    publicFile.assertStatus(200)
+  })
+
+  test('fleet managers can delete fleet files but not identity documents', async ({ client }) => {
+    const { owner, fleetUser } = await setup()
+    const fleetManage = await Permission.create({
+      name: 'Manage fleet',
+      slug: 'fleet.manage',
+      group: 'fleet',
+    })
+    await fleetUser.load('role')
+    await fleetUser.role.related('permissions').attach([fleetManage.id])
+
+    const card = await uploadAs(client, owner, 'id_front')
+    const photo = await uploadAs(client, owner, 'car_photo')
+
+    const blocked = await client.delete(`/api/v1/admin/files/${card.id}`).loginAs(fleetUser)
+    blocked.assertStatus(403)
+
+    const allowed = await client.delete(`/api/v1/admin/files/${photo.id}`).loginAs(fleetUser)
+    allowed.assertStatus(200)
+  })
+})

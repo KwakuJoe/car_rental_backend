@@ -1,6 +1,5 @@
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import type File from '#models/file'
-import FileService from '#services/file_service'
 
 export default class FileTransformer extends BaseTransformer<File> {
   toObject() {
@@ -8,7 +7,9 @@ export default class FileTransformer extends BaseTransformer<File> {
       id: this.resource.id,
       disk: this.resource.disk,
       path: this.resource.path,
-      url: FileService.getUrl(this.resource),
+      // Private files get no link here: callers must use GET /admin/files/:id/url,
+      // which checks permissions and audits access to identity documents.
+      url: this.resource.isPrivate ? null : this.resource.url,
       originalName: this.resource.originalName,
       mime: this.resource.mime,
       size: Number(this.resource.size),
