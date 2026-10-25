@@ -1,0 +1,61 @@
+# Staff users - permission: users.manage. See prompt-reference/auth_module.txt
+# Owner accounts (super-admin role) can only be edited/reset by another owner, and only an
+# owner can assign the Owner role (403 E_OWNER_ONLY otherwise).
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### List staff
+# Filters: search (name/email/phone), roleId, branchId, isActive, mustResetPassword,
+# createdFrom/createdTo. Sort: sortBy=fullName|email|createdAt|lastLoginAt, sortOrder=asc|desc.
+# Pagination: page, limit (max 100). Response has data[] + meta.
+# @name listUsers
+GET {{baseUrl}}/admin/users?page=1&limit=20&search=&sortBy=fullName&sortOrder=asc
+Authorization: Bearer {{token}}
+
+###
+@userId = {{listUsers.response.body.$.data[0].id}}
+
+### Show one staff member
+GET {{baseUrl}}/admin/users/{{userId}}
+Authorization: Bearer {{token}}
+
+### Create staff - returns a one-time temporaryPassword
+# branchIds optional - defaults to the main branch. roleId from GET /admin/lookups/roles.
+# 201 | 403 E_OWNER_ONLY (non-owner assigning the Owner role) | 422 duplicate email, unknown ids
+# @name createUser
+POST {{baseUrl}}/admin/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fullName": "Kojo Mensah",
+  "email": "kojo.mensah@example.com",
+  "phone": "0244000000",
+  "roleId": "REPLACE_WITH_ROLE_ID"
+}
+
+### Update staff - every field optional
+# branchIds REPLACES all assignments (min 1). permissionsOverride: { "slug": true|false } or null.
+# 200 | 400 deactivating yourself | 403 E_OWNER_ONLY | 404 | 422
+PUT {{baseUrl}}/admin/users/{{userId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isActive": true,
+  "permissionsOverride": null
+}
+
+### Reset password - new one-time temporaryPassword, forces a change on next sign in
+# 200 | 403 E_OWNER_ONLY | 404
+POST {{baseUrl}}/admin/users/{{userId}}/reset-password
+Authorization: Bearer {{token}}

@@ -1,0 +1,25 @@
+# Lookups - any signed-in staff member, no module permission. Small, non-sensitive lists for
+# dropdowns and display. See prompt-reference/settings_module.txt
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### Business - name, tradingName, contacts, currency, timezone (for headers, receipts, money)
+GET {{baseUrl}}/admin/lookups/business
+Authorization: Bearer {{token}}
+
+### Roles - id, name, slug, isSuperAdmin (for the staff role picker)
+GET {{baseUrl}}/admin/lookups/roles
+Authorization: Bearer {{token}}
+
+### Active branches - id, name, code, isMain (main first)
+GET {{baseUrl}}/admin/lookups/branches
+Authorization: Bearer {{token}}

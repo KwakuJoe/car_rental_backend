@@ -1,0 +1,38 @@
+# Auth & account - see prompt-reference/auth_module.txt
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# Public. Rate limited: 5 attempts/minute per IP + email, then a 15-minute lockout (429).
+# 200 { data: { user, token } } | 400 bad credentials | 403 E_ACCOUNT_DEACTIVATED | 422 | 429
+# Tokens expire after 7 days.
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv HTTP_EMAIL}}",
+  "password": "{{$dotenv HTTP_PASSWORD}}"
+}
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### Profile - the signed-in user with role, permissions and branches
+GET {{baseUrl}}/account/profile
+Authorization: Bearer {{token}}
+
+### Change password - the only way to clear mustResetPassword
+# 200 | 400 "Current password is incorrect" | 422 (8-32 chars, confirmation must match)
+POST {{baseUrl}}/account/change-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "{{$dotenv HTTP_PASSWORD}}",
+  "password": "NewSecurePass456",
+  "passwordConfirmation": "NewSecurePass456"
+}
+
+### Logout - revokes the current token
+POST {{baseUrl}}/account/logout
+Authorization: Bearer {{token}}

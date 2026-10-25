@@ -1,0 +1,118 @@
+CAR RENTAL BACKEND — SETTINGS MODULE REFERENCE
+(business profile, branches, opening hours, closure dates, lookups)
+=====================================================================
+Base URL prefix: /api/v1. Standard envelope { message, data, meta? } - see
+auth_module.txt. Runnable examples: http/business.http, http/branches.http,
+http/lookups.http.
+
+
+PERMISSIONS
+-----------
+settings.manage   business profile, branches, opening hours, closure dates
+                  (Owner via isSuperAdmin; seeded on Manager)
+(none)            /admin/lookups/* - any signed-in, active staff member
+
+
+DATA MODEL
+----------
+Business      one row per install (created by business:create)
+  id, name, tradingName, email, phone, whatsappPhone, address,
+  digitalAddress (GhanaPost GPS, e.g. GA-123-4567), city, region,
+  tin (GRA TIN), vatRegistered, vatNumber, currency ("GHS"),
+  timezone ("Africa/Accra"), createdAt, updatedAt
+Branch
+  id, name, code (2-10 uppercase letters/digits, unique - used in document
+  numbers later), isMain (exactly one), isActive, email, phone, address,
+  digitalAddress, city, region, latitude, longitude (numbers or null),
+  createdAt, updatedAt
+OpeningHour   (per branch, one row per weekday)
+  weekday (0 = Sunday ... 6 = Saturday), isClosed, opensAt, closesAt
+  ("HH:mm", null when closed)
+ClosureDate
+  id, branchId, date ("YYYY-MM-DD"), reason
+
+
+LOOKUPS (no permission)
+-----------------------
+GET /admin/lookups/business  -> { id, name, tradingName, email, phone,
+                                  whatsappPhone, currency, timezone }
+GET /admin/lookups/roles     -> [{ id, name, slug, isSuperAdmin }] by name
+GET /admin/lookups/branches  -> [{ id, name, code, isMain }] active only,
+                                  main first
+Use these for dropdowns and display instead of the full admin resources
+(which need roles.manage / settings.manage). Not paginated.
+
+
+BUSINESS PROFILE
+----------------
+GET /admin/business                      200 full Business object
+PUT /admin/business                      any subset of: name, tradingName,
+                                          email, phone, whatsappPhone, address,
+                                          digitalAddress, city, region, tin,
+                                          vatRegistered, vatNumber
+  - currency and timezone are fixed at install time (not accepted).
+  - vatRegistered: false also sets vatNumber to null.
+  Errors: 422 validation.
+
+
+BRANCHES
+--------
+GET    /admin/branches          list; search (name/code/city/address),
+                                 isMain, isActive; sortBy name|code|city|
+                                 createdAt (default: main first, then name)
+POST   /admin/branches          { name, code, email?, phone?, address?,
+                                 digitalAddress?, city?, region?, latitude?,
+                                 longitude? } -> 201
+  - never created as main; code is uppercased; copies the main branch's
+    opening hours.
+GET    /admin/branches/:id
+PUT    /admin/branches/:id      any subset of the create fields + isActive,
+                                 isMain
+  - isMain: true promotes this branch and demotes the old main (one
+    transaction). Must be active.
+  - 400: isMain: false on the main branch ("promote another branch
+    instead"), isActive: false on the main branch, promoting an inactive
+    branch.
+DELETE /admin/branches/:id
+  - 400 main branch; 409 while staff are assigned ("Reassign the N staff
+    members..."). Once later modules reference a branch (cars, bookings,
+    payments), deactivate it instead.
+Errors: 404 unknown id, 422 validation (duplicate code, bad format).
+
+
+OPENING HOURS
+-------------
+GET /admin/branches/:branchId/opening-hours   7 rows ordered by weekday
+PUT /admin/branches/:branchId/opening-hours   replaces the whole week
+  { "days": [ { weekday, isClosed, opensAt?, closesAt? } x7 ] }
+  - exactly 7 entries, distinct weekdays 0-6
+  - open days need opensAt < closesAt ("HH:mm", 24h); closed days store no
+    times
+  Errors: 422 (field "days.N" for the offending day).
+Used later by bookings: pickups/returns outside these hours are rejected
+or charged the after-hours fee (Phase 3).
+
+
+CLOSURE DATES
+-------------
+GET    /admin/branches/:branchId/closure-dates      upcoming (today+) by
+                                                     default; from/to
+                                                     (YYYY-MM-DD) for ranges
+POST   /admin/branches/:branchId/closure-dates      { date, reason? } -> 201
+                                                     422 if already closed
+DELETE /admin/branches/:branchId/closure-dates/:id
+
+
+RELATED FILES
+-------------
+Controllers:  app/controllers/admin/lookups_controller.ts
+              app/controllers/admin/business_controller.ts
+              app/controllers/admin/branches_controller.ts
+              app/controllers/admin/opening_hours_controller.ts
+              app/controllers/admin/closure_dates_controller.ts
+Validators:   app/validators/business.ts, app/validators/branch.ts
+Filter:       app/filters/branch_filter.ts
+Transformers: business_, branch_, opening_hour_, closure_date_transformer.ts
+Models:       business.ts, branch.ts, opening_hour.ts, closure_date.ts
+Tests:        tests/functional/settings.spec.ts
+HTTP:         http/business.http, http/branches.http, http/lookups.http

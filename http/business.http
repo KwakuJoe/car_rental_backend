@@ -1,0 +1,36 @@
+# Business profile - permission: settings.manage. See prompt-reference/settings_module.txt
+# currency (GHS) and timezone (Africa/Accra) are fixed at install and not editable.
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### Show the business profile
+GET {{baseUrl}}/admin/business
+Authorization: Bearer {{token}}
+
+### Update the business profile - every field optional
+# vatRegistered: false also clears vatNumber. 200 | 422
+PUT {{baseUrl}}/admin/business
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "tradingName": "Wynk Rentals",
+  "phone": "0302000000",
+  "whatsappPhone": "0244000000",
+  "address": "12 Liberation Road",
+  "digitalAddress": "GA-123-4567",
+  "city": "Accra",
+  "region": "Greater Accra",
+  "tin": "C0012345678",
+  "vatRegistered": false,
+  "vatNumber": null
+}

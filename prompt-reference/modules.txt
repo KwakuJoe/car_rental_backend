@@ -1,0 +1,1262 @@
+CAR RENTAL BACKEND — MODULES & ROADMAP
+==========================================
+Single-location car rental business in Ghana (GHS, MoMo, Ghana Card, GRA taxes).
+This is the master build plan. Every module below lists concrete features,
+the tables it adds, the business rules it must enforce, its permissions, and
+a "Done when" checklist. Build phases in order; within a phase, build modules
+in the order listed (later modules depend on earlier ones).
+
+Stack:  AdonisJS 7 JSON API (this repo, /api/v1, bearer access tokens, Tuyau
+        typed client) + PostgreSQL.
+Frontend: ONE Next.js 16 app (decided) at
+        ~/Documents/My_Projects/next-essentials/car-rental-frontend serving
+        both the public booking website (src/app/(site), SEO) and the staff
+        dashboard (src/app/dashboard). Staff token lives in an httpOnly cookie;
+        the browser calls Next.js /api/backend/*, which forwards to this API
+        with the Bearer token - so this API needs no CORS for the dashboard.
+        See that project's CLAUDE.md for conventions.
+
+
+WHAT THE TEMPLATE ALREADY GIVES US
+-------------------------------------
+- Staff login/logout, profile, change password, forced reset on first login
+- Users (fullName, email, phone, isActive, mustResetPassword, lastLoginAt,
+  permissionsOverride), Roles (isSuperAdmin, isSystem), Permissions,
+  role_permissions pivot - all ULID ids
+- Middleware: auth, isActive, mustResetPassword, permission
+- Admin endpoints: users (list/create/update/reset-password), roles (CRUD +
+  sync permissions), permissions (list)
+- Shared BaseFilter for search/sort/pagination, transformers, response
+  envelope { message, data, meta? }
+- Commands: password:reset, app:rename (make:admin was replaced by
+  business:create in M1.1)
+See prompt-reference/auth_module.txt for the auth/RBAC reference and
+prompt-reference/setup_command.txt for the install flow.
+
+
+PROGRESS
+-----------
+Update this list as modules land.
+  [x] M1.0  Postgres-only (SQLite removed), btree_gist + pg_trgm enabled,
+            login rate limiting (5/min per IP+email, 15 min lockout),
+            7-day token expiry
+  [x] M1.1  businesses, branches, branch_users, opening_hours,
+            closure_dates; business:create; staff branch assignment;
+            business / branches / opening-hours / closure-dates endpoints;
+            lookups (business, roles, branches) for any staff
+            (prompt-reference/settings_module.txt)
+  [x] M1.2  six system roles + settings.manage; GET /admin/users/:id;
+            owner-account protection (E_OWNER_ONLY); no self-deactivation;
+            usersCount on roles
+  [x] Docs  http/ request collection (one .http file per module)
+  [ ] M1.3 - M1.8
+
+
+PHASE OVERVIEW
+-----------------
+Phase  Name                         Outcome
+-----  ---------------------------  ------------------------------------------
+1      Foundation                   Business, branch, roles, settings, audit,
+                                    files, jobs, numbering
+2      Fleet & Pricing              Cars, documents, rates, extras, insurance,
+                                    fees, taxes, price quote engine
+3      Customers & Bookings         Verified customers, blacklist, staff
+                                    bookings, no double-booking, calendar,
+                                    modifications, chauffeur assignment
+4      Vehicle Handover             Check-out/check-in inspections, signatures,
+                                    extra charges, rental agreement PDF
+5      Payments & Finance           Paystack + manual payments, deposits,
+                                    invoices/receipts with taxes, cash-up,
+                                    expenses, exports
+       >>> MILESTONE A: INTERNAL GO-LIVE (staff use the system daily) <<<
+6      Notifications  (moved up)    SMS, email, in-app alerts, reminders
+7      Public Booking Website       Search, checkout, Paystack, lookup via OTP,
+                                    customer accounts, self-service changes
+       >>> MILESTONE B: PUBLIC LAUNCH <<<
+8      Operations                   Maintenance, incidents & fines, driver
+                                    trips, corporate accounts & billing
+9      Reports & Dashboard          Owner dashboard, utilisation, profit per
+                                    car, tax and payment reports
+10     Growth                       Promo codes, reviews, loyalty, referrals,
+                                    WhatsApp, SEO, GPS, partner-owned cars
+
+Why Notifications moved before the public site: the public site needs SMS
+for booking lookup OTPs, confirmations and payment receipts. Without
+notifications in place first, online customers get no confirmation.
+
+What was ADDED to the original roadmap (summary - details in each phase):
+- Ghana Card/licence verification workflow, foreign passport + IDP support,
+  additional drivers, minimum age/licence-years rules
+- Database-level double-booking protection (Postgres exclusion constraint)
+  and turnaround buffer between rentals
+- Car "blocks" (out of service / in garage) from Phase 2, so go-live doesn't
+  wait for the full maintenance module
+- Chauffeur pricing (in-town vs out-of-town, driver night allowance), driver
+  assignment with clash checks at booking time
+- Delivery/collection zones (KIA airport, hotels), mileage allowance and
+  excess-km charge, fuel policy, late-return grace and fees, fee schedule
+  (cleaning, smoking, lost key, fuel refill)
+- Price quote engine with frozen price snapshots on each booking
+- Cancellation and no-show policy engine, holds that expire automatically
+- Booking folio (charges vs payments ledger), credit notes instead of
+  editing issued invoices, sequential document numbering for GRA
+- Deposits as a liability (held/refunded/deducted), not revenue
+- Paystack webhooks with signature check + idempotency + reconciliation
+- Manual MoMo-to-merchant-number payments with proof upload
+- Withholding tax on corporate payments, GRA E-VAT check
+- Post-rental charges (traffic fines, late-discovered damage)
+- Ghana Data Protection Act (Act 843) handling for ID documents
+- Background jobs + scheduler, file storage, rate limiting, PDF service
+
+
+==========================================================================
+CROSS-CUTTING CONVENTIONS (apply to every module)
+==========================================================================
+Money        Store every amount as an INTEGER in pesewas (GHS 1.00 = 100).
+             Never use floats. Column suffix: *_amount (e.g. total_amount).
+             Currency is GHS only; keep a currency column on business
+             settings, not on every row.
+Time         Store timestamps in UTC (timestamptz). Business timezone is
+             Africa/Accra (UTC+0, no daylight saving) - still convert
+             explicitly so nothing breaks if branches abroad ever exist.
+IDs          ULID string primary keys (existing withUlid mixin).
+             Human-facing references are separate columns:
+               booking   CR-2026-000123
+               invoice   INV-2026-000045
+               receipt   RCT-2026-000210
+               credit    CN-2026-000003
+               job card  JC-2026-000017
+             Generated from a document_sequences table inside the same
+             transaction (gap-free, needed for GRA audit).
+Branch       Every operational row (car, booking, payment, expense, cash-up,
+             staff assignment, maintenance job, ...) has branch_id from day
+             one, pointing to the single main branch. Queries scope by the
+             staff user's branches. Adding branches later = new feature, no
+             rewrite.
+Database     PostgreSQL only for this project. Drop the SQLite fallback from
+             the template - the double-booking exclusion constraint
+             (btree_gist) and jsonb need Postgres.
+Deletes      Never hard-delete business records (cars, customers, bookings,
+             payments, invoices). Use status/archived_at. Hard delete only
+             for drafts and config rows with no history.
+Audit        Every create/update/delete/status change on business records
+             writes an audit_logs row (see M1.4).
+Permissions  module.action slugs, seeded in
+             database/seed_data/role_permission_data.ts as each module is
+             built. Full catalog at the end of this file.
+Files        Through @adonisjs/drive (local disk in dev, S3-compatible bucket
+             in production, e.g. Cloudflare R2 / AWS S3). Private files
+             (IDs, licences, signatures) served only via short-lived signed
+             URLs, never public URLs.
+Jobs         Background queue + scheduler (M1.6) for anything slow or timed:
+             PDFs, SMS/email, expiry checks, hold expiry, overdue detection.
+Validation   VineJS validators per module in app/validators/<module>.ts.
+Lists        Every list endpoint uses BaseFilter (page, limit, sortBy,
+             sortOrder, search + module filters).
+Docs         When a module is finished, write prompt-reference/<module>_module.txt
+             in the same style as auth_module.txt (data model, endpoints,
+             request/response examples, errors, rules, related files).
+Tests        Japa functional tests per module covering happy path, permission
+             denial (403), validation (422), and every business rule listed
+             in that module's "Rules".
+
+
+==========================================================================
+PHASE 1: FOUNDATION
+==========================================================================
+
+M1.0 Template adaptation
+--------------------------
+- Rename app (app:rename), set DB names to car_rental_db / car_rental_db_test
+- Remove SQLite connection; enable Postgres extensions btree_gist (and
+  pg_trgm for fuzzy customer search) in a migration
+- Set TZ=Africa/Accra handling, APP_URL, CORS_ORIGIN for admin + public site
+- Add rate limiting (@adonisjs/limiter) on /auth/login now, and later on
+  all public endpoints
+Done when: fresh install runs migrations on Postgres, tests pass, login is
+rate limited.
+
+M1.1 Business profile & branch
+--------------------------------
+Tables:
+  businesses   name, trading_name, logo_file, email, phone, whatsapp_phone,
+               address, digital_address (GhanaPost GPS, e.g. GA-123-4567),
+               city, region, tin (GRA Taxpayer ID), vat_registered (bool),
+               vat_number, currency (GHS), timezone. Exactly one row.
+  branches     business_id, name, is_main, address, digital_address, city,
+               phone, latitude, longitude, active. One main branch created by
+               the bootstrap command.
+  branch_users pivot (staff user <-> branch), composite key like role_permissions
+  opening_hours branch_id, weekday (0-6), opens_at, closes_at, is_closed
+  closure_dates branch_id, date, reason (public holidays, e.g. Independence
+               Day, Christmas) - no pickups/returns allowed on these days
+               unless after-hours fee applies
+Command: business:create (replaces make:admin as the install bootstrap):
+  creates business + main branch + seeds roles/permissions + owner account
+  with temp password, in one transaction; refuses to run twice.
+Endpoints: GET/PUT /admin/business, GET/PUT /admin/branches/:id,
+  GET/PUT /admin/branches/:id/opening-hours, CRUD /admin/closure-dates
+Permissions: settings.manage
+Done when: install bootstrap works end to end; staff are assigned to the
+main branch automatically.
+
+M1.2 Staff roles & permissions
+--------------------------------
+Replace the template's single Super Admin seed with these system roles:
+  owner        Owner           isSuperAdmin  Everything
+  manager      Manager                       Everything operational, approves
+                                             discounts/refunds/cash-up
+  front-desk   Front Desk                    Customers, bookings, handover,
+                                             take payments, own cash-up
+  fleet        Fleet Officer                 Cars, documents, inspections,
+                                             maintenance, incidents
+  driver       Driver                        Only own assigned trips
+  accountant   Accountant                    Payments, invoices, expenses,
+                                             cash-up review, reports, exports
+Role -> permission defaults: see "ROLE MATRIX" at the end of this file.
+Add GET /admin/users/:id (missing from template) and a lightweight
+GET /admin/staff/options (id + name, for dropdowns) gated by bookings.view.
+Done when: seeder creates all six roles with their default permissions;
+each role is tested against at least one allowed and one denied route.
+
+M1.3 Settings (business rules as data, not code)
+--------------------------------------------------
+Table: settings (key, value jsonb, branch_id nullable) with typed accessors
+in a SettingsService. Initial keys and sensible defaults:
+  booking.min_driver_age                    25
+  booking.min_licence_years                 2
+  booking.min_rental_days                   1
+  booking.max_rental_days                   90
+  booking.turnaround_buffer_minutes         120  (cleaning/prep between rentals)
+  booking.return_grace_minutes              59
+  booking.hold_minutes                      30   (unpaid online hold)
+  booking.monthly_threshold_days            28
+  booking.weekly_threshold_days             7
+  booking.after_hours_fee_amount            pesewas
+  booking.require_verified_customer_for_checkout  true
+  pricing.display_tax_inclusive             true
+  payment.reservation_fee_type              percent | fixed
+  payment.reservation_fee_value             e.g. 20 (%) or 50000 (GHS 500)
+  payment.allow_pay_at_pickup               true
+  payment.balance_due                       at_pickup
+  deposit.default_amount                    per category, see M2.1
+  fuel.policy                               full_to_full | same_to_same
+  mileage.policy                            unlimited | daily_allowance
+  cancellation.policy                       tiers, see M3.6
+  legal.terms_version / legal.terms_text    rental terms shown + signed
+Endpoints: GET /admin/settings, PUT /admin/settings (partial update,
+validated per key). Public subset (opening hours, contact, terms) exposed
+later in Phase 7.
+Permissions: settings.manage
+Done when: every rule used by later modules reads from SettingsService, no
+hardcoded policy numbers anywhere.
+
+M1.4 Audit log
+-----------------
+Table: audit_logs  id, user_id (nullable for system/customer), actor_type
+  (staff | customer | system | webhook), action (e.g. booking.cancelled),
+  subject_type, subject_id, before jsonb, after jsonb (changed fields only),
+  ip, user_agent, created_at. Append-only (no update/delete endpoints).
+Implementation: AuditService.record(ctx, action, subject, before, after),
+called explicitly from services (not model hooks, so we capture intent like
+"price overridden" rather than just "row updated"). Also log logins, failed
+logins and permission changes.
+Endpoints: GET /admin/audit-logs (filters: userId, action, subjectType,
+subjectId, dateFrom/To), GET /admin/<resource>/:id/history for any record.
+Permissions: audit.view
+Done when: role/user/settings changes from the template are also audited.
+
+M1.5 File storage
+-------------------
+- @adonisjs/drive setup, private vs public disks
+- files table: id, disk, path, original_name, mime, size, uploaded_by,
+  attachable_type, attachable_id, purpose (car_photo, id_front, licence,
+  signature, receipt_proof, ...)
+- Upload validation: images (jpg/png/webp/heic) up to ~8 MB, PDFs up to
+  ~10 MB; image resize/compress for photos
+- Signed URL endpoint, permission-checked by purpose
+Done when: any later module can attach files with one service call.
+
+M1.6 Background jobs & scheduler
+----------------------------------
+- Job queue (Redis-backed or Postgres-backed) + recurring scheduler
+- Standard jobs registered here, filled in by later phases:
+    every minute   expire unpaid booking holds
+    every 15 min   flag overdue rentals
+    daily 07:00    document expiry check, maintenance due check, daily
+                   pickups/returns digest
+- Failed job logging + retry
+Done when: a sample scheduled job runs in dev and is covered by a test.
+
+M1.7 Document numbering
+-------------------------
+document_sequences (type, year, branch_id, next_value) + NumberingService
+.next(type, trx). Row-locked (SELECT ... FOR UPDATE) to stay gap-free under
+concurrency.
+
+M1.8 In-app notifications (minimal)
+-------------------------------------
+notifications table (user_id, type, title, body, link, read_at). Endpoints:
+GET /account/notifications, POST /account/notifications/:id/read, read-all.
+Used from Phase 2 for expiry alerts; SMS/email channels come in Phase 6.
+
+PHASE 1 DONE WHEN: owner can install, log in, configure business/hours/
+settings, create staff in all six roles, and every action shows in the
+audit log.
+
+
+==========================================================================
+PHASE 2: FLEET & PRICING
+==========================================================================
+
+M2.1 Vehicle categories
+-------------------------
+categories  name (Economy, Compact, Saloon, SUV, 4x4, Pickup, Minivan/
+  Bus, Luxury), slug, description, image, seats, default_deposit_amount,
+  self_drive_allowed (some luxury/bus categories are chauffeur-only),
+  min_driver_age_override, sort_order, active.
+Permissions: fleet.manage
+
+M2.2 Cars
+-----------
+cars  branch_id, category_id, make, model, year, colour, registration_no
+  (e.g. GR 1234-24, unique), vin_chassis_no, engine_no, transmission
+  (auto/manual), fuel_type (petrol/diesel/hybrid/electric), fuel_capacity_l,
+  seats, doors, luggage, features (array: AC, Bluetooth, reverse camera,
+  GPS tracker, ...), current_odometer_km, purchase_date, purchase_amount,
+  ownership (company | partner - partner payouts in Phase 10),
+  public_title (e.g. "Toyota Corolla 2022"), public_description,
+  is_listed_online, status, archived_at.
+car_photos  via files (ordered, one cover photo).
+Status (operational, set by staff/system):
+  active          can be booked
+  in_maintenance  blocked (set by maintenance block or job card)
+  out_of_service  blocked (accident, impounded, waiting for parts)
+  retired         sold/written off - hidden everywhere, history kept
+"Available / rented / reserved" is NOT stored on the car - it's computed
+from the allocation table (M3.4) for a given time range.
+Endpoints: CRUD /admin/cars, POST /admin/cars/:id/photos, reorder, delete
+photo, PUT /admin/cars/:id/status (with reason), GET /admin/cars/:id/odometer-history
+Rules:
+  - registration_no and VIN unique
+  - cannot retire a car with future confirmed bookings (must swap first)
+  - odometer can only go up (corrections need fleet.manage + reason, audited)
+Permissions: fleet.view, fleet.manage
+
+M2.3 Car blocks (simple availability blocks)
+----------------------------------------------
+Staff can block a car for a date range (garage, owner use, inspection)
+before the full maintenance module exists. Stored as rows in the shared
+allocation table (M3.4) with source=block, so bookings can't overlap them.
+Endpoints: CRUD /admin/cars/:id/blocks
+Permissions: fleet.manage
+
+M2.4 Vehicle documents & expiry alerts
+----------------------------------------
+vehicle_documents  car_id, type (roadworthy | insurance | registration |
+  income_tax_sticker | other), number, provider (insurer name), cover_type
+  (comprehensive | third_party), issued_on, expires_on, file, notes.
+Keep history: renewing creates a new row; the latest per type is "current".
+Rules:
+  - Daily job: alerts at 30, 14, 7, 1 days before expiry and on expiry day
+    (in-app now, SMS/email after Phase 6) to fleet + manager roles
+  - A car whose roadworthy or insurance expires before a booking's return
+    date shows a warning at booking time and BLOCKS check-out (M4.1) once
+    expired
+  - Car list shows a compliance badge: ok / expiring_soon / expired
+Endpoints: CRUD /admin/cars/:id/documents, GET /admin/documents/expiring?days=30
+Permissions: fleet.view, fleet_documents.manage
+
+M2.5 Rates
+------------
+rate_plans  category_id (required) + car_id (optional override),
+  drive_type (self_drive | chauffeur), daily_amount, weekly_amount (per 7
+  days), monthly_amount (per 30 days), included_km_per_day (null =
+  unlimited), excess_km_amount, active, effective_from, effective_to.
+Chauffeur extras (when drive_type=chauffeur):
+  - zone: in_town | out_of_town (outside the city/region, e.g. Accra ->
+    Kumasi) with its own daily amount
+  - driver_overnight_allowance_amount per night away
+  - driver_hours_per_day (e.g. 12) + driver_overtime_hour_amount
+  - fuel_included flag (chauffeur rentals in Ghana are often fuel-excluded)
+Lookup order: car override > category plan. Tier picked by rental length:
+  days >= monthly_threshold -> monthly per-day equivalent; >= weekly ->
+  weekly per-day equivalent; else daily.
+Permissions: pricing.view, pricing.manage
+
+M2.6 Seasonal, weekend & holiday pricing
+------------------------------------------
+pricing_rules  name, type (season | weekend | holiday | long_weekend),
+  date_from, date_to (for seasons), weekdays (for weekend, e.g. Fri-Sun),
+  adjustment_type (percent | fixed per day), adjustment_value (+/-),
+  applies_to (all | category ids | car ids), min_rental_days (e.g. December
+  "Detty December" season requires min 3 days), priority, active.
+Applied PER CALENDAR DAY of the rental; when several match, highest
+priority wins (no stacking unless a rule is marked stackable).
+Blackout dates: optional rule flag that blocks online booking on those
+dates (staff can still book).
+Permissions: pricing.manage
+
+M2.7 Extras
+-------------
+extras  name (child seat, booster seat, extra driver, GPS device, Wi-Fi
+  hotspot, airport delivery, cooler box, ...), charge_type (per_day |
+  per_rental | per_unit), amount, max_quantity, tracked_stock (int, null =
+  unlimited - e.g. 4 child seats), taxable, available_online, active.
+Stocked extras get availability checked like cars (simple count of
+overlapping bookings vs stock).
+Permissions: extras.manage
+
+M2.8 Insurance / protection add-ons
+-------------------------------------
+protection_plans  name (Basic - included, CDW, Super CDW, Tyre & Glass),
+  per_day_amount, excess_amount (customer's max liability for damage),
+  deposit_amount_override, is_default, mandatory, description/terms.
+The chosen plan's excess is printed on the agreement and used at check-in
+to cap damage charges.
+Permissions: pricing.manage
+
+M2.9 Delivery zones & fee schedule
+------------------------------------
+delivery_zones  name (Kotoka Int'l Airport, East Legon, Airport Residential,
+  Tema, Kumasi, ...), delivery_amount, collection_amount, after_hours_amount,
+  active.
+fee_schedule  code + name + amount for standard extra charges used at
+  check-in and post-rental: late_return_hour, late_return_day, fuel_per_litre
+  (or per eighth of tank), refuel_service_fee, cleaning_standard,
+  cleaning_heavy, smoking, lost_key, lost_document, excess_km (default),
+  admin_fee_on_fines.
+Permissions: pricing.manage
+
+M2.10 Taxes
+-------------
+tax_rates  name (VAT, NHIL, GETFund, ...), code, rate (basis points, e.g.
+  1500 = 15%), calculation (simple_on_net | compound_on_net_plus_levies),
+  applies_to (rental, extras, fees, delivery), effective_from, effective_to,
+  active.
+Never hardcode rates: Ghana's VAT and levy structure has been reformed
+recently (2025-2026). Load the current structure from the accountant and
+keep old rows so past invoices stay reproducible. Taxes apply only if
+business.vat_registered is true.
+Permissions: settings.manage
+
+M2.11 Price quote engine (the core of pricing)
+------------------------------------------------
+PricingService.quote({ carId | categoryId, pickupAt, returnAt, driveType,
+  zone, extras[], protectionPlanId, deliveryZoneId, collectionZoneId,
+  promoCode?, corporateAccountId?, manualDiscount? }) returns:
+  rental_days, tier used, per-day lines (date, base, adjustment, rule),
+  extras lines, protection line, delivery/collection lines, after-hours
+  fees, discount lines, subtotal, tax lines, total, deposit_amount,
+  reservation_fee_amount, warnings[] (e.g. min days for season not met).
+Rental days = ceil((returnAt - pickupAt - grace) / 24h), minimum 1.
+Order: base -> seasonal/weekend -> extras/protection/delivery -> discounts
+-> taxes -> total. Deposit is never taxed and never part of revenue.
+Used by staff booking, modifications, check-in recalculation and the public
+site - ONE implementation.
+Endpoint: POST /admin/quotes (staff preview). Public version in Phase 7.
+Done when: unit tests cover tier switching, a rental spanning a season
+boundary, weekend days, extras per day vs per rental, tax rounding (round
+per line, to the pesewa) and grace period edges.
+
+PHASE 2 DONE WHEN: the full fleet is entered with photos and documents,
+prices are configured, and staff can produce an accurate quote for any car
+and date range.
+
+
+==========================================================================
+PHASE 3: CUSTOMERS & BOOKINGS (STAFF SIDE)
+==========================================================================
+
+M3.1 Customers
+----------------
+customers  type (individual | corporate_driver), full_name, phone (E.164,
+  +233...), whatsapp_phone, email, date_of_birth, gender (optional),
+  nationality, residential_address, digital_address, occupation, employer,
+  emergency_contact_name, emergency_contact_phone, source, notes,
+  verification_status, is_blacklisted (denormalised from M3.3),
+  corporate_account_id (Phase 8), marketing_opt_in, archived_at.
+customer_identities  customer_id, type (ghana_card | passport | voter_id |
+  drivers_licence | international_driving_permit), number, issuing_country,
+  issued_on, expires_on, licence_class (B, C, ...), front_file, back_file,
+  verified_by, verified_at, status (pending | verified | rejected),
+  rejection_reason.
+  Ghana Card format: GHA-XXXXXXXXX-X (validate pattern).
+  Foreign customers (tourists, diaspora): passport + home licence + IDP.
+selfie_file (optional) for face match by staff.
+Rules:
+  - Phone unique among active customers; fuzzy duplicate warning on name +
+    DOB, Ghana Card no., licence no.
+  - Customer is "verified" when they have a verified ID AND a verified,
+    non-expired driving licence (licence not needed for chauffeur-only
+    customers)
+  - Age >= min_driver_age (category override allowed), licence held >=
+    min_licence_years - checked at booking for the main and extra drivers
+  - ID numbers and document images are masked/hidden unless the user has
+    customers.view_documents (Data Protection Act 2012, Act 843). Access to
+    document images is audited.
+  - Retention: archived customers' document images purged after a
+    configurable period (e.g. 24 months after last rental)
+  - Optional later: NIA Ghana Card verification API
+Endpoints: CRUD /admin/customers, POST/PUT /admin/customers/:id/identities,
+  POST /admin/customers/:id/identities/:identityId/verify|reject,
+  GET /admin/customers/:id/bookings, GET /admin/customers/search?q= (phone,
+  name, ID no.)
+Permissions: customers.view, customers.manage, customers.verify,
+  customers.view_documents
+
+M3.2 Additional drivers
+-------------------------
+booking_drivers  booking_id, customer_id, is_primary. Every driver must pass
+the same age/licence/blacklist checks. Extra driver fee comes from the
+"extra driver" extra (M2.7).
+
+M3.3 Blacklist
+----------------
+blacklist_entries  customer_id (nullable), phone, ghana_card_no,
+  licence_no, passport_no, reason (unpaid balance, damage, fraud,
+  violence, late returns, other), details, severity (warn | block),
+  added_by, added_at, lifted_by, lifted_at, lift_reason.
+Rules:
+  - Checked on customer create/update and on every booking (match on ANY
+    of phone / Ghana Card / licence / passport, so a new profile with the
+    same ID is still caught)
+  - block -> booking refused unless a manager overrides (audited);
+    warn -> booking allowed with visible warning
+Endpoints: CRUD /admin/blacklist, POST /admin/blacklist/:id/lift,
+  GET /admin/blacklist/check?phone=&idNumber=
+Permissions: customers.blacklist
+
+M3.4 Availability & no double-booking
+---------------------------------------
+car_allocations  car_id, booking_id (nullable), source (booking | hold |
+  block | maintenance), starts_at, ends_at, ends_at_with_buffer, active.
+  Postgres constraint:
+    EXCLUDE USING gist (car_id WITH =,
+      tstzrange(starts_at, ends_at_with_buffer) WITH &&) WHERE (active)
+  This makes overlapping allocations IMPOSSIBLE even under concurrent
+  requests; the service turns the constraint violation into a clean 409
+  "Car is not available for these dates".
+Same pattern for drivers: driver_allocations (M3.9).
+AvailabilityService:
+  - isAvailable(carId, from, to)
+  - search(from, to, filters) -> available cars, grouped by category
+  - nextAvailableAt(carId)
+Endpoints: GET /admin/availability?from=&to=&categoryId=&driveType=
+
+M3.5 Bookings
+---------------
+bookings  reference, branch_id, customer_id, car_id, category_id, source
+  (walk_in | phone | whatsapp | website | corporate), drive_type, zone,
+  destination/purpose, pickup_at, return_at, pickup_location (branch |
+  delivery_zone + address), return_location, actual_pickup_at,
+  actual_return_at, protection_plan_id, corporate_account_id, driver_id
+  (chauffeur), status, price_snapshot jsonb (full quote at booking time),
+  subtotal_amount, discount_amount, tax_amount, total_amount,
+  deposit_amount, paid_amount, balance_amount (kept in sync by the folio,
+  Phase 5), terms_version, cancelled_at, cancel_reason, created_by, notes.
+booking_extras  booking_id, extra_id, quantity, unit_amount, total_amount.
+Status machine (only these transitions are allowed):
+  draft ---------> pending ---------> confirmed -----> on_rent -----> returned -----> closed
+     \               |  \                 |               (check-out)   (check-in)     (balance 0,
+      \              |   expired          |                                              deposit settled)
+       \             |  (hold timeout)    +--> no_show
+        +------------+--> cancelled <-----+
+  draft      quote being built, no car hold
+  pending    car held until hold_expires_at, waiting for reservation fee
+             or staff confirmation
+  confirmed  reservation fee paid OR staff confirmed (pay at pickup)
+  on_rent    car checked out (Phase 4)
+  returned   car checked in, final charges being settled
+  closed     everything settled; record is locked (changes via credit
+             notes / post-rental charges only)
+  cancelled / no_show / expired  release the car allocation
+"Overdue" is a computed flag: status on_rent and now > return_at + grace.
+Rules:
+  - Creating/confirming a booking writes the car allocation in the same
+    transaction (fails with 409 on overlap)
+  - Pickup/return must fall within opening hours or carry the after-hours
+    fee; closure dates are rejected
+  - Customer must not be blocked; must be verified before CHECK-OUT (not
+    before booking) when booking.require_verified_customer_for_checkout
+  - Price is frozen in price_snapshot; later rate changes never alter
+    existing bookings
+  - Manual price override / discount above a staff limit requires
+    bookings.override (manager) and a reason - audited
+  - Car's documents must be valid through return_at (warning at booking)
+Endpoints: GET/POST /admin/bookings, GET/PUT /admin/bookings/:id,
+  POST /admin/bookings/:id/confirm|cancel|no-show, GET /admin/bookings/:id/history
+Filters: status, dateFrom/To (pickup or return), carId, customerId,
+  source, driveType, overdue=true, reference search
+Permissions: bookings.view, bookings.create, bookings.update,
+  bookings.cancel, bookings.override
+
+M3.6 Cancellation & no-show policy
+------------------------------------
+Policy tiers in settings, e.g.:
+  >= 72h before pickup   full refund (minus payment provider fees, setting)
+  24-72h                 reservation fee kept
+  < 24h or no-show       reservation fee + 1 day kept
+CancellationService.evaluate(booking, now) returns the fee and refundable
+amount; staff see it before confirming. No-show: booking still pending/
+confirmed X hours after pickup_at -> staff marks no_show (or the scheduler
+flags it for review). Refunds themselves are processed in Phase 5.
+
+M3.7 Booking calendar
+-----------------------
+- GET /admin/calendar?from=&to=&categoryId= -> per-car rows of allocations
+  (bookings, holds, blocks, maintenance) for a Gantt/timeline view
+- GET /admin/cars/:id/calendar for one car
+- Colour by status; includes buffer periods
+
+M3.8 Extend, swap, upgrade, change dates, early return
+---------------------------------------------------------
+booking_modifications  booking_id, type (extend | shorten | change_dates |
+  swap_car | upgrade | downgrade | change_extras | early_return),
+  before jsonb, after jsonb, price_difference_amount, reason, created_by.
+Rules:
+  - Extend: availability re-checked for the extra period; extra days priced
+    with CURRENT rates for the new days (setting: or the original snapshot
+    rate) - the allocation is extended in the same transaction
+  - Swap/upgrade: new car must be free for the remaining period. Upgrade at
+    no charge (business reason, e.g. original car broke down) or charged
+    the difference; on an on_rent booking a swap triggers a mini check-in/
+    check-out of both cars (Phase 4)
+  - Early return: refund policy from settings (none / unused days at daily
+    rate / credit)
+  - Every modification re-runs the quote engine and posts the difference to
+    the folio (Phase 5)
+Endpoints: POST /admin/bookings/:id/extend|swap|change-dates|extras,
+  POST /admin/bookings/:id/modifications/preview (price diff before saving)
+
+M3.9 Drivers (chauffeur assignment - basic)
+---------------------------------------------
+drivers  user_id (staff user with Driver role, nullable for freelance
+  drivers), full_name, phone, licence_no, licence_class, licence_expires_on,
+  status (active | on_leave | inactive), daily_rate_amount (cost to the
+  business), notes.
+driver_allocations  same exclusion constraint as cars.
+Rules: chauffeur booking must have a driver before check-out; driver can't
+be double-booked; expired licence blocks assignment.
+Endpoints: CRUD /admin/drivers, PUT /admin/bookings/:id/driver
+Trip logs, allowances and the driver's own app endpoints come in M8.3.
+
+M3.10 Today board (operational view for go-live)
+--------------------------------------------------
+GET /admin/today -> pickups due today, returns due today, currently
+overdue, pending holds about to expire, unverified customers with pickups
+today, cars with expired documents. (The full owner dashboard is Phase 9.)
+
+PHASE 3 DONE WHEN: staff can register and verify a customer, find an
+available car, quote, book, modify and cancel, and it is impossible to
+double-book a car or driver (proven by a concurrent-insert test).
+
+
+==========================================================================
+PHASE 4: VEHICLE HANDOVER
+==========================================================================
+
+M4.1 Check-out (pickup)
+-------------------------
+inspection_templates  name, items (e.g. spare tyre, jack & wheel spanner,
+  warning triangles, fire extinguisher, first aid kit, car documents,
+  number of keys, floor mats, radio/screen, phone charger) - configurable.
+inspections  booking_id, car_id, type (check_out | check_in | swap_out |
+  swap_in), odometer_km, fuel_level (0-8 eighths), checklist results
+  jsonb (item -> ok | missing | damaged + note), exterior/interior
+  cleanliness, inspected_by, inspected_at, customer_signature_file,
+  staff_signature_file, signed_at, signer_ip, signer_device, notes.
+inspection_photos  inspection_id, angle (front, rear, left, right,
+  interior_front, interior_rear, dashboard_odometer, fuel_gauge, boot,
+  damage), file.
+damage_marks  inspection_id, car_id, panel/zone (from a car diagram: e.g.
+  front_bumper, left_front_door), x/y position on the diagram, type
+  (scratch, dent, crack, chip, missing_part), severity (minor | moderate |
+  major), photo, is_preexisting.
+Rules (all checked before status -> on_rent):
+  - Booking is confirmed; customer + extra drivers verified, not blocked
+  - Car status active; roadworthy and insurance valid TODAY
+  - Required balance paid per payment policy (Phase 5 enforces;
+    until then staff confirm manually) and deposit collected
+  - Minimum required photos uploaded (front, rear, left, right, odometer)
+  - Odometer >= car's current_odometer_km
+  - Existing open damages on the car are pre-loaded as is_preexisting so
+    the customer signs over them
+  - Customer accepts the current terms_version and signs
+Endpoints: POST /admin/bookings/:id/check-out (draft save + complete),
+  POST /admin/inspections/:id/photos, POST /admin/inspections/:id/damages
+Permissions: handover.checkout
+
+M4.2 Digital signatures
+-------------------------
+Signature captured as PNG on the tablet/phone at the desk (frontend canvas),
+stored privately, with timestamp, IP and device. Each signature is tied to
+the exact terms_version and a SHA-256 hash of the agreement content.
+(Remote signing link for delivery handovers is a Phase 7 add-on.)
+
+M4.3 Check-in (return)
+------------------------
+Same inspection flow, type check_in, then a comparison:
+  - km driven vs included km -> excess km charge
+  - fuel level vs check-out level -> fuel charge (fee_schedule)
+  - actual_return_at vs return_at + grace -> late hours (hourly fee up to
+    a cap, then whole extra day at the booking's rate)
+  - new damage marks (not preexisting) -> damage charge entered by staff,
+    capped at the protection plan's excess unless negligence (manager)
+  - missing checklist items, cleaning, smoking -> fee_schedule charges
+CheckInService proposes charges; staff accept/edit/waive each line (waiver
+needs a reason; waivers above a limit need bookings.override). Accepted
+charges post to the folio. Car odometer updated; new damages added to the
+car's damage register (Phase 8 builds on this); car stays blocked for the
+turnaround buffer. Status -> returned.
+Endpoint: POST /admin/bookings/:id/check-in, GET /admin/bookings/:id/check-in/comparison
+Permissions: handover.checkin
+
+M4.4 PDF service & rental agreement
+-------------------------------------
+- Shared PdfService (HTML template -> PDF, e.g. headless Chromium or a
+  JS PDF library) reused for invoices, receipts, job cards, statements
+- Rental agreement PDF: business details + TIN, booking reference,
+  customer and drivers with ID/licence numbers (partially masked), car
+  (make/model/plate/VIN), dates, pickup/return locations, price breakdown,
+  deposit, protection plan + excess, fuel & mileage policy, check-out
+  odometer/fuel/damage diagram + photos thumbnails, terms text (version),
+  both signatures. Generated at check-out (and a check-in summary
+  appended/second PDF at return). Stored, immutable, downloadable.
+Endpoints: GET /admin/bookings/:id/agreement.pdf, GET .../check-in-report.pdf
+
+PHASE 4 DONE WHEN: a car can go out and come back with full photo/sign-off
+evidence, extra charges are computed, and the signed agreement PDF exists.
+
+
+==========================================================================
+PHASE 5: PAYMENTS & FINANCE
+==========================================================================
+
+M5.1 Booking folio (ledger)
+-----------------------------
+folio_entries  booking_id, type (charge | discount | payment | refund |
+  deposit_received | deposit_refunded | deposit_applied | adjustment),
+  description, amount (signed pesewas), tax_amount, source (booking |
+  modification | check_in | post_rental | manual), payment_id, created_by.
+balance = charges - discounts - payments + refunds (deposits tracked
+separately as a liability). bookings.paid_amount / balance_amount are
+recalculated from the folio in the same transaction.
+Endpoint: GET /admin/bookings/:id/folio
+
+M5.2 Paystack (MoMo: MTN, Telecel Cash, AT Money; cards)
+----------------------------------------------------------
+payments  reference, booking_id, customer_id, corporate_account_id, method
+  (paystack_momo | paystack_card | cash | bank_transfer | momo_direct |
+  pos_card | cheque), purpose (reservation_fee | rental | balance |
+  deposit | post_rental | corporate_invoice), amount, fee_amount
+  (provider charges), status (pending | success | failed | abandoned |
+  reversed), provider_reference, provider_payload jsonb, paid_at,
+  recorded_by, cash_session_id, proof_file, notes.
+Flow:
+  1. POST /admin/bookings/:id/payments/paystack -> initialize transaction
+     (amount, email/phone, channels, metadata { bookingId, purpose }),
+     return authorization URL / MoMo prompt status
+  2. Customer approves on phone (MoMo) or card page
+  3. Webhook POST /webhooks/paystack:
+       - verify x-paystack-signature (HMAC-SHA512 of raw body with secret)
+       - idempotent on provider reference (unique index; replays are no-ops)
+       - re-verify via Paystack verify API before marking success
+       - post folio entry, update booking (pending -> confirmed if the
+         reservation fee is now covered), audit, queue receipt
+  4. Fallback GET /admin/payments/:id/verify for staff when the webhook is
+     late
+  - Reconciliation job (daily): compare Paystack transactions/settlements
+    with local payments; flag mismatches
+  - Store Paystack fees so reports can show gross vs net
+Secrets in env: PAYSTACK_SECRET_KEY, PAYSTACK_PUBLIC_KEY.
+
+M5.3 Pay upfront vs pay at pickup (reservation fee)
+-----------------------------------------------------
+- Upfront: full total (and optionally deposit) via Paystack -> confirmed
+- Pay at pickup: reservation fee (setting: % or fixed) secures the booking;
+  balance due at check-out (enforced in M4.1). Unpaid pending bookings
+  expire after hold_minutes (online) or a staff-set deadline (phone
+  bookings) and release the car
+- Reservation fee refundability follows the cancellation policy (M3.6)
+
+M5.4 Manual payments (cash, bank transfer, direct MoMo, POS)
+--------------------------------------------------------------
+POST /admin/bookings/:id/payments with method + amount + reference +
+optional proof upload (MoMo/bank screenshot). Cash payments attach to the
+staff member's open cash session (M5.7). Direct MoMo/bank transfers can
+require approval (status pending_verification until accountant/manager
+confirms the money arrived) - setting.
+Voiding a recorded payment: payments.void, reason, audited, never deleted.
+
+M5.5 Security deposits & refunds
+----------------------------------
+deposits  booking_id, amount, method, status (held | partially_applied |
+  refunded | forfeited), received_at, settled_at.
+Rules:
+  - Deposit is a LIABILITY: not revenue, not taxed, shown separately on
+    receipts
+  - At closing: apply deposit against outstanding charges (deposit_applied),
+    refund the remainder
+  - Paystack does not reliably support card pre-authorisation holds in
+    Ghana, so deposits are collected then refunded (confirm with Paystack)
+  - Refund methods: Paystack refund API (back to card/MoMo), cash, MoMo
+    transfer, bank transfer; refunds above a limit need manager approval
+  - Booking can only be closed when balance = 0 and deposit settled
+refunds  payment_id, amount, method, status, reason, approved_by,
+  provider_reference.
+Endpoints: POST /admin/bookings/:id/deposit, POST /admin/deposits/:id/settle,
+  POST /admin/payments/:id/refund, POST /admin/refunds/:id/approve
+Permissions: deposits.manage, payments.refund, refunds.approve
+
+M5.6 Invoices, receipts, credit notes (VAT & levies)
+------------------------------------------------------
+invoices  number (INV-), booking_id or corporate_account_id, issued_at,
+  due_at, lines jsonb (description, qty, unit, net, taxes), subtotal,
+  tax breakdown per tax_rate, total, status (issued | partially_paid | paid
+  | void), pdf_file.
+receipts  number (RCT-), payment_id, pdf_file.
+credit_notes  number (CN-), invoice_id, lines, reason.
+Rules:
+  - Issued invoices are immutable; corrections via credit note + new
+    invoice
+  - Show business TIN, customer TIN for corporate clients, each tax line
+  - Check with the accountant whether the business must issue invoices
+    through GRA's E-VAT system; if yes, add an E-VAT integration step to
+    this module (invoice gets a GRA signature/QR)
+  - Receipts emailed/SMS-linked after Phase 6
+Endpoints: GET /admin/invoices, GET /admin/invoices/:id.pdf,
+  POST /admin/bookings/:id/invoice, POST /admin/invoices/:id/credit-note,
+  GET /admin/receipts/:id.pdf
+Permissions: invoices.view, invoices.manage
+
+M5.7 Daily cash-up
+--------------------
+cash_sessions  branch_id, user_id, opened_at, opening_float_amount,
+  closed_at, expected jsonb (per method, computed), counted jsonb (cash
+  counted by denomination + other methods confirmed), variance_amount,
+  notes, status (open | closed | approved), approved_by.
+Rules: a staff member must have an open session to record cash; one open
+session per staff member; closing computes expected vs counted and
+variance; manager/accountant approves; approved sessions are locked.
+Also cash paid out (refunds, petty expenses) recorded against the session.
+Endpoints: POST /admin/cash-sessions/open|close, GET /admin/cash-sessions,
+  POST /admin/cash-sessions/:id/approve, GET /admin/cash-sessions/:id/report.pdf
+Permissions: cashup.manage (own), cashup.approve
+
+M5.8 Expenses
+---------------
+expense_categories  fuel, repairs & parts, servicing, tyres, insurance,
+  roadworthy & licensing, car wash, salaries, driver allowances, rent,
+  utilities, marketing, Paystack fees, other.
+expenses  branch_id, category_id, car_id (optional - feeds profit per car),
+  vendor, amount, tax_amount, paid_via, paid_at, reference, receipt_file,
+  status (submitted | approved | rejected), submitted_by, approved_by, notes.
+Endpoints: CRUD /admin/expenses, POST /admin/expenses/:id/approve|reject
+Permissions: expenses.view, expenses.manage, expenses.approve
+
+M5.9 Excel & CSV export
+-------------------------
+Export endpoints for bookings, payments, refunds, deposits, invoices,
+expenses, cash sessions, customers (masked IDs), with the same filters as
+the list endpoints. Large exports run as a background job and return a
+download link. Formats: CSV and XLSX.
+Permissions: exports.run (+ the view permission of the data exported)
+
+PHASE 5 DONE WHEN: every booking's money is traceable from quote to closed
+(payments, deposit, refunds, invoice, receipt), cash-up balances, and the
+accountant can export everything.
+
+>>> MILESTONE A: INTERNAL GO-LIVE. The business runs walk-in and phone
+bookings on the system. Run 1-2 weeks in parallel with the old process,
+import the existing fleet, customers and future bookings first. <<<
+
+
+==========================================================================
+PHASE 6: NOTIFICATIONS
+==========================================================================
+
+M6.1 Channels & providers
+---------------------------
+- SMS via a Ghanaian provider (e.g. Hubtel, mNotify, Arkesel) behind an
+  SmsProvider interface; register the business Sender ID early (approval
+  takes time)
+- Email via @adonisjs/mail (SMTP or a transactional provider) with PDF
+  attachments
+- In-app (M1.8)
+- WhatsApp is Phase 10 (needs Meta Business verification + approved
+  templates)
+
+M6.2 Templates & log
+----------------------
+notification_templates  event, channel, subject, body with placeholders
+  ({customer_name}, {reference}, {pickup_at}, {car}, {amount}, {link}),
+  active. Editable by managers; SMS length counter.
+notification_logs  event, channel, recipient, payload, provider_message_id,
+  status (queued | sent | delivered | failed), error, cost, sent_at,
+  related subject. Retries with backoff. All sends go through the queue.
+Customer preferences: opt-out of marketing (transactional always sent).
+Permissions: notifications.manage
+
+M6.3 Customer messages
+------------------------
+  booking created (pending, with payment link)   SMS + email
+  booking confirmed                              SMS + email
+  payment received                               SMS + email with receipt PDF
+  pickup reminder (24h and 2h before)            SMS
+  return reminder (morning of / 2h before)       SMS
+  overdue notice                                 SMS
+  booking modified / cancelled (with refund)     SMS + email
+  agreement + check-in report                    email with PDFs
+  deposit refunded                               SMS + email
+  hold about to expire (online)                  SMS
+
+M6.4 Staff alerts
+-------------------
+  new booking (esp. online)                       in-app + SMS to front desk
+  payment failed / pending verification           in-app
+  overdue return                                  in-app + SMS to manager
+  documents expiring / expired                    in-app + daily email digest
+  maintenance due (Phase 8)                       in-app
+  cash-up variance above threshold                in-app to manager
+  daily summary (pickups, returns, cash) at 07:00 email to owner/manager
+
+PHASE 6 DONE WHEN: every event above fires once (no duplicates on retry),
+appears in the log, and reminders are scheduled/cancelled correctly when a
+booking changes.
+
+
+==========================================================================
+PHASE 7: PUBLIC BOOKING WEBSITE
+==========================================================================
+All public routes under /api/v1/public, no staff token, rate limited, CORS
+limited to the website origin. Only cars with is_listed_online + active
+categories appear. Uses the same AvailabilityService and PricingService.
+
+M7.1 Search
+-------------
+GET /public/search?pickupAt=&returnAt=&driveType=&categoryId=&zone=
+  &deliveryZoneId= -> available cars (or models) with total price, per-day
+  price, deposit, key features, cover photo. Validates opening hours,
+  closure dates, min/max days, blackout dates, lead time (e.g. no online
+  booking less than 3h ahead - setting).
+GET /public/meta -> categories, extras, protection plans, delivery zones,
+  opening hours, contact, WhatsApp number, terms.
+
+M7.2 Car listing & detail
+---------------------------
+GET /public/cars, GET /public/cars/:slug (photos, specs, features, price
+from, policies, availability calendar for the next 60 days without
+customer details).
+
+M7.3 Checkout
+---------------
+1. POST /public/quotes -> priced quote (extras, protection, delivery)
+2. POST /public/bookings -> creates customer (or matches by phone after
+   OTP) + pending booking + car HOLD (hold_minutes), returns reference
+3. Upload ID + licence (front/back, selfie) -> POST /public/bookings/:ref/documents
+4. Accept terms (version recorded)
+5. Pay via Paystack: full amount or reservation fee (settings)
+6. Webhook confirms -> confirmed (or "confirmed - pending ID verification"
+   until staff verify documents; failed verification -> staff contact
+   customer, cancellation with refund per policy)
+Blacklist check runs silently; blocked customers get a generic "please
+contact us" message.
+Abuse protection: phone OTP before creating the hold, CAPTCHA, max active
+holds per phone/IP.
+
+M7.4 Booking lookup (reference + phone, with OTP)
+----------------------------------------------------
+POST /public/lookup {reference, phone} -> sends SMS OTP;
+POST /public/lookup/verify {reference, phone, otp} -> short-lived booking
+token. Reference + phone alone is NOT enough (references are guessable and
+would expose personal data). OTP: 6 digits, 5 min expiry, max 5 attempts,
+rate limited.
+
+M7.5 Optional customer accounts
+---------------------------------
+Phone-number login with OTP (preferred in Ghana) or email + password.
+Separate auth guard / token type from staff (customers must never reach
+/admin). Features: my bookings, saved documents (re-use verified ID),
+profile, receipts/invoices download. Guest checkout stays available.
+
+M7.6 Cancel & change online
+-----------------------------
+- Cancel: shows CancellationService result, refund via Paystack refund API
+- Change dates / extras: preview price difference, pay difference via
+  Paystack, or refund difference per policy
+- Not allowed online within X hours of pickup or once on_rent (must call)
+
+M7.7 WhatsApp contact & content
+---------------------------------
+- wa.me click-to-chat link with prefilled text ("Hi, I'm asking about
+  booking CR-2026-000123")
+- Managed content: FAQs, terms, about, contact page, policies (content
+  table, content.manage)
+
+PHASE 7 DONE WHEN: a customer can find a car, pay with MoMo, upload ID,
+receive SMS/email confirmation, look up and cancel their booking - and
+staff see it all in the admin.
+
+>>> MILESTONE B: PUBLIC LAUNCH <<<
+
+
+==========================================================================
+PHASE 8: OPERATIONS
+==========================================================================
+
+M8.1 Maintenance schedules & job cards
+----------------------------------------
+maintenance_schedules  car_id or category_id, task (engine oil service,
+  tyre rotation, brake check, battery, AC service, roadworthy renewal),
+  interval_km, interval_days, last_done_km, last_done_on, next_due_km,
+  next_due_on.
+job_cards  number (JC-), car_id, type (scheduled | repair | accident |
+  inspection), status (open | in_progress | waiting_parts | completed |
+  cancelled), vendor/mechanic, odometer_km, opened_at, expected_back_at,
+  completed_at, lines (parts + labour: description, qty, amount),
+  total_amount, notes, attachments.
+Rules: opening a job card creates a maintenance allocation (blocks the car;
+409 if it clashes with a confirmed booking unless the booking is swapped
+first); completing it posts the cost as an expense (car-linked) and updates
+the schedule's next due. Due-soon alerts by km (from check-in odometer) or
+date.
+Permissions: maintenance.view, maintenance.manage
+
+M8.2 Damage, accidents, traffic fines
+---------------------------------------
+damage_register  car_id, from inspection or reported, zone, description,
+  severity, status (open | repaired | accepted_wear), repaired_job_card_id.
+incidents  car_id, booking_id, driver/customer, type (accident | theft |
+  breakdown | police_stop | other), occurred_at, location, description,
+  police_report_no, third_party details, insurance_claim_no, claim_status
+  (not_filed | filed | approved | rejected | paid), claim_amount,
+  customer_liability_amount (capped by excess), photos, job_card_id.
+traffic_fines  car_id, booking_id (matched by date/time), offence,
+  issued_at, amount, admin_fee, status (unpaid | paid_by_business |
+  charged_to_customer | paid_by_customer).
+Post-rental charges: damage or fines found after closing are added to the
+customer's account as a post_rental folio entry with an invoice; can be
+deducted from a future deposit or collected separately.
+Permissions: incidents.view, incidents.manage
+
+M8.3 Driver management & trips
+--------------------------------
+- Trip records per chauffeur booking: start/end odometer, start/end time,
+  route/destination, fuel bought (receipt), tolls, overnight count
+- Driver allowances (per diem, overnight, overtime) computed from trips ->
+  payable report + expense on payment
+- Driver portal endpoints (Driver role): GET /driver/trips (today/upcoming),
+  POST /driver/trips/:id/start|end, upload fuel/toll receipts
+- Driver licence expiry alerts; driver performance (trips, customer
+  ratings in Phase 10)
+Permissions: drivers.view, drivers.manage, trips.own
+
+M8.4 Corporate accounts & monthly billing
+-------------------------------------------
+corporate_accounts  name, tin, address, billing_email, contacts, payment
+  terms (net 15/30), credit_limit_amount, current_balance_amount,
+  rate_card (percent discount or specific rate plans), withholding_tax
+  applicable, status (active | on_hold), account_manager.
+corporate_bookers  authorised staff of the client who may request
+  bookings (name, phone, email); each booking records who requested it
+  and a PO number.
+Rules:
+  - Bookings on account skip upfront payment; balance accrues to the
+    account; credit limit and on_hold block new bookings (manager override)
+  - Monthly statement job: one invoice per account for all bookings
+    closed in the month, with booking-level detail; PDF emailed
+  - Payments allocated to invoices; withholding tax deducted by the client
+    recorded as WHT with certificate upload (not a short payment)
+  - Ageing: current, 30, 60, 90+ days
+Endpoints: CRUD /admin/corporate-accounts, GET .../statement?month=,
+  POST .../invoices/generate, POST .../payments (allocate)
+Permissions: corporate.view, corporate.manage, corporate.billing
+
+M8.5 Fuel log (optional but cheap)
+------------------------------------
+fuel_logs car_id, litres, amount, odometer_km, station, receipt, filled_by
+- feeds fuel expenses and cost per km.
+
+PHASE 8 DONE WHEN: cars in the garage are blocked automatically, every
+accident/fine has an owner and a status, drivers' trips and allowances are
+tracked, and corporate clients receive a correct monthly invoice.
+
+
+==========================================================================
+PHASE 9: REPORTS & DASHBOARD
+==========================================================================
+All reports: date range + branch filter, export CSV/XLSX, figures in GHS
+from pesewas. Heavy reports read from daily snapshot tables filled by a
+nightly job (fleet_daily_stats: car_id, date, status, rented minutes,
+revenue_amount) so they stay fast.
+
+M9.1 Owner dashboard
+  revenue today / month-to-date vs last month, cash collected by method,
+  utilisation % (rented time / available time, excluding maintenance &
+  retired), cars out now / available now / in garage, overdue rentals,
+  pickups & returns today, outstanding balances, deposits held (liability),
+  expiring documents, upcoming maintenance, bookings by source.
+M9.2 Revenue & profit by car - revenue, expenses (repairs, fuel, insurance),
+  net profit, utilisation, average daily rate, revenue per available day;
+  also by category.
+M9.3 Payments by method - gross, Paystack fees, net, refunds; per staff.
+M9.4 Cancellations & no-shows - count, rate, lost revenue, retained fees,
+  by source and lead time.
+M9.5 Financial - sales/tax report per tax line for GRA filing, receivables
+  ageing (customers + corporate), deposits liability, expenses by category,
+  cash-up variances.
+M9.6 Operational - fleet status, maintenance cost per car, incidents,
+  fines, driver trips/allowances, staff activity (bookings created,
+  payments taken).
+M9.7 Customer - top customers, repeat rate, new vs returning, blacklist
+  activity.
+Permissions: dashboard.view, reports.view, reports.financial (money
+reports need the second one)
+
+PHASE 9 DONE WHEN: the owner can see business health on one screen and
+every number reconciles with the payments/expense data.
+
+
+==========================================================================
+PHASE 10: GROWTH
+==========================================================================
+M10.1 Promo codes - code, type (percent | fixed | free extra | free day),
+  value, valid_from/to, min_days, categories, first_booking_only,
+  total and per-customer usage limits, channel (online/staff), budget cap;
+  applied in PricingService; redemptions tracked.
+M10.2 Reviews & ratings - invite by SMS after closed bookings, 1-5 stars
+  for car, service, driver; moderation before public display; average
+  rating on car pages.
+M10.3 Loyalty points & referral codes - earn points per GHS paid (on closed
+  bookings only), redeem as discount, expiry; referral code per customer,
+  reward both sides after the friend's first completed rental, fraud
+  checks (same phone/ID).
+M10.4 WhatsApp notifications - WhatsApp Business Platform (Meta Cloud API
+  or a provider), approved templates for confirmations/reminders, falls
+  back to SMS; later: WhatsApp booking enquiries into the admin.
+M10.5 SEO pages - prerendered Next.js pages in src/app/(site)
+  for SEO (car pages, "car rental in Accra", "airport car
+  hire Accra", "chauffeur service Ghana", category pages); sitemap.xml,
+  structured data (schema.org Product/Offer + LocalBusiness), Google
+  Business Profile link.
+M10.6 Extras worth considering later
+  - GPS tracker integration (live location, geofence alerts when a car
+    leaves the allowed region, odometer sync)
+  - Partner-owned cars: owner profiles, revenue share %, monthly owner
+    statements and payouts (common model in Ghana)
+  - Multi-branch (data model already supports it): branch transfers,
+    one-way rentals with drop-off fees
+  - Long-term leasing / ride-hailing (Uber/Bolt) driver rentals with weekly
+    payments
+  - Dynamic pricing suggestions from utilisation
+  - USD display for diaspora customers (charge stays GHS)
+
+
+==========================================================================
+PERMISSION CATALOG
+==========================================================================
+slug                         group          used by
+---------------------------  -------------  -------------------------------
+settings.manage              settings       business, branches, hours,
+                                            settings, taxes
+users.manage                 rbac           (template)
+roles.manage                 rbac           (template)
+permissions.manage           rbac           (template)
+audit.view                   audit          audit log, record history
+fleet.view                   fleet          cars, categories, calendar
+fleet.manage                 fleet          cars, categories, blocks, photos
+fleet_documents.manage       fleet          vehicle documents
+pricing.view                 pricing        rates, rules (read)
+pricing.manage               pricing        rates, rules, protection, zones,
+                                            fee schedule
+extras.manage                pricing        extras
+customers.view               customers      customer list/profile
+customers.manage             customers      create/update customers
+customers.verify             customers      verify/reject ID & licence
+customers.view_documents     customers      see ID numbers & images
+customers.blacklist          customers      add/lift blacklist entries
+bookings.view                bookings       list, calendar, today board
+bookings.create              bookings       create, quote
+bookings.update              bookings       modify, extend, swap, driver
+bookings.cancel              bookings       cancel, no-show
+bookings.override            bookings       price override, big discounts,
+                                            waivers, blacklist override
+handover.checkout            handover       check-out
+handover.checkin             handover       check-in & charges
+payments.view                payments       payments, folio
+payments.record              payments       take Paystack/manual payments
+payments.void                payments       void a recorded payment
+payments.refund              payments       request refunds
+refunds.approve              payments       approve refunds over limit
+deposits.manage              payments       collect/settle deposits
+invoices.view                finance        invoices, receipts
+invoices.manage              finance        issue invoices, credit notes
+cashup.manage                finance        open/close own cash session
+cashup.approve               finance        approve sessions, see all
+expenses.view                finance        expenses
+expenses.manage              finance        submit/edit expenses
+expenses.approve             finance        approve/reject expenses
+exports.run                  finance        CSV/XLSX exports
+notifications.manage         notifications  templates, logs
+content.manage               website        public content, FAQs, terms
+maintenance.view             operations     schedules, job cards
+maintenance.manage           operations     create/complete job cards
+incidents.view               operations     damage, accidents, fines
+incidents.manage             operations     record/update incidents, fines
+drivers.view                 operations     driver list
+drivers.manage               operations     driver records, allowances
+trips.own                    operations     driver portal (own trips only)
+corporate.view               corporate      accounts
+corporate.manage             corporate      accounts, bookers, rate cards
+corporate.billing            corporate      statements, invoices, WHT
+dashboard.view               reports        owner dashboard
+reports.view                 reports        operational reports
+reports.financial            reports        money/tax reports
+promos.manage                growth         promo codes
+reviews.moderate             growth         reviews
+loyalty.manage               growth         loyalty & referrals
+
+
+ROLE MATRIX (default grants; Owner is isSuperAdmin = everything)
+==========================================================================
+Manager      everything except users.manage on owner accounts (rule in
+             UsersController), roles.manage, permissions.manage
+Front Desk   fleet.view, pricing.view, customers.view, customers.manage,
+             customers.verify, customers.view_documents, bookings.view,
+             bookings.create, bookings.update, bookings.cancel,
+             handover.checkout, handover.checkin, payments.view,
+             payments.record, payments.refund, deposits.manage,
+             invoices.view, cashup.manage, drivers.view, incidents.view
+Fleet        fleet.view, fleet.manage, fleet_documents.manage, pricing.view,
+             bookings.view, handover.checkout, handover.checkin,
+             maintenance.view, maintenance.manage, incidents.view,
+             incidents.manage, drivers.view, expenses.manage
+Driver       trips.own
+Accountant   bookings.view, customers.view, payments.view, payments.void,
+             refunds.approve, invoices.view, invoices.manage, cashup.approve,
+             expenses.view, expenses.manage, expenses.approve, exports.run,
+             corporate.view, corporate.billing, dashboard.view, reports.view,
+             reports.financial, audit.view
+Per-user overrides (permissionsOverride) cover exceptions without new roles.
+
+
+==========================================================================
+DECISIONS TO CONFIRM BEFORE / DURING THE BUILD
+==========================================================================
+1. Frontend: DECIDED - one Next.js app (public site + dashboard).
+2. Customers book a SPECIFIC car (assumed - matches "calendar per car" and
+   car detail pages) vs a category ("Toyota Corolla or similar") with the
+   car assigned at pickup. The data model supports both (bookings keep
+   category_id), but the public site UX differs.
+3. VAT registration status, current tax lines and whether GRA E-VAT is
+   mandatory for this business (accountant).
+4. Paystack: confirm MoMo channels, fees, settlement timing, refund rules
+   and whether deposits can be pre-authorised (assumed: no).
+5. SMS provider + Sender ID registration.
+6. Rental policy numbers: minimum age, licence years, deposit per
+   category, mileage allowance, fuel policy, late fees, cancellation tiers,
+   chauffeur out-of-town and overnight rates.
+7. Whether foreigners (passport + IDP) can self-drive or only chauffeur.
+8. Hosting: server, managed Postgres, object storage, backups (daily
+   database backups + file bucket versioning are required before go-live).

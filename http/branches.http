@@ -1,0 +1,104 @@
+# Branches, opening hours, closure dates - permission: settings.manage.
+# See prompt-reference/settings_module.txt
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### List branches - main branch first by default
+# Filters: search (name/code/city/address), isMain, isActive. sortBy=name|code|city|createdAt.
+# @name listBranches
+GET {{baseUrl}}/admin/branches?page=1&limit=20
+Authorization: Bearer {{token}}
+
+###
+@branchId = {{listBranches.response.body.$.data[0].id}}
+
+### Show a branch
+GET {{baseUrl}}/admin/branches/{{branchId}}
+Authorization: Bearer {{token}}
+
+### Create a branch - never main; copies the main branch's opening hours
+# code: 2-10 letters/digits, stored uppercase, unique. 201 | 422
+# @name createBranch
+POST {{baseUrl}}/admin/branches
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Airport Branch",
+  "code": "KIA",
+  "phone": "0302000001",
+  "address": "Kotoka International Airport, Arrivals",
+  "city": "Accra",
+  "region": "Greater Accra",
+  "latitude": 5.6052,
+  "longitude": -0.1668
+}
+
+###
+@newBranchId = {{createBranch.response.body.$.data.id}}
+
+### Update a branch - every field optional
+# isMain: true promotes it and demotes the old main (atomic).
+# 400: un-setting or deactivating the main branch, or promoting an inactive branch.
+PUT {{baseUrl}}/admin/branches/{{newBranchId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "phone": "0302000002", "isActive": true }
+
+### Delete a branch - only if not main and no staff assigned
+# 200 | 400 main branch | 409 staff still assigned | 404
+DELETE {{baseUrl}}/admin/branches/{{newBranchId}}
+Authorization: Bearer {{token}}
+
+### Opening hours - 7 days, weekday 0 = Sunday ... 6 = Saturday, times "HH:mm"
+GET {{baseUrl}}/admin/branches/{{branchId}}/opening-hours
+Authorization: Bearer {{token}}
+
+### Replace the whole week
+# Exactly 7 distinct weekdays. Open days need opensAt < closesAt; closed days ignore times.
+# 200 | 422
+PUT {{baseUrl}}/admin/branches/{{branchId}}/opening-hours
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "days": [
+    { "weekday": 0, "isClosed": true },
+    { "weekday": 1, "isClosed": false, "opensAt": "08:00", "closesAt": "18:00" },
+    { "weekday": 2, "isClosed": false, "opensAt": "08:00", "closesAt": "18:00" },
+    { "weekday": 3, "isClosed": false, "opensAt": "08:00", "closesAt": "18:00" },
+    { "weekday": 4, "isClosed": false, "opensAt": "08:00", "closesAt": "18:00" },
+    { "weekday": 5, "isClosed": false, "opensAt": "08:00", "closesAt": "18:00" },
+    { "weekday": 6, "isClosed": false, "opensAt": "09:00", "closesAt": "15:00" }
+  ]
+}
+
+### Closure dates - upcoming by default; from/to (YYYY-MM-DD) for a range or history
+GET {{baseUrl}}/admin/branches/{{branchId}}/closure-dates
+Authorization: Bearer {{token}}
+
+### Add a closure date - no pickups/returns that day
+# 201 | 422 invalid date or already closed
+# @name addClosure
+POST {{baseUrl}}/admin/branches/{{branchId}}/closure-dates
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "date": "2026-12-25", "reason": "Christmas Day" }
+
+###
+@closureId = {{addClosure.response.body.$.data.id}}
+
+### Remove a closure date
+DELETE {{baseUrl}}/admin/branches/{{branchId}}/closure-dates/{{closureId}}
+Authorization: Bearer {{token}}

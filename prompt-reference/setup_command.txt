@@ -1,0 +1,239 @@
+CAR RENTAL BACKEND — PROJECT SETUP
+=====================================
+
+DEPLOYMENT MODEL REMINDER
+-----------------------------
+This is NOT a SaaS. Each car rental business gets its own installed,
+self-hosted instance (own server, own database). The steps below are what
+you run once per install, on the client's server. There is no public staff
+signup - the very first account is created by the `business:create`
+command in step 6. The React/Next.js frontend (admin + public booking site)
+is a separate project that talks to this API.
+
+
+PREREQUISITES
+-----------------
+- Node.js 24.x (satisfies the AdonisJS 7 / TypeScript ~6 toolchain in
+  package.json)
+- npm
+- PostgreSQL 14+ (PostgreSQL ONLY - this project relies on the btree_gist
+  extension for its no-double-booking exclusion constraints, plus jsonb and
+  pg_trgm. There is no SQLite/MySQL fallback.)
+- The database user must be allowed to CREATE EXTENSION for btree_gist and
+  pg_trgm (both are "trusted" extensions, so the database owner can create
+  them on Postgres 13+; on managed Postgres, enable them in the provider's
+  console if migrations fail on step 4).
+
+
+1. INSTALL DEPENDENCIES
+---------------------------
+  npm install
+
+
+2. CREATE THE DATABASES
+---------------------------
+  createdb car_rental_db
+  createdb car_rental_db_test     # only on dev machines / CI
+
+(Or via psql: `CREATE DATABASE car_rental_db;`) Each install gets
+its own database, matching the one-business-per-install model.
+
+
+3. CONFIGURE ENVIRONMENT
+-----------------------------
+  cp .env.example .env
+  node ace generate:key
+
+`generate:key` writes a fresh APP_KEY into .env (used for encryption/
+signing - never share this or commit it). Review the rest of .env:
+
+  TZ, PORT, HOST, NODE_ENV   - standard Node/server settings. Keep TZ=UTC:
+                               timestamps are stored in UTC and converted to
+                               the business timezone (Africa/Accra) in code.
+  LOG_LEVEL                  - pino log level
+  APP_URL                    - derived from HOST/PORT by default
+  SESSION_DRIVER             - "cookie" by default
+  DB_HOST, DB_PORT,
+  DB_USER, DB_PASSWORD,
+  DB_DATABASE                - Postgres connection details. On a local
+                               Homebrew Postgres, DB_USER is usually your
+                               macOS username (there is no "postgres" role
+                               by default) and DB_PASSWORD can be blank.
+  LIMITER_STORE              - "database" (rate_limits table; default) or
+                               "memory". Used by the login throttle.
+                               .env.test uses memory.
+  CORS_ORIGIN                - the frontend origin(s), comma-separated
+                               (admin app + public booking site), before
+                               going to production
+
+Later phases add more variables (Paystack keys, SMS provider, mail, file
+storage) - each module's reference doc lists the ones it needs.
+
+
+4. RUN DATABASE MIGRATIONS
+-------------------------------
+  node ace migration:run
+
+Enables the btree_gist and pg_trgm extensions and creates every table
+(businesses, branches, branch_users, opening_hours, closure_dates, roles,
+permissions, role_permissions, users, auth_access_tokens). Also regenerates
+database/schema.ts - never edit that file by hand.
+
+Useful related commands:
+  node ace migration:status       - see what's pending/applied
+  node ace migration:rollback     - undo the last batch
+
+
+5. (OPTIONAL) SEED ROLES/PERMISSIONS ONLY
+----------------------------------------------
+  node ace db:seed
+
+Runs database/seeders/role_permission_seeder.ts on its own, creating the
+Owner / Manager / Front Desk / Fleet Officer / Driver / Accountant roles and
+the current permission set if they don't already exist (idempotent and
+additive - see prompt-reference/auth_module.txt). You normally do NOT need
+to run this manually - step 6 runs it as part of bootstrapping. It's here
+for two other cases:
+  - Re-applying the seeder after pulling an update that added new
+    roles/permissions to database/seed_data/role_permission_data.ts
+    (every new module adds permissions - run this after each deploy that
+    includes one).
+  - Local development where you want roles/permissions seeded before a
+    business/owner exists yet.
+
+
+6. BOOTSTRAP THE BUSINESS + OWNER ACCOUNT
+-----------------------------------------------
+  node ace business:create
+
+Interactive prompts:
+  Business name               (required)
+  Business email              (required)
+  Business phone (optional)
+  City                        (default: Accra)
+  Region                      (default: Greater Accra)
+  Owner name                  (required)
+  Owner email                 (required, must be unique)
+
+What it does, in one DB transaction:
+  1. Creates the Business row (currency GHS, timezone Africa/Accra,
+     vatRegistered false - tax details are set later from the admin).
+  2. Creates the main Branch, "<Business name> - Main Branch", code MAIN.
+  3. Seeds the main branch's opening hours: Mon-Fri 08:00-18:00,
+     Sat 09:00-15:00, Sun closed (editable later).
+  4. Runs RolePermissionSeeder (same as step 5).
+  5. Creates the owner User with the Owner role, a random temporary
+     password, and mustResetPassword: true.
+  6. Assigns the owner to the main branch.
+
+Output: prints the owner's email and temporary password to the terminal.
+THIS IS THE ONLY TIME THAT PASSWORD IS EVER SHOWN - copy it and hand it to
+the business owner through a secure channel. They must log in and call
+POST /account/change-password before they can use anything else (see
+prompt-reference/auth_module.txt, "Forced password reset flow").
+
+Guard rails:
+  - Refuses to run again once a Business row exists: "This install is
+    already set up for '<name>'. Only one business is supported per
+    install."
+  - Refuses if the owner email already belongs to an account.
+There's no undo command; to start over in dev:
+  dropdb car_rental_db && createdb car_rental_db
+  node ace migration:run
+
+
+7. START THE SERVER
+------------------------
+Development (auto-restart on file change):
+  npm run dev
+  # or: node ace serve --hmr
+
+Production build:
+  npm run build           # compiles TypeScript + copies .env/package.json
+                          # etc. into ./build (self-contained deployable)
+  cd build
+  npm ci --omit=dev       # install production deps inside build/
+  npm start               # runs "node bin/server.js"
+
+Server listens on HOST:PORT from .env (default localhost:3333). All app
+routes are under /api/v1 - see prompt-reference/auth_module.txt for the
+endpoint list.
+
+Before go-live (Milestone A in modules.txt): daily Postgres backups and a
+process manager (pm2/systemd) or container restart policy are required.
+
+Behind a proxy: the login rate limit is keyed on the client IP, read from
+X-Forwarded-For only when the request comes from a trusted proxy. Loopback
+is trusted by default, which covers the Next.js frontend on the same
+server. If Nginx/a load balancer/another host sits in front, set
+http.trustProxy in config/app.ts to its address - otherwise every login
+looks like it comes from one IP.
+
+
+8. LOG IN
+-------------
+  curl -X POST http://localhost:3333/api/v1/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"email":"<owner email>","password":"<temporary password>"}'
+
+Then immediately:
+  curl -X POST http://localhost:3333/api/v1/account/change-password \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer <token from login>" \
+    -d '{"currentPassword":"<temporary password>","password":"<new password>","passwordConfirmation":"<new password>"}'
+
+After that, the owner has full access (Owner role has isSuperAdmin: true)
+and can create staff accounts via POST /admin/users - new staff are
+assigned to the main branch automatically.
+
+
+OTHER OPERATIONAL COMMANDS
+-------------------------------
+node ace password:reset <email>
+  Server-side password recovery for when someone is locked out (there is
+  no email-based reset flow for staff, by design). Prompts for email if
+  omitted. Generates a new temporary password and sets
+  mustResetPassword: true. For day-to-day resets of other staff accounts,
+  use POST /admin/users/:id/reset-password from the admin frontend.
+
+node ace app:rename
+  Only used right after cloning the template into a new project - sets
+  package.json name and the DB names in .env / .env.test.
+
+node ace test
+  Runs the Japa test suite (unit + functional) with NODE_ENV=test, which
+  loads .env.test on top of .env - that overrides DB_DATABASE to
+  car_rental_db_test so tests never touch real data. Functional
+  tests use testUtils.db().withGlobalTransaction(), so they leave nothing
+  behind. Apply migrations to the test database once, and again after
+  adding new migrations:
+    NODE_ENV=test node ace migration:run
+
+npm run typecheck   - tsc --noEmit
+npm run lint        - ESLint (npm run format runs Prettier)
+
+node ace list:routes
+  Prints every route, its middleware, and controller/action - useful for
+  double-checking permission gates after adding a new route.
+
+node ace make:migration / make:model / make:controller / make:validator /
+node ace make:seeder / make:transformer / make:command
+  Standard generators used to scaffold each module (see
+  prompt-reference/modules.txt for the build order).
+
+
+QUICK REFERENCE: FULL INSTALL, START TO FINISH
+=====================================================
+  npm install
+  createdb car_rental_db
+  cp .env.example .env
+  node ace generate:key
+  # edit .env: DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_DATABASE, CORS_ORIGIN
+  node ace migration:run
+  node ace business:create
+  npm run dev
+
+  # dev machines / CI only:
+  createdb car_rental_db_test
+  NODE_ENV=test node ace migration:run
+  node ace test

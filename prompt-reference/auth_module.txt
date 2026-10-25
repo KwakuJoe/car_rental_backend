@@ -1,0 +1,801 @@
+CAR RENTAL BACKEND — AUTH & RBAC MODULE REFERENCE
+====================================================
+
+OVERVIEW
+--------
+Staff-only authentication + full DB-driven RBAC (Users -> Role -> Permissions).
+No public signup for staff. Staff accounts are created either by the
+`business:create` bootstrap command (first owner account) or by an admin via
+POST /admin/users (other staff). Customer accounts for the public booking
+site are a separate guard, built in Phase 7 (see modules.txt). See prompt-reference/setup_command.txt for the install flow.
+
+Base URL prefix for every route below: /api/v1
+
+
+DATA MODEL
+----------
+Business      - the car rental company running this install (name,
+                tradingName, email, phone, whatsappPhone, address,
+                digitalAddress, city, region, tin, vatRegistered,
+                vatNumber, currency = GHS, timezone = Africa/Accra).
+                Exactly one row per install.
+Branch        - a location under the Business (name, code, isMain,
+                isActive, email, phone, address, digitalAddress, city,
+                region, latitude, longitude). The single "main branch" is
+                created by business:create; at most one branch can be
+                isMain (enforced by a partial unique index).
+OpeningHour   - per-branch, per-weekday hours (weekday 0 = Sunday ... 6 =
+                Saturday, opensAt, closesAt, isClosed). business:create
+                seeds Mon-Fri 08:00-18:00, Sat 09:00-15:00, Sun closed.
+ClosureDate   - per-branch dates with no pickups/returns (public holidays).
+Role          - name, slug, description, isSuperAdmin, isSystem
+Permission    - name, slug (module.action format, e.g. "users.manage"),
+                group, description
+RolePermission- pivot table joining roles <-> permissions
+User          - fullName, email, phone, password (hashed), roleId,
+                isActive, mustResetPassword, lastLoginAt, permissionsOverride
+BranchUser    - pivot table (branch_users) joining branches <-> users. A
+                user can be assigned to multiple branches (manyToMany); a
+                new staff user defaults to the main branch if no branchIds
+                are given at creation (see POST /admin/users).
+
+IDs: every table above (except the two pivot tables, which use composite
+primary keys) uses a ULID string (26 chars, e.g.
+"01HZXKQ7VJXPYW5EYXQGZ8YQ7B") as its primary key, sortable by creation time.
+The one exception is auth_access_tokens.id, which stays an auto-increment
+integer because @adonisjs/auth's DbAccessTokensProvider writes to that table
+directly and has no hook to assign a custom id. auth_access_tokens.tokenable_id
+(the FK to users.id) is still a ULID string.
+
+
+RESPONSE ENVELOPE
+-----------------
+Every endpoint returns JSON shaped like:
+
+  { "message": "<human-readable outcome>", "data": <payload>, "meta"?: <pagination> }
+
+Endpoints with no meaningful payload (e.g. logout) omit "data". Error
+responses are just { "message": "..." } (plus an optional "code") with the
+appropriate HTTP status - no "data" key.
+
+
+AUTHENTICATION
+--------------
+Bearer token, issued by POST /auth/login. Send it as:
+
+  Authorization: Bearer oat_xxxxxxxxxxxxxxxxxxxxxxxx
+
+Tokens are opaque API tokens (@adonisjs/auth access-tokens guard), not JWTs.
+They expire 7 days after login (401 afterwards - sign in again).
+
+Runnable examples for every endpoint in this file: http/auth.http,
+http/users.http, http/roles.http, http/permissions.http (see http/README.md).
+
+
+MIDDLEWARE (applied to route groups, in this order)
+-----------------------------------------------------
+auth
+  Requires a valid bearer token. 401 if missing/invalid.
+
+isActive
+  Applied to the whole /admin group (after auth, before mustResetPassword).
+  If the authenticated user's isActive flag is false, every /admin/* route
+  returns 403 with code "E_ACCOUNT_DEACTIVATED". Like mustResetPassword,
+  /account/* routes are NOT behind this middleware - a deactivated user can
+  still reach profile, logout, and change-password, but nothing else.
+  Deactivation does not revoke existing access tokens outright; it's
+  enforced per-request by this middleware instead, so the practical effect
+  is the same (next /admin/* call gets rejected) without needing to hunt
+  down and delete every token. Login itself is also blocked earlier, at
+  POST /auth/login (see below) - a deactivated user can't even get a fresh
+  token.
+
+mustResetPassword
+  Applied to the whole /admin group (after isActive). If the authenticated
+  user's mustResetPassword flag is true, every /admin/* route returns 403
+  with code "E_PASSWORD_RESET_REQUIRED" until they change their password
+  via POST /account/change-password. Note: /account/* routes are NOT behind
+  this middleware, so a locked-out user can still reach profile, logout,
+  and change-password.
+
+permission
+  Applied per resource group inside /admin (e.g. only the users.* routes
+  require "users.manage"). Loads the user's role + role's permissions,
+  then for each required slug checks - in order - a per-user override
+  (user.permissionsOverride[slug]) if one exists, otherwise the role: either
+  isSuperAdmin: true (bypasses everything) or the role's own permissions
+  list. See "PERMISSION RESOLUTION ORDER" below for the full breakdown.
+  403 if the check fails.
+
+
+ROUTE GROUPS
+------------
+/api/v1/auth     - public, no auth required
+/api/v1/account  - requires auth only (no mustResetPassword gate)
+/api/v1/admin    - requires auth + mustResetPassword=false + the listed
+                   permission for that resource
+
+
+ENDPOINTS
+=========
+
+POST /api/v1/auth/login
+------------------------
+Public. Exchanges email + password for an access token.
+
+Rate limited: 5 attempts per minute for the same IP + email, then that
+pair is locked out for 15 minutes. Response 429:
+  { "errors": [{ "message": "Too many requests", "retryAfter": 900 }] }
+(retryAfter in seconds). The IP is read from X-Forwarded-For when the
+request comes through a trusted proxy (loopback by default - the Next.js
+frontend on the same server).
+
+Request body:
+  { "email": "ada@sunrise.test", "password": "TempPass123" }
+
+On success, also stamps the user's lastLoginAt with the current time before
+issuing the token.
+
+Response 200 (super admin example - Owner role):
+  {
+    "message": "Login successful",
+    "data": {
+      "user": {
+        "id": "01HZXKQ7VJXPYW5EYXQGZ8YQ7B",
+        "fullName": "Ada Owusu",
+        "email": "ada@sunrise.test",
+        "phone": null,
+        "isActive": true,
+        "mustResetPassword": true,
+        "lastLoginAt": "2026-07-13T20:00:00.000+00:00",
+        "permissionsOverride": null,
+        "createdAt": "2026-07-13T20:00:00.000+00:00",
+        "updatedAt": "2026-07-13T20:00:00.000+00:00",
+        "initials": "AO",
+        "role": {
+          "id": "01HZXKQ8G3F5M6WQXAF3T2VZ9K",
+          "name": "Owner",
+          "slug": "owner",
+          "description": "Business owner with unrestricted access to all features",
+          "isSuperAdmin": true,
+          "isSystem": true,
+          "permissions": []
+        },
+        "branches": [
+          { "id": "01HZXKQA1B2C3D4E5F6G7H8J9K", "name": "Sunrise Car Rentals - Main Branch", "code": "MAIN", "isMain": true, "isActive": true, "email": "hello@sunrise.test", "phone": "0302000000", "address": null, "digitalAddress": null, "city": "Accra", "region": "Greater Accra", "latitude": null, "longitude": null }
+        ]
+      },
+      "token": "oat_MQ.abcdef1234567890"
+    }
+  }
+
+Response 200 (non-super-admin example - Front Desk role):
+  {
+    "message": "Login successful",
+    "data": {
+      "user": {
+        "id": "01HZXKQ7VJYYWQ5EYXQGZ8YQ7C",
+        "fullName": "Kojo Mensah",
+        "email": "kojo@sunrise.test",
+        "phone": "0244000000",
+        "isActive": true,
+        "mustResetPassword": false,
+        "lastLoginAt": "2026-07-13T20:05:00.000+00:00",
+        "permissionsOverride": { "users.manage": true },
+        "createdAt": "2026-07-13T20:00:00.000+00:00",
+        "updatedAt": "2026-07-13T20:05:00.000+00:00",
+        "initials": "KM",
+        "role": {
+          "id": "01HZXKQ8G3F5M6WQXAF3T2VZ9L",
+          "name": "Front Desk",
+          "slug": "front-desk",
+          "description": "Handles customers, bookings, vehicle handovers and payments at the counter",
+          "isSuperAdmin": false,
+          "isSystem": true,
+          "permissions": [
+            { "id": "01HZXKQ9AB12CD34EF56GH78IJ", "name": "Manage settings", "slug": "settings.manage", "group": "settings", "description": "..." }
+          ]
+        },
+        "branches": [
+          { "id": "01HZXKQA1B2C3D4E5F6G7H8J9K", "name": "Sunrise Car Rentals - Main Branch", "code": "MAIN", "isMain": true, "isActive": true, "email": "hello@sunrise.test", "phone": "0302000000", "address": null, "digitalAddress": null, "city": "Accra", "region": "Greater Accra", "latitude": null, "longitude": null }
+        ]
+      },
+      "token": "oat_Mg.zyxwvu0987654321"
+    }
+  }
+
+"role" and "branches" are NOT optional - they're always present (a fresh
+account only ever lacks a role transiently, since roleId is required at
+creation time). "role.permissions" is ALWAYS an array, never omitted - it's
+just often empty ([]) for a super-admin role like Owner, since isSuperAdmin
+bypasses the permission check entirely rather than needing an explicit
+list (see "PERMISSION RESOLUTION ORDER" below). For a non-super-admin role,
+it lists exactly the permissions assigned via PUT /admin/roles/:id/permissions.
+Note "permissionsOverride" on the user itself is separate from
+"role.permissions" - it's the per-user grant/deny map, null when unset.
+
+Errors:
+  400 { "errors": [{ "message": "Invalid user credentials" }] } - bad email/password
+  403 { "message": "This account has been deactivated",
+        "code": "E_ACCOUNT_DEACTIVATED" }                 - isActive: false
+  422 validation error                                    - malformed body
+
+
+GET /api/v1/account/profile
+-----------------------------
+Auth required. Returns the current user, same shape as the "user" object in
+the login response above (role with its permissions, plus branch
+assignments) - see that section for a non-super-admin example.
+
+Response 200:
+  {
+    "message": "Profile fetched successfully",
+    "data": {
+      "id": "01HZXKQ7VJXPYW5EYXQGZ8YQ7B",
+      "fullName": "Ada Owusu",
+      "email": "ada@sunrise.test",
+      "phone": null,
+      "isActive": true,
+      "mustResetPassword": false,
+      "lastLoginAt": "2026-07-13T20:00:00.000+00:00",
+      "permissionsOverride": null,
+      "createdAt": "2026-07-13T20:00:00.000+00:00",
+      "updatedAt": "2026-07-13T20:00:00.000+00:00",
+      "initials": "AO",
+      "role": {
+        "id": "01HZXKQ8G3F5M6WQXAF3T2VZ9K",
+        "name": "Owner",
+        "slug": "owner",
+        "description": "Business owner with unrestricted access to all features",
+        "isSuperAdmin": true,
+        "isSystem": true,
+        "permissions": []
+      },
+      "branches": [
+        { "id": "01HZXKQA1B2C3D4E5F6G7H8J9K", "name": "Sunrise Car Rentals - Main Branch", "code": "MAIN", "isMain": true, "isActive": true, "email": "hello@sunrise.test", "phone": "0302000000", "address": null, "digitalAddress": null, "city": "Accra", "region": "Greater Accra", "latitude": null, "longitude": null }
+      ]
+    }
+  }
+
+
+POST /api/v1/account/logout
+------------------------------
+Auth required. Revokes the current access token.
+
+Response 200:
+  { "message": "Logged out successfully" }
+
+
+POST /api/v1/account/change-password
+---------------------------------------
+Auth required. Changes the current user's password. This is the ONLY way to
+clear mustResetPassword, and it's reachable even while mustResetPassword is
+true (it sits outside the mustResetPassword middleware).
+
+Request body:
+  {
+    "currentPassword": "TempPass123",
+    "password": "NewSecurePass456",
+    "passwordConfirmation": "NewSecurePass456"
+  }
+
+Response 200:
+  { "message": "Password updated successfully" }
+
+Errors:
+  400 { "message": "Current password is incorrect" }
+  422 validation error - password too short, confirmation mismatch, etc.
+
+
+GET /api/v1/admin/users
+--------------------------
+Requires permission: users.manage
+Lists all staff users with their role (including role.permissions - see the
+non-super-admin example under POST /auth/login above for the full shape)
+and branch assignments. Paginated, searchable, and sortable -
+see "LIST ENDPOINTS: SEARCH, SORT, PAGINATION" near the end of this file
+for the full shared query param reference. Users-specific query params:
+
+  search              matches fullName, email, or phone
+  roleId              exact match
+  branchId            only users assigned to this branch
+  isActive            true | false
+  mustResetPassword   true | false
+  createdFrom/To      ISO date strings, inclusive range on createdAt
+  sortBy              fullName | email | createdAt | lastLoginAt
+
+Response 200:
+  {
+    "message": "Users fetched successfully",
+    "data": [
+      {
+        "id": "01HZXKQ7VJXPYW5EYXQGZ8YQ7B",
+        "fullName": "Ada Owusu",
+        "email": "ada@sunrise.test",
+        "phone": null,
+        "isActive": true,
+        "mustResetPassword": false,
+        "lastLoginAt": "2026-07-13T20:00:00.000+00:00",
+        "permissionsOverride": null,
+        "createdAt": "...",
+        "updatedAt": "...",
+        "initials": "AO",
+        "role": { "id": "...", "name": "Owner", "slug": "owner", "isSuperAdmin": true, "isSystem": true, "description": "...", "permissions": [] },
+        "branches": [
+          { "id": "...", "name": "Sunrise Car Rentals - Main Branch", "code": "MAIN", "isMain": true, "isActive": true, ... }
+        ]
+      }
+    ],
+    "meta": { "total": 1, "perPage": 20, "currentPage": 1, "lastPage": 1, "firstPage": 1, "firstPageUrl": "...", "lastPageUrl": "...", "nextPageUrl": null, "previousPageUrl": null }
+  }
+
+
+GET /api/v1/admin/users/:id
+------------------------------
+Requires permission: users.manage
+One staff user, same shape as a list item (role with permissions, branches).
+Errors: 404.
+
+
+POST /api/v1/admin/users
+---------------------------
+Requires permission: users.manage
+Creates a staff user with a system-generated temporary password. The user
+must change it via /account/change-password before they can do anything else.
+
+Request body:
+  {
+    "fullName": "Kojo Mensah",
+    "email": "kojo@sunrise.test",
+    "phone": "0244000000",
+    "roleId": "01HZXKQ8G3F5M6WQXAF3T2VZ9K",
+    "branchIds": ["01HZXKQABC12DE34FG56HJ78KM"]
+  }
+
+"phone" and "branchIds" are both optional. If branchIds is omitted (or
+empty), the new user is assigned to the main branch (the Branch with
+isMain: true) automatically - every staff user always has at least one
+branch assignment.
+
+Response 201:
+  {
+    "message": "Staff user created successfully",
+    "data": {
+      "user": {
+        "id": "...", "fullName": "Kojo Mensah", "email": "kojo@sunrise.test",
+        "phone": "0244000000", "isActive": true, "mustResetPassword": true,
+        "permissionsOverride": null,
+        "role": { "id": "...", "slug": "owner", ... },
+        "branches": [{ "id": "...", "name": "Sunrise Car Rentals - Main Branch", "code": "MAIN", "isMain": true, ... }]
+      },
+      "temporaryPassword": "Bc4IvzR1N-Ze"
+    }
+  }
+
+Notes:
+  - "temporaryPassword" is only ever returned in this one response. Relay it
+    to the staff member out of band (it is not recoverable afterwards -
+    use POST /admin/users/:id/reset-password to issue a new one instead).
+  - email must be unique; fullName is nullable; roleId must reference an
+    existing role; each id in branchIds must reference an existing
+    branch.
+  - New users are always created with isActive: true - deactivate via
+    PUT /admin/users/:id afterwards if needed.
+
+Errors: 422 validation error (duplicate email, unknown roleId/branchIds, etc.)
+        403 { "code": "E_OWNER_ONLY" } - a non-owner assigning a super-admin
+            (Owner) role. See "OWNER ACCOUNT PROTECTION" below.
+
+
+PUT /api/v1/admin/users/:id
+------------------------------
+Requires permission: users.manage
+Updates a staff user - role, active status, branch assignments, and/or
+per-user permission overrides. Every field is optional; only the ones
+provided get changed. This is also how a user gets deactivated/reactivated
+(there's no separate DELETE endpoint - deactivation is a flag flip, not a
+row delete, so existing history/relations stay intact).
+
+Request body (any subset):
+  {
+    "roleId": "01HZXKQ8G3F5M6WQXAF3T2VZ9K",
+    "isActive": false,
+    "branchIds": ["01HZXKQABC12DE34FG56HJ78KM"],
+    "permissionsOverride": { "settings.manage": true, "users.manage": false }
+  }
+
+- roleId: reassigns the user's role.
+- isActive: false blocks login immediately and blocks all /admin/* access
+  on their next request (see isActive middleware above); true reactivates.
+- branchIds: REPLACES the full set of branch assignments (sync, not
+  additive - unlike the role permission seeder). Pass every branch the user
+  should keep, not just the ones being added. Must contain at least one id.
+- permissionsOverride: replaces the full override map. Pass `null` to clear
+  all overrides and fall back to pure role-based permissions. See
+  "PERMISSION RESOLUTION ORDER" below.
+
+Response 200:
+  {
+    "message": "User updated successfully",
+    "data": {
+      "id": "...", "fullName": "Kojo Mensah", "isActive": false,
+      "role": { "id": "...", "slug": "manager", ... },
+      "branches": [{ "id": "...", "name": "Airport Branch", "code": "KIA", "isMain": false, ... }],
+      "permissionsOverride": { "settings.manage": true, "users.manage": false },
+      ...
+    }
+  }
+
+Errors: 404 if :id doesn't exist, 422 if roleId/branchIds are invalid,
+        400 { "message": "You cannot deactivate your own account" },
+        403 E_OWNER_ONLY - a non-owner editing an owner account or assigning
+            the Owner role.
+
+
+POST /api/v1/admin/users/:id/reset-password
+-----------------------------------------------
+Requires permission: users.manage
+Admin-triggered password reset for another staff member (the frontend flow -
+see prompt-reference/setup_command.txt for the CLI equivalent used for the
+account running the install). Generates a new temporary password and forces
+a reset on next login, same mechanism as user creation.
+
+No request body.
+
+Response 200:
+  {
+    "message": "Password reset successfully",
+    "data": {
+      "user": { "id": "...", "mustResetPassword": true, ... },
+      "temporaryPassword": "kQ1f0tpZhzFw"
+    }
+  }
+
+Errors: 404 if :id doesn't exist; 403 E_OWNER_ONLY for an owner account
+        unless the caller is an owner.
+
+
+OWNER ACCOUNT PROTECTION
+------------------------
+Users holding a super-admin role (Owner) can only be updated or have their
+password reset by another super-admin, and only a super-admin can give the
+Owner role to anyone (create or update). Otherwise a Manager with
+users.manage could take over the owner account. Response:
+  403 { "message": "Only an owner can manage owner accounts or assign the
+        owner role", "code": "E_OWNER_ONLY" }
+
+
+GET /api/v1/admin/roles
+--------------------------
+Requires permission: roles.manage
+Lists all roles with their assigned permissions and usersCount (how many
+staff hold the role). Paginated, searchable, and
+sortable - see "LIST ENDPOINTS: SEARCH, SORT, PAGINATION" near the end of
+this file. Roles-specific query params:
+
+  search        matches name or slug
+  isSystem      true | false
+  isSuperAdmin  true | false
+  sortBy        name | slug | createdAt
+
+Response 200:
+  {
+    "message": "Roles fetched successfully",
+    "data": [
+      {
+        "id": "...", "name": "Manager", "slug": "manager",
+        "description": "Runs day-to-day operations, manages staff, and approves discounts, refunds and cash-ups",
+        "isSuperAdmin": false, "isSystem": true,
+        "permissions": [
+          { "id": "...", "name": "Manage users", "slug": "users.manage", "group": "rbac", "description": "..." },
+          { "id": "...", "name": "Manage settings", "slug": "settings.manage", "group": "settings", "description": "..." }
+        ]
+      }
+    ],
+    "meta": { "total": 6, "perPage": 20, "currentPage": 1, "lastPage": 1, "firstPage": 1, "firstPageUrl": "...", "lastPageUrl": "...", "nextPageUrl": null, "previousPageUrl": null }
+  }
+
+
+POST /api/v1/admin/roles
+---------------------------
+Requires permission: roles.manage
+Creates a custom role. isSuperAdmin and isSystem are NOT settable here (by
+design - see "Security notes" below); new roles are always isSuperAdmin:
+false, isSystem: false.
+
+Request body:
+  {
+    "name": "Car Washer",
+    "slug": "car-washer",
+    "description": "Prepares and cleans cars between rentals"
+  }
+
+Response 201:
+  {
+    "message": "Role created successfully",
+    "data": { "id": "...", "name": "Car Washer", "slug": "car-washer", "isSuperAdmin": false, "isSystem": false, "permissions": [] }
+  }
+
+Errors: 422 (duplicate slug, invalid slug format - lowercase kebab-case only)
+
+
+GET /api/v1/admin/roles/:id
+------------------------------
+Requires permission: roles.manage
+Fetches a single role with its permissions.
+
+Response 200: same shape as one item from GET /admin/roles.
+Errors: 404 if not found.
+
+
+PUT /api/v1/admin/roles/:id
+------------------------------
+Requires permission: roles.manage
+Updates a role's name/description.
+
+Request body (both optional):
+  { "name": "Car Valet", "description": "Updated description" }
+
+Response 200: updated role, same shape as GET /admin/roles/:id.
+
+Errors:
+  400 { "message": "System roles cannot be renamed" } - if :id is a seeded
+      system role (owner/manager/front-desk/fleet/driver/accountant) and
+      "name" differs
+      from its current value. Description edits on system roles are allowed.
+  404 if :id doesn't exist.
+
+
+DELETE /api/v1/admin/roles/:id
+---------------------------------
+Requires permission: roles.manage
+Deletes a custom role. Users holding it get roleId set to NULL
+(ON DELETE SET NULL) rather than being deleted themselves.
+
+Response 200:
+  { "message": "Role deleted successfully" }
+
+Errors:
+  400 { "message": "System roles cannot be deleted" } - if :id is a seeded
+      system role.
+  404 if :id doesn't exist.
+
+
+PUT /api/v1/admin/roles/:id/permissions
+-------------------------------------------
+Requires permission: roles.manage
+Replaces a role's full set of assigned permissions (sync, not additive -
+unlike the seeder, calling this with a smaller list DOES remove permissions
+not in it).
+
+Request body:
+  { "permissionIds": ["01HZXKQ9AB12CD34EF56GH78IJ", "01HZXKQ9KL90MN12OP34QR56ST"] }
+
+Response 200:
+  {
+    "message": "Role permissions updated successfully",
+    "data": { "id": "...", "slug": "manager", "permissions": [ /* the new set */ ] }
+  }
+
+Errors: 422 if any id doesn't reference an existing permission. 404 if :id
+role doesn't exist.
+
+
+GET /api/v1/admin/permissions
+---------------------------------
+Requires permission: permissions.manage
+Need roles or branches for a dropdown without roles.manage/settings.manage?
+Use GET /admin/lookups/roles and /admin/lookups/branches (any signed-in staff)
+- see prompt-reference/settings_module.txt.
+
+Read-only list of every permission that exists in the system. There is no
+create/update/delete endpoint for permissions - new permission rows are
+added by future modules' seed data as those modules are built, not via API.
+Paginated, searchable, and sortable - see "LIST ENDPOINTS: SEARCH, SORT,
+PAGINATION" near the end of this file. Permissions-specific query params:
+
+  search  matches name, slug, or description
+  group   exact match (e.g. "rbac", "settings")
+  sortBy  slug | name | createdAt
+
+Response 200:
+  {
+    "message": "Permissions fetched successfully",
+    "data": [
+      { "id": "...", "name": "Manage users", "slug": "users.manage", "group": "rbac", "description": "Create staff users and assign roles" },
+      { "id": "...", "name": "Manage roles", "slug": "roles.manage", "group": "rbac", "description": "..." },
+      { "id": "...", "name": "Manage permissions", "slug": "permissions.manage", "group": "rbac", "description": "..." },
+      { "id": "...", "name": "Manage settings", "slug": "settings.manage", "group": "settings", "description": "..." }
+    ],
+    "meta": { "total": 4, "perPage": 20, "currentPage": 1, "lastPage": 1, "firstPage": 1, "firstPageUrl": "...", "lastPageUrl": "...", "nextPageUrl": null, "previousPageUrl": null }
+  }
+
+
+SEEDED ROLES (via database/seeders/role_permission_seeder.ts)
+================================================================
+slug          name           isSuperAdmin  isSystem  default permissions
+------------  -------------  ------------  --------  -------------------------
+owner         Owner          true          true      none needed - bypasses all
+                                                      checks. Created by
+                                                      business:create for the
+                                                      first account.
+manager       Manager        false         true      users.manage,
+                                                      settings.manage
+front-desk    Front Desk     false         true      none yet (customers/
+                                                      bookings modules not built)
+fleet         Fleet Officer  false         true      none yet (fleet module not
+                                                      built)
+driver        Driver         false         true      none yet (trips module not
+                                                      built)
+accountant    Accountant     false         true      none yet (finance modules
+                                                      not built)
+
+All six are isSystem: true, so none of them can be deleted or renamed
+through the API (description edits are still allowed). Custom roles created
+via POST /admin/roles are always isSystem: false. The target permissions
+for each role, as modules get built, are in the ROLE MATRIX section of
+prompt-reference/modules.txt.
+
+
+SEEDED PERMISSIONS
+====================
+slug                  group        description
+--------------------  -----------  --------------------------------------------
+users.manage          rbac         Create staff users, assign roles and branches
+roles.manage          rbac         Create, update, and delete roles and their permissions
+permissions.manage    rbac         View the list of available permissions
+settings.manage       settings     Business profile, branches, opening hours,
+                                    closure dates (see settings_module.txt)
+
+More permissions get added to database/seed_data/role_permission_data.ts
+as each new module (fleet, bookings, payments, etc.) is built - see the
+PERMISSION CATALOG in prompt-reference/modules.txt for the full list.
+
+
+PERMISSION RESOLUTION ORDER
+===============================
+For each permission slug a route requires, the permission middleware
+resolves access in this order:
+
+1. Per-user override (user.permissionsOverride[slug]) - if the key is
+   present (true or false), that value wins outright, full stop.
+2. Otherwise, role.isSuperAdmin - if true, access is granted.
+3. Otherwise, whether the slug is in the role's assigned permissions.
+
+Practical effect: an override can either GRANT a permission the role
+doesn't have (e.g. give one Front Desk staffer "settings.manage" without
+making them a Manager), or DENY a permission the role - even a super
+admin role - would otherwise have (e.g. block one specific Owner-level
+account from "users.manage" for some reason). Set via
+PUT /admin/users/:id with a `permissionsOverride` object; pass `null` to
+clear all overrides for a user.
+
+isActive is a separate, earlier gate (see the isActive middleware above) -
+it's not part of this per-permission resolution. A deactivated user is
+blocked from all of /admin regardless of role or overrides.
+
+
+FORCED PASSWORD RESET FLOW
+==============================
+Every account created by business:create, POST /admin/users, or
+POST /admin/users/:id/reset-password (or the `password:reset` CLI command)
+gets a system-generated temporary password and mustResetPassword: true.
+
+1. User logs in with the temporary password (POST /auth/login succeeds
+   normally - a temp password is a valid password, unless isActive is
+   false, which blocks login entirely - see below).
+2. Every /admin/* route returns 403 (E_PASSWORD_RESET_REQUIRED) until step 3.
+   /account/profile, /account/logout, and /account/change-password remain
+   reachable throughout.
+3. User calls POST /account/change-password with the temp password as
+   currentPassword and a new password. This clears mustResetPassword.
+4. Normal access resumes, gated by their role's permissions (and any
+   per-user overrides - see "PERMISSION RESOLUTION ORDER" above).
+
+
+DEACTIVATION FLOW (isActive)
+================================
+Setting a user's isActive to false via PUT /admin/users/:id (there is no
+separate deactivate/delete endpoint - it's just a flag) has two effects:
+
+1. POST /auth/login is rejected immediately with 403
+   E_ACCOUNT_DEACTIVATED - a deactivated user cannot obtain a new token.
+2. Existing access tokens are NOT revoked/deleted. A token issued before
+   deactivation still exists and is still cryptographically valid. Instead,
+   the isActive middleware re-checks the user's current isActive value
+   (freshly loaded, not cached on the token) on every /admin/* request, so
+   their very next call to any admin-guarded route gets rejected - in
+   practice near-instant, without needing to hunt down and delete tokens.
+   The one gap: /account/logout and /account/change-password sit outside
+   both the isActive and mustResetPassword middleware, so a deactivated
+   user's still-valid token can still hit those two endpoints specifically.
+   This is intentional - always let someone log out.
+
+Reactivate the same way: PUT /admin/users/:id with { "isActive": true }.
+
+
+SECURITY NOTES
+==================
+- isSuperAdmin can only ever be set by the business:create bootstrap command
+  (via the seeder) - it is never accepted as API input on any role
+  create/update endpoint, so a role can't be escalated to super-admin
+  through the API.
+- isSystem is likewise never settable through the API.
+- There is no public registration endpoint. The only ways an account gets
+  created are business:create (first owner) and POST /admin/users (guarded by
+  users.manage).
+- Temporary passwords are generated with node:crypto randomBytes (see
+  app/services/temporary_password_service.ts), not a predictable pattern.
+- isActive, branchIds, and permissionsOverride are only settable by an
+  admin with users.manage via PUT /admin/users/:id - a user can never
+  reactivate themselves, reassign their own branches, or grant themselves
+  extra permissions.
+
+
+LIST ENDPOINTS: SEARCH, SORT, PAGINATION (shared pattern)
+==============================================================
+GET /admin/users, /admin/roles and /admin/permissions (and every list
+endpoint added by later modules) accept the same base query params,
+applied via a shared `BaseFilter` class per resource (app/filters/*.ts):
+
+  page        number, default 1
+  limit       number, default 20, max 100
+  sortOrder   "asc" | "desc", default "asc"
+  sortBy      resource-specific allow-list of sortable columns - an
+              unrecognized value is ignored and falls back to that
+              endpoint's default sort, not an error
+  search      resource-specific free-text match (case-insensitive,
+              partial match across a few relevant columns)
+
+Every response from these endpoints includes a "meta" object alongside
+"data" with Lucid's standard pagination shape: total, perPage, currentPage,
+lastPage, firstPage, firstPageUrl, lastPageUrl, nextPageUrl,
+previousPageUrl. Resource-specific filter/sort fields:
+
+  users        roleId, branchId, isActive, mustResetPassword,
+               createdFrom, createdTo | sortBy: fullName, email,
+               createdAt, lastLoginAt
+  roles        isSystem, isSuperAdmin | sortBy: name, slug, createdAt
+  permissions  group | sortBy: slug, name, createdAt
+
+
+RELATED FILES
+================
+Routes:       start/routes.ts
+Middleware:   app/middleware/auth_middleware.ts
+              app/middleware/is_active_middleware.ts
+              app/middleware/must_reset_password_middleware.ts
+              app/middleware/permission_middleware.ts
+Controllers:  app/controllers/access_tokens_controller.ts
+              app/controllers/profile_controller.ts
+              app/controllers/change_password_controller.ts
+              app/controllers/admin/users_controller.ts
+              app/controllers/admin/roles_controller.ts
+              app/controllers/admin/permissions_controller.ts
+Filters:      app/filters/base_filter.ts, user_filter.ts, role_filter.ts,
+              permission_filter.ts
+Validators:   app/validators/user.ts
+              app/validators/role.ts
+              app/validators/permission.ts
+              app/validators/shared.ts (pagination fields)
+Transformers: app/transformers/user_transformer.ts
+              app/transformers/role_transformer.ts
+              app/transformers/permission_transformer.ts
+              app/transformers/branch_transformer.ts
+Models:       app/models/user.ts, role.ts, permission.ts, business.ts,
+              branch.ts, opening_hour.ts, closure_date.ts
+Migrations:   database/migrations/*_enable_postgres_extensions.ts,
+              *_create_businesses_table.ts, *_create_branches_table.ts,
+              *_create_branch_users_table.ts, *_create_opening_hours_table.ts,
+              *_create_closure_dates_table.ts
+Seeder:       database/seeders/role_permission_seeder.ts
+              database/seed_data/role_permission_data.ts
+Commands:     commands/business_create.ts
+              commands/password_reset.ts
+              commands/app_rename.ts
+Tests:        tests/functional/rbac.spec.ts
+              tests/functional/admin_users.spec.ts
+              tests/functional/admin_list_filters.spec.ts
+              tests/functional/commands/business_create.spec.ts
+              tests/functional/commands/password_reset.spec.ts
+              tests/functional/seeders/role_permission_seeder.spec.ts

@@ -1,0 +1,63 @@
+# Roles - permission: roles.manage. See prompt-reference/auth_module.txt
+# System roles (owner, manager, front-desk, fleet, driver, accountant) can't be renamed or deleted.
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### List roles - each with permissions[] and usersCount
+# Filters: search (name/slug), isSystem, isSuperAdmin. sortBy=name|slug|createdAt.
+# @name listRoles
+GET {{baseUrl}}/admin/roles?page=1&limit=20
+Authorization: Bearer {{token}}
+
+###
+@roleId = {{listRoles.response.body.$.data[0].id}}
+
+### Show a role
+GET {{baseUrl}}/admin/roles/{{roleId}}
+Authorization: Bearer {{token}}
+
+### Create a custom role - slug is lowercase kebab-case and unique
+# isSuperAdmin/isSystem are never accepted here. 201 | 422
+# @name createRole
+POST {{baseUrl}}/admin/roles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Car Washer",
+  "slug": "car-washer",
+  "description": "Prepares and cleans cars between rentals"
+}
+
+###
+@newRoleId = {{createRole.response.body.$.data.id}}
+
+### Update a role - name and/or description (system roles: description only)
+# 200 | 400 "System roles cannot be renamed" | 404
+PUT {{baseUrl}}/admin/roles/{{newRoleId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "description": "Washes and refuels cars between rentals" }
+
+### Replace a role's permissions (sync - ids not listed are removed)
+# permissionIds from GET /admin/permissions. 200 | 404 | 422 unknown id
+PUT {{baseUrl}}/admin/roles/{{newRoleId}}/permissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "permissionIds": [] }
+
+### Delete a custom role - staff holding it are left with no role
+# 200 | 400 "System roles cannot be deleted" | 404
+DELETE {{baseUrl}}/admin/roles/{{newRoleId}}
+Authorization: Bearer {{token}}

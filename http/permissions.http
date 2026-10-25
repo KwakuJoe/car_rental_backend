@@ -1,0 +1,18 @@
+# Permission catalog - permission: permissions.manage. Read-only: new permissions are added
+# by each module's seed data (database/seed_data/role_permission_data.ts), not via the API.
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### List permissions
+# Filters: search (name/slug/description), group (e.g. rbac, settings). sortBy=slug|name|createdAt.
+GET {{baseUrl}}/admin/permissions?limit=100&sortBy=slug
+Authorization: Bearer {{token}}

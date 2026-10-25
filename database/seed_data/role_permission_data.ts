@@ -1,0 +1,98 @@
+// ─────────────────────────────────────────────────────────────
+// Car rental backend — Roles & Permissions seed data
+// Permissions use module.action format (matches middleware usage)
+// See prompt-reference/modules.txt for the full permission catalog -
+// add each module's permissions here as that module is built.
+// ─────────────────────────────────────────────────────────────
+
+// ── Roles ─────────────────────────────────────────────────────
+export const roleData = [
+  {
+    name: 'Owner',
+    slug: 'owner',
+    description: 'Business owner with unrestricted access to all features',
+    isSuperAdmin: true,
+    isSystem: true,
+  },
+  {
+    name: 'Manager',
+    slug: 'manager',
+    description:
+      'Runs day-to-day operations, manages staff, and approves discounts, refunds and cash-ups',
+    isSuperAdmin: false,
+    isSystem: true,
+  },
+  {
+    name: 'Front Desk',
+    slug: 'front-desk',
+    description: 'Handles customers, bookings, vehicle handovers and payments at the counter',
+    isSuperAdmin: false,
+    isSystem: true,
+  },
+  {
+    name: 'Fleet Officer',
+    slug: 'fleet',
+    description: 'Manages cars, vehicle documents, inspections, maintenance and incidents',
+    isSuperAdmin: false,
+    isSystem: true,
+  },
+  {
+    name: 'Driver',
+    slug: 'driver',
+    description: 'Chauffeur with access to their own assigned trips only',
+    isSuperAdmin: false,
+    isSystem: true,
+  },
+  {
+    name: 'Accountant',
+    slug: 'accountant',
+    description: 'Reviews payments, invoices, expenses and cash-ups; runs financial reports',
+    isSuperAdmin: false,
+    isSystem: true,
+  },
+]
+
+// ── Permissions ───────────────────────────────────────────────
+export const permissionData = [
+  // rbac
+  {
+    name: 'Manage users',
+    slug: 'users.manage',
+    group: 'rbac',
+    description: 'Create staff users, assign roles and branches',
+  },
+  {
+    name: 'Manage roles',
+    slug: 'roles.manage',
+    group: 'rbac',
+    description: 'Create, update, and delete roles and their permissions',
+  },
+  {
+    name: 'Manage permissions',
+    slug: 'permissions.manage',
+    group: 'rbac',
+    description: 'View the list of available permissions',
+  },
+
+  // settings
+  {
+    name: 'Manage settings',
+    slug: 'settings.manage',
+    group: 'settings',
+    description: 'Update business profile, branches, opening hours, closure dates and settings',
+  },
+]
+
+// ── Role → Permission mapping ──────────────────────────────────
+// Owner has isSuperAdmin: true - it bypasses permission checks entirely,
+// so listing permissions here has no effect. Roles with an empty list get
+// their permissions as their modules are built (see the ROLE MATRIX in
+// prompt-reference/modules.txt).
+export const rolePermissionMap: Record<string, string[]> = {
+  'owner': [], // isSuperAdmin - all permissions implicitly granted
+  'manager': ['users.manage', 'settings.manage'],
+  'front-desk': [],
+  'fleet': [],
+  'driver': [],
+  'accountant': [],
+}
