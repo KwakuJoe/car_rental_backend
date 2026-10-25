@@ -73,6 +73,8 @@ Update this list as modules land.
             setup_command.txt "SCHEDULED JOBS") - a queue for slow work
             (PDFs, SMS) still to come with Phase 4/6
   [ ] M1.7  document numbering - with bookings/invoices
+  [ ] M8.6  vehicle usage chart on the Odometer tab (after M8.1, or a simple
+            version after Phase 4) - see M8.6
 
 
 PHASE OVERVIEW
@@ -1100,6 +1102,24 @@ M8.5 Fuel log (optional but cheap)
 ------------------------------------
 fuel_logs car_id, litres, amount, odometer_km, station, receipt, filled_by
 - feeds fuel expenses and cost per km.
+
+M8.6 Vehicle usage chart (odometer over time)
+-----------------------------------------------
+Agreed with the owner 2026-10-25. Build after M8.1 (needs maintenance
+schedules for the service-due line); a simpler version without that line can
+ship right after Phase 4 once check-out/check-in readings exist. Before then
+cars only have 2-3 manual readings and a chart says nothing.
+- Vehicle detail > Odometer tab: "Usage" chart above the history table - line
+  of odometer km over time, points marked by source (rental out / rental in /
+  manual / correction); downward corrections and unusual jumps highlighted.
+- Summary figures: km in the last 30 days, average km per month, next service
+  due (km + forecast date from the recent km/day rate, from M8.1 schedules).
+- Shown only when the car has >= 4 readings; otherwise just the table.
+- Data: existing GET /admin/cars/:id/odometer-history (has date + source) plus
+  GET /admin/cars/:id/usage-summary { last30DaysKm, avgKmPerMonth,
+  nextService: { task, dueKm, forecastDate } }.
+- Later feeds M9 reports: km per car per month, idle cars, cost per km (M8.5).
+Permissions: fleet.view
 
 PHASE 8 DONE WHEN: cars in the garage are blocked automatically, every
 accident/fine has an owner and a status, drivers' trips and allowances are
