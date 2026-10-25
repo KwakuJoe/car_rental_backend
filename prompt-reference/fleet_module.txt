@@ -68,6 +68,22 @@ DATA MODEL
    created_at, updated_at
 
 
+5. car_allocations (M2.3 & M3.4 Availability Foundation)
+   id                    ULID
+   car_id                ULID (references cars.id CASCADE)
+   booking_id            ULID nullable (references bookings.id SET NULL)
+   source                'booking' | 'block'
+   reason                Text nullable
+   starts_at             Timestamp with time zone
+   ends_at               Timestamp with time zone
+   ends_at_with_buffer   Timestamp with time zone
+   buffer_minutes        Integer (default 0)
+   active                Boolean (default true)
+   created_by            ULID nullable (references users.id SET NULL)
+   created_at, updated_at
+   Exclusion constraint: EXCLUDE USING gist (car_id WITH =, tstzrange(starts_at, ends_at_with_buffer) WITH &&) WHERE (active = true);
+
+
 BUSINESS RULES & CONSTRAINTS
 ----------------------------
 1. Categories cannot be deleted if there are any cars (including archived ones) assigned to them.
@@ -79,12 +95,16 @@ BUSINESS RULES & CONSTRAINTS
    - Initial odometer reading at vehicle creation automatically seeds the first `odometer_logs` record.
 5. Deleting a car performs a soft-delete: sets `archived_at` and sets status to `'retired'`.
 6. Setting a photo as cover resets any other cover photo for that car so exactly one cover photo is active.
+7. Availability blocks:
+   - Guaranteed no-overlap via PostgreSQL btree_gist exclusion constraint on `(car_id, tstzrange(starts_at, ends_at_with_buffer))` where active=true.
+   - Overlap conflicts return 409 Conflict with `{ code: 'E_CAR_UNAVAILABLE' }`.
+   - Releasing a block marks `active = false` and writes an audit log.
 
 
 PERMISSIONS
 -----------
-fleet.view    - View categories, cars, specs, photos, odometer logs
-fleet.manage  - Create/edit/delete categories and cars, update status, record odometer, manage photos
+fleet.view    - View categories, cars, specs, photos, odometer logs, availability blocks
+fleet.manage  - Create/edit/delete categories and cars, update status, record odometer, manage photos, create/release car blocks
 
 
 ENDPOINTS
@@ -109,5 +129,11 @@ Cars:
   PATCH  /api/v1/admin/cars/:id/photos/:photoId/cover Set cover photo
   DELETE /api/v1/admin/cars/:id/photos/:photoId Delete photo attachment
 
+Car Availability Blocks:
+  GET    /api/v1/admin/cars/:carId/blocks            List availability blocks (filter by activeOnly)
+  POST   /api/v1/admin/cars/:carId/blocks            Create block (maintenance, hold, inspection)
+  DELETE /api/v1/admin/cars/:carId/blocks/:id        Release block
+
 Lookups:
   GET    /api/v1/admin/lookups/categories    Lightweight list of active categories for dropdowns
+

@@ -5,6 +5,7 @@ import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Branch from '#models/branch'
 import Category from '#models/category'
 import CarPhoto from '#models/car_photo'
+import CarAllocation from '#models/car_allocation'
 import OdometerLog from '#models/odometer_log'
 import { withUlid } from '#models/mixins/with_ulid'
 
@@ -45,4 +46,7 @@ export default class Car extends compose(CarSchema, withUlid) {
 
   @hasMany(() => OdometerLog)
   declare odometerLogs: HasMany<typeof OdometerLog>
+
+  @hasMany(() => CarAllocation)
+  declare allocations: HasMany<typeof CarAllocation>
 }

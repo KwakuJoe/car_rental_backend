@@ -172,3 +172,26 @@ Content-Type: application/json
 ### Delete car (soft-delete / archives and marks retired)
 DELETE {{baseUrl}}/admin/cars/{{carId}}
 Authorization: Bearer {{token}}
+
+### List availability blocks for a car
+GET {{baseUrl}}/admin/cars/{{carId}}/blocks?activeOnly=true
+Authorization: Bearer {{token}}
+
+### Create availability block (maintenance / reserve / inspection)
+# Guarantees no double-booking via Postgres btree_gist exclusion constraint
+POST {{baseUrl}}/admin/cars/{{carId}}/blocks
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "startsAt": "2026-11-01T08:00:00.000Z",
+  "endsAt": "2026-11-03T18:00:00.000Z",
+  "reason": "Scheduled servicing and engine tune-up",
+  "bufferMinutes": 60
+}
+
+### Release availability block
+@blockId = 01JM00000000000000000BLOCK
+DELETE {{baseUrl}}/admin/cars/{{carId}}/blocks/{{blockId}}
+Authorization: Bearer {{token}}
+

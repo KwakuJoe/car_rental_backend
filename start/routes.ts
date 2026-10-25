@@ -99,6 +99,7 @@ router
             router.get('cars', [controllers.admin.Cars, 'index'])
             router.get('cars/:id', [controllers.admin.Cars, 'show'])
             router.get('cars/:id/odometer-history', [controllers.admin.Cars, 'odometerHistory'])
+            router.get('cars/:carId/blocks', [controllers.admin.CarBlocks, 'index'])
           })
           .use(middleware.permission({ permissions: ['fleet.view'] }))
 
@@ -118,6 +119,9 @@ router
             router.put('cars/:id/photos/reorder', [controllers.admin.Cars, 'reorderPhotos'])
             router.put('cars/:id/photos/:photoId/cover', [controllers.admin.Cars, 'setCoverPhoto'])
             router.delete('cars/:id/photos/:photoId', [controllers.admin.Cars, 'deletePhoto'])
+
+            router.post('cars/:carId/blocks', [controllers.admin.CarBlocks, 'store'])
+            router.delete('cars/:carId/blocks/:id', [controllers.admin.CarBlocks, 'destroy'])
           })
           .use(middleware.permission({ permissions: ['fleet.manage'] }))
 

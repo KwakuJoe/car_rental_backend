@@ -154,6 +154,37 @@ export class BusinessSchema extends BaseModel {
   declare whatsappPhone: string | null
 }
 
+export class CarAllocationSchema extends BaseModel {
+  static $columns = ['active', 'bookingId', 'bufferMinutes', 'carId', 'createdAt', 'createdBy', 'endsAt', 'endsAtWithBuffer', 'id', 'reason', 'source', 'startsAt', 'updatedAt'] as const
+  $columns = CarAllocationSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare bookingId: string | null
+  @column()
+  declare bufferMinutes: number
+  @column()
+  declare carId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare endsAt: DateTime
+  @column.dateTime()
+  declare endsAtWithBuffer: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare reason: string | null
+  @column()
+  declare source: string
+  @column.dateTime()
+  declare startsAt: DateTime
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class CarPhotoSchema extends BaseModel {
   static $columns = ['carId', 'createdAt', 'fileId', 'id', 'isCover', 'sortOrder', 'updatedAt'] as const
   $columns = CarPhotoSchema.$columns

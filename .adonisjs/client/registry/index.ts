@@ -198,6 +198,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"id"],[0,"odometer-history"]],
     types: placeholder as Registry['admin.cars.odometer_history']['types'],
   },
+  'admin.car_blocks.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/cars/:carId/blocks',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"blocks"]],
+    types: placeholder as Registry['admin.car_blocks.index']['types'],
+  },
   'admin.categories.store': {
     methods: ["POST"],
     pattern: '/api/v1/admin/categories',
@@ -269,6 +275,18 @@ const routes = {
     pattern: '/api/v1/admin/cars/:id/photos/:photoId',
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"id"],[0,"photos"],[1,"photoId"]],
     types: placeholder as Registry['admin.cars.delete_photo']['types'],
+  },
+  'admin.car_blocks.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/cars/:carId/blocks',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"blocks"]],
+    types: placeholder as Registry['admin.car_blocks.store']['types'],
+  },
+  'admin.car_blocks.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/admin/cars/:carId/blocks/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"blocks"],[1,"id"]],
+    types: placeholder as Registry['admin.car_blocks.destroy']['types'],
   },
   'admin.settings.index': {
     methods: ["GET","HEAD"],

@@ -8,6 +8,7 @@ import type { InferData, InferVariants } from '@adonisjs/core/types/transformers
 import type AuditLogTransformer from '#transformers/audit_log_transformer'
 import type BranchTransformer from '#transformers/branch_transformer'
 import type BusinessTransformer from '#transformers/business_transformer'
+import type CarAllocationTransformer from '#transformers/car_allocation_transformer'
 import type CarTransformer from '#transformers/car_transformer'
 import type CategoryTransformer from '#transformers/category_transformer'
 import type ClosureDateTransformer from '#transformers/closure_date_transformer'
@@ -30,6 +31,10 @@ export namespace Data {
   export type Business = InferData<BusinessTransformer>
   export namespace Business {
     export type Variants = InferVariants<BusinessTransformer>
+  }
+  export type CarAllocation = InferData<CarAllocationTransformer>
+  export namespace CarAllocation {
+    export type Variants = InferVariants<CarAllocationTransformer>
   }
   export type Car = InferData<CarTransformer>
   export namespace Car {

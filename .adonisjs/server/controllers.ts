@@ -9,6 +9,7 @@ export const controllers = {
     AuditLogs: () => import('#controllers/admin/audit_logs_controller'),
     Branches: () => import('#controllers/admin/branches_controller'),
     Business: () => import('#controllers/admin/business_controller'),
+    CarBlocks: () => import('#controllers/admin/car_blocks_controller'),
     Cars: () => import('#controllers/admin/cars_controller'),
     Categories: () => import('#controllers/admin/categories_controller'),
     ClosureDates: () => import('#controllers/admin/closure_dates_controller'),

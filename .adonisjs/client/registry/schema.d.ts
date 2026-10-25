@@ -423,6 +423,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['odometerHistory']>>>
     }
   }
+  'admin.car_blocks.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/cars/:carId/blocks'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { carId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/car_block').listCarBlocksValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.categories.store': {
     methods: ["POST"]
     pattern: '/api/v1/admin/categories'
@@ -577,6 +590,32 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['deletePhoto']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['deletePhoto']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['deletePhoto']>>>
+    }
+  }
+  'admin.car_blocks.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/cars/:carId/blocks'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/car_block').createCarBlockValidator)>>
+      paramsTuple: [ParamValue]
+      params: { carId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/car_block').createCarBlockValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.car_blocks.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/cars/:carId/blocks/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { carId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['destroy']>>>
     }
   }
   'admin.settings.index': {

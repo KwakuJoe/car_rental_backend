@@ -77,6 +77,11 @@ export interface ApiDefinition {
       setCoverPhoto: typeof routes['admin.cars.set_cover_photo']
       deletePhoto: typeof routes['admin.cars.delete_photo']
     }
+    carBlocks: {
+      index: typeof routes['admin.car_blocks.index']
+      store: typeof routes['admin.car_blocks.store']
+      destroy: typeof routes['admin.car_blocks.destroy']
+    }
     settings: {
       index: typeof routes['admin.settings.index']
       update: typeof routes['admin.settings.update']
