@@ -11,6 +11,7 @@ import {
 } from '#validators/user'
 import { generateTemporaryPassword } from '#services/temporary_password_service'
 import UserFilter from '#filters/user_filter'
+import AuditService from '#services/audit_service'
 
 /**
  * Owner accounts (super-admin role) can only be managed by another
@@ -28,6 +29,23 @@ async function isSuperAdminRole(roleId: string | null | undefined) {
   const role = await Role.find(roleId)
   return !!role?.isSuperAdmin
 }
+
+/** Readable audit snapshot - role and branch names rather than ids. */
+async function auditSnapshot(user: User) {
+  await user.load((preloader) => preloader.load('role').load('branches'))
+  return {
+    role: user.role?.name ?? null,
+    isActive: user.isActive,
+    permissionsOverride: user.permissionsOverride,
+    branches: user.branches.map((branch) => branch.name).sort(),
+  }
+}
+
+const auditSubject = (user: User) => ({
+  type: 'user',
+  id: user.id,
+  label: user.fullName ?? user.email,
+})
 
 const OWNER_ONLY = {
   message: 'Only an owner can manage owner accounts or assign the owner role',
@@ -90,6 +108,16 @@ export default class UsersController {
         await newUser.related('branches').sync(assignedBranchIds)
       }
 
+      await AuditService.record(
+        ctx,
+        {
+          action: 'user.created',
+          subject: auditSubject(newUser),
+          after: { email: newUser.email, phone: newUser.phone, ...(await auditSnapshot(newUser)) },
+        },
+        trx
+      )
+
       return newUser
     })
 
@@ -132,6 +160,7 @@ export default class UsersController {
     if (user.id === auth.getUserOrFail().id && isActive === false) {
       return response.badRequest({ message: 'You cannot deactivate your own account' })
     }
+    const before = await auditSnapshot(user)
     await db.transaction(async (trx) => {
       user.useTransaction(trx)
       if (roleId !== undefined) {
@@ -149,6 +178,17 @@ export default class UsersController {
       if (branchIds !== undefined) {
         await user.related('branches').sync(branchIds)
       }
+
+      await AuditService.record(
+        ctx,
+        {
+          action: 'user.updated',
+          subject: auditSubject(user),
+          before,
+          after: await auditSnapshot(user),
+        },
+        trx
+      )
     })
 
     await user.load((preloader) => preloader.load('role').load('branches'))
@@ -168,9 +208,17 @@ export default class UsersController {
     }
     const temporaryPassword = generateTemporaryPassword()
 
-    user.password = temporaryPassword
-    user.mustResetPassword = true
-    await user.save()
+    await db.transaction(async (trx) => {
+      user.useTransaction(trx)
+      user.password = temporaryPassword
+      user.mustResetPassword = true
+      await user.save()
+      await AuditService.record(
+        ctx,
+        { action: 'user.password_reset', subject: auditSubject(user) },
+        trx
+      )
+    })
     await user.load((preloader) => preloader.load('role').load('branches'))
 
     const transformed = await serialize(UserTransformer.transform(user))

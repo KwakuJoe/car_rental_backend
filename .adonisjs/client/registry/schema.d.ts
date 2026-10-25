@@ -215,6 +215,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/permissions_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.audit_logs.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/audit-logs'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/audit_log').auditLogFilterValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/audit_logs_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/audit_logs_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/audit_logs_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.audit_logs.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/audit-logs/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/audit_logs_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/audit_logs_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/audit_logs_controller').default['show']>>>
+    }
+  }
   'admin.lookups.lookups.business': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/lookups/business'
@@ -252,6 +278,45 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['branches']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['branches']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['branches']>>>
+    }
+  }
+  'admin.lookups.lookups.staff': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/lookups/staff'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['staff']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['staff']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['staff']>>>
+    }
+  }
+  'admin.settings.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/settings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['index']>>>
+    }
+  }
+  'admin.settings.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/settings'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/setting').updateSettingsValidator)>|InferInput<(typeof import('#services/settings/settings_service').default)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/setting').updateSettingsValidator)>|InferInput<(typeof import('#services/settings/settings_service').default)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.business.show': {

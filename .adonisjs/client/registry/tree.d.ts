@@ -37,12 +37,21 @@ export interface ApiDefinition {
     permissions: {
       index: typeof routes['admin.permissions.index']
     }
+    auditLogs: {
+      index: typeof routes['admin.audit_logs.index']
+      show: typeof routes['admin.audit_logs.show']
+    }
     lookups: {
       lookups: {
         business: typeof routes['admin.lookups.lookups.business']
         roles: typeof routes['admin.lookups.lookups.roles']
         branches: typeof routes['admin.lookups.lookups.branches']
+        staff: typeof routes['admin.lookups.lookups.staff']
       }
+    }
+    settings: {
+      index: typeof routes['admin.settings.index']
+      update: typeof routes['admin.settings.update']
     }
     business: {
       show: typeof routes['admin.business.show']

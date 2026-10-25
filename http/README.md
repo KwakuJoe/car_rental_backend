@@ -27,5 +27,7 @@ Longer explanations (business rules, response shapes) live in `prompt-reference/
 | `lookups.http` | dropdown data for any signed-in staff: business, roles, branches |
 | `business.http` | business profile |
 | `branches.http` | branches, opening hours, closure dates |
+| `settings.http` | business rules (booking, rental, payment, pricing policy) |
+| `audit-logs.http` | audit log: list, filter, one record's history, show |
 
 New module = new `<module>.http` file here, same layout, added to this table.

@@ -1,0 +1,33 @@
+# Business rules (settings) - permission: settings.manage. See prompt-reference/settings_module.txt
+# Defaults live in code (app/services/settings/definitions.ts); only changed values are stored.
+# Money values are integer pesewas (GHS 150.00 = 15000).
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### All rules with current value, default, type, limits, unit and options
+GET {{baseUrl}}/admin/settings
+Authorization: Bearer {{token}}
+
+### Change some rules - partial; a value equal to the default removes the override
+# 200 { data: { settings } } | 422 errors[].field = "values.<key>" (range, type, option, unknown key)
+PUT {{baseUrl}}/admin/settings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "values": {
+    "booking.min_driver_age": 23,
+    "booking.after_hours_fee": 15000,
+    "rental.fuel_policy": "full_to_full",
+    "payment.allow_pay_at_pickup": true
+  }
+}

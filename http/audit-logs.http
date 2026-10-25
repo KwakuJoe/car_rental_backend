@@ -1,0 +1,40 @@
+# Audit log - permission: audit.view (Owner; seeded on Manager and Accountant).
+# Append-only: there are no update/delete endpoints. See prompt-reference/audit_module.txt
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### List entries - newest first
+# Filters: search (action, record label, person), userId, action (exact "user.updated" or a
+# module prefix ending in "." like "user."), subjectType + subjectId (one record's history),
+# from/to (YYYY-MM-DD). sortOrder=asc|desc. Pagination: page, limit (max 100).
+# @name listLogs
+GET {{baseUrl}}/admin/audit-logs?page=1&limit=20
+Authorization: Bearer {{token}}
+
+###
+@logId = {{listLogs.response.body.$.data[0].id}}
+
+### Failed sign-ins only
+GET {{baseUrl}}/admin/audit-logs?action=auth.login_failed
+Authorization: Bearer {{token}}
+
+### One record's history (e.g. a staff member) - replace the id
+GET {{baseUrl}}/admin/audit-logs?subjectType=user&subjectId=REPLACE_WITH_USER_ID
+Authorization: Bearer {{token}}
+
+### Show one entry
+GET {{baseUrl}}/admin/audit-logs/{{logId}}
+Authorization: Bearer {{token}}
+
+### Staff list for the "done by" filter - any signed-in staff
+GET {{baseUrl}}/admin/lookups/staff
+Authorization: Bearer {{token}}

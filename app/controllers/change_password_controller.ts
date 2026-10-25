@@ -1,9 +1,11 @@
 import hash from '@adonisjs/core/services/hash'
 import type { HttpContext } from '@adonisjs/core/http'
 import { changePasswordValidator } from '#validators/user'
+import AuditService from '#services/audit_service'
 
 export default class ChangePasswordController {
-  async store({ request, auth, response }: HttpContext) {
+  async store(ctx: HttpContext) {
+    const { request, auth, response } = ctx
     const { currentPassword, password } = await request.validateUsing(changePasswordValidator)
     const user = auth.getUserOrFail()
 
@@ -13,8 +15,14 @@ export default class ChangePasswordController {
     }
 
     user.password = password
+    const wasTemporary = user.mustResetPassword
     user.mustResetPassword = false
     await user.save()
+    await AuditService.record(ctx, {
+      action: 'auth.password_changed',
+      subject: { type: 'user', id: user.id, label: user.fullName ?? user.email },
+      metadata: { replacedTemporaryPassword: wasTemporary },
+    })
 
     return response.ok({
       message: 'Password updated successfully',

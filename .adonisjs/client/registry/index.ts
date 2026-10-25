@@ -102,6 +102,18 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"permissions"]],
     types: placeholder as Registry['admin.permissions.index']['types'],
   },
+  'admin.audit_logs.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/audit-logs',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"audit-logs"]],
+    types: placeholder as Registry['admin.audit_logs.index']['types'],
+  },
+  'admin.audit_logs.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/audit-logs/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"audit-logs"],[1,"id"]],
+    types: placeholder as Registry['admin.audit_logs.show']['types'],
+  },
   'admin.lookups.lookups.business': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/lookups/business',
@@ -119,6 +131,24 @@ const routes = {
     pattern: '/api/v1/admin/lookups/branches',
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"lookups"],[0,"branches"]],
     types: placeholder as Registry['admin.lookups.lookups.branches']['types'],
+  },
+  'admin.lookups.lookups.staff': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/lookups/staff',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"lookups"],[0,"staff"]],
+    types: placeholder as Registry['admin.lookups.lookups.staff']['types'],
+  },
+  'admin.settings.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/settings',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"settings"]],
+    types: placeholder as Registry['admin.settings.index']['types'],
+  },
+  'admin.settings.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/settings',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"settings"]],
+    types: placeholder as Registry['admin.settings.update']['types'],
   },
   'admin.business.show': {
     methods: ["GET","HEAD"],

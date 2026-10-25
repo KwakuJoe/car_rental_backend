@@ -20,9 +20,14 @@ export type ScannedRoutes = {
     'admin.roles.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.roles.sync_permissions': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.permissions.index': { paramsTuple?: []; params?: {} }
+    'admin.audit_logs.index': { paramsTuple?: []; params?: {} }
+    'admin.audit_logs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.lookups.lookups.business': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.roles': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.branches': { paramsTuple?: []; params?: {} }
+    'admin.lookups.lookups.staff': { paramsTuple?: []; params?: {} }
+    'admin.settings.index': { paramsTuple?: []; params?: {} }
+    'admin.settings.update': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.business.update': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
@@ -43,9 +48,13 @@ export type ScannedRoutes = {
     'admin.roles.index': { paramsTuple?: []; params?: {} }
     'admin.roles.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.permissions.index': { paramsTuple?: []; params?: {} }
+    'admin.audit_logs.index': { paramsTuple?: []; params?: {} }
+    'admin.audit_logs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.lookups.lookups.business': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.roles': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.branches': { paramsTuple?: []; params?: {} }
+    'admin.lookups.lookups.staff': { paramsTuple?: []; params?: {} }
+    'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
     'admin.branches.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -59,9 +68,13 @@ export type ScannedRoutes = {
     'admin.roles.index': { paramsTuple?: []; params?: {} }
     'admin.roles.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.permissions.index': { paramsTuple?: []; params?: {} }
+    'admin.audit_logs.index': { paramsTuple?: []; params?: {} }
+    'admin.audit_logs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.lookups.lookups.business': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.roles': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.branches': { paramsTuple?: []; params?: {} }
+    'admin.lookups.lookups.staff': { paramsTuple?: []; params?: {} }
+    'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
     'admin.branches.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -82,6 +95,7 @@ export type ScannedRoutes = {
     'admin.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.roles.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.roles.sync_permissions': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.settings.update': { paramsTuple?: []; params?: {} }
     'admin.business.update': { paramsTuple?: []; params?: {} }
     'admin.branches.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.opening_hours.update': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }

@@ -64,18 +64,29 @@ router
           })
           .use(middleware.permission({ permissions: ['permissions.manage'] }))
 
+        router
+          .group(() => {
+            router.get('audit-logs', [controllers.admin.AuditLogs, 'index'])
+            router.get('audit-logs/:id', [controllers.admin.AuditLogs, 'show'])
+          })
+          .use(middleware.permission({ permissions: ['audit.view'] }))
+
         // Dropdown/display data for any signed-in staff member - no module permission.
         router
           .group(() => {
             router.get('business', [controllers.admin.Lookups, 'business'])
             router.get('roles', [controllers.admin.Lookups, 'roles'])
             router.get('branches', [controllers.admin.Lookups, 'branches'])
+            router.get('staff', [controllers.admin.Lookups, 'staff'])
           })
           .prefix('lookups')
           .as('lookups')
 
         router
           .group(() => {
+            router.get('settings', [controllers.admin.Settings, 'index'])
+            router.put('settings', [controllers.admin.Settings, 'update'])
+
             router.get('business', [controllers.admin.Business, 'show'])
             router.put('business', [controllers.admin.Business, 'update'])
 

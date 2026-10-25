@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Business from '#models/business'
 import Branch from '#models/branch'
 import Role from '#models/role'
+import User from '#models/user'
 
 /**
  * Minimal, non-sensitive lists for dropdowns and display, available to any
@@ -35,6 +36,20 @@ export default class LookupsController {
         name: role.name,
         slug: role.slug,
         isSuperAdmin: role.isSuperAdmin,
+      })),
+    })
+  }
+
+  /** Staff names for "who" pickers (audit filters, assignments later). */
+  async staff({ response }: HttpContext) {
+    const users = await User.query().orderBy('full_name', 'asc').orderBy('email', 'asc')
+    return response.ok({
+      message: 'Staff fetched successfully',
+      data: users.map((user) => ({
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        isActive: user.isActive,
       })),
     })
   }

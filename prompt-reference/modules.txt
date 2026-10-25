@@ -49,7 +49,14 @@ Update this list as modules land.
             owner-account protection (E_OWNER_ONLY); no self-deactivation;
             usersCount on roles
   [x] Docs  http/ request collection (one .http file per module)
-  [ ] M1.3 - M1.8
+  [x] M1.3  business rules: settings table (overrides only), typed
+            definitions + SettingsService, GET/PUT /admin/settings
+  [x] M1.4  audit log: append-only audit_logs, AuditService (diff +
+            redaction, same transaction), all Phase 1 actions recorded,
+            GET /admin/audit-logs, audit.view (prompt-reference/
+            audit_module.txt)
+  [ ] M1.5 file storage, M1.6 jobs/scheduler, M1.7 numbering,
+      M1.8 in-app notifications - build when Phase 2 first needs them
 
 
 PHASE OVERVIEW

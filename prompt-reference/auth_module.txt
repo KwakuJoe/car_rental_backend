@@ -620,15 +620,16 @@ owner         Owner          true          true      none needed - bypasses all
                                                       business:create for the
                                                       first account.
 manager       Manager        false         true      users.manage,
-                                                      settings.manage
+                                                      settings.manage,
+                                                      audit.view
 front-desk    Front Desk     false         true      none yet (customers/
                                                       bookings modules not built)
 fleet         Fleet Officer  false         true      none yet (fleet module not
                                                       built)
 driver        Driver         false         true      none yet (trips module not
                                                       built)
-accountant    Accountant     false         true      none yet (finance modules
-                                                      not built)
+accountant    Accountant     false         true      audit.view (finance
+                                                      modules not built yet)
 
 All six are isSystem: true, so none of them can be deleted or renamed
 through the API (description edits are still allowed). Custom roles created
@@ -646,6 +647,8 @@ roles.manage          rbac         Create, update, and delete roles and their pe
 permissions.manage    rbac         View the list of available permissions
 settings.manage       settings     Business profile, branches, opening hours,
                                     closure dates (see settings_module.txt)
+audit.view            audit        Audit log (see audit_module.txt) - seeded on
+                                    Manager and Accountant
 
 More permissions get added to database/seed_data/role_permission_data.ts
 as each new module (fleet, bookings, payments, etc.) is built - see the

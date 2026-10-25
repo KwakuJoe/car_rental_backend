@@ -8,6 +8,9 @@ import {
   roleFilterValidator,
 } from '#validators/role'
 import RoleFilter from '#filters/role_filter'
+import AuditService from '#services/audit_service'
+
+const auditSubject = (role: Role) => ({ type: 'role', id: role.id, label: role.name })
 
 export default class RolesController {
   async index({ request, response, serialize }: HttpContext) {
@@ -29,9 +32,15 @@ export default class RolesController {
     })
   }
 
-  async store({ request, response, serialize }: HttpContext) {
+  async store(ctx: HttpContext) {
+    const { request, response, serialize } = ctx
     const data = await request.validateUsing(createRoleValidator)
     const role = await Role.create(data)
+    await AuditService.record(ctx, {
+      action: 'role.created',
+      subject: auditSubject(role),
+      after: AuditService.pick(role, ['name', 'slug', 'description']),
+    })
     await role.load('permissions')
 
     const transformed = await serialize(RoleTransformer.transform(role))
@@ -55,7 +64,8 @@ export default class RolesController {
     })
   }
 
-  async update({ params, request, response, serialize }: HttpContext) {
+  async update(ctx: HttpContext) {
+    const { params, request, response, serialize } = ctx
     const data = await request.validateUsing(updateRoleValidator)
 
     const role = await Role.findOrFail(params.id)
@@ -63,8 +73,15 @@ export default class RolesController {
       return response.badRequest({ message: 'System roles cannot be renamed' })
     }
 
+    const before = AuditService.pick(role, ['name', 'description'])
     role.merge(data)
     await role.save()
+    await AuditService.record(ctx, {
+      action: 'role.updated',
+      subject: auditSubject(role),
+      before,
+      after: AuditService.pick(role, ['name', 'description']),
+    })
     await role.load('permissions')
 
     const transformed = await serialize(RoleTransformer.transform(role))
@@ -74,25 +91,48 @@ export default class RolesController {
     })
   }
 
-  async destroy({ params, response }: HttpContext) {
-    const role = await Role.findOrFail(params.id)
+  async destroy(ctx: HttpContext) {
+    const { params, response } = ctx
+    const role = await Role.query()
+      .where('id', params.id)
+      .preload('permissions')
+      .withCount('users')
+      .firstOrFail()
     if (role.isSystem) {
       return response.badRequest({ message: 'System roles cannot be deleted' })
     }
 
     await role.delete()
+    await AuditService.record(ctx, {
+      action: 'role.deleted',
+      subject: auditSubject(role),
+      before: {
+        ...AuditService.pick(role, ['name', 'slug', 'description']),
+        permissions: role.permissions.map((permission) => permission.slug).sort(),
+      },
+      metadata: { staffLeftWithoutRole: Number(role.$extras.users_count ?? 0) },
+    })
 
     return response.ok({
       message: 'Role deleted successfully',
     })
   }
 
-  async syncPermissions({ params, request, response, serialize }: HttpContext) {
+  async syncPermissions(ctx: HttpContext) {
+    const { params, request, response, serialize } = ctx
     const { permissionIds } = await request.validateUsing(syncRolePermissionsValidator)
 
-    const role = await Role.findOrFail(params.id)
+    const role = await Role.query().where('id', params.id).preload('permissions').firstOrFail()
+    const slugs = () => role.permissions.map((permission) => permission.slug).sort()
+    const before = { permissions: slugs() }
     await role.related('permissions').sync(permissionIds)
     await role.load('permissions')
+    await AuditService.record(ctx, {
+      action: 'role.permissions_synced',
+      subject: auditSubject(role),
+      before,
+      after: { permissions: slugs() },
+    })
 
     const transformed = await serialize(RoleTransformer.transform(role))
     return response.ok({

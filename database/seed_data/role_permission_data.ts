@@ -74,6 +74,14 @@ export const permissionData = [
     description: 'View the list of available permissions',
   },
 
+  // audit
+  {
+    name: 'View audit log',
+    slug: 'audit.view',
+    group: 'audit',
+    description: 'See who changed what and when, including sign-ins',
+  },
+
   // settings
   {
     name: 'Manage settings',
@@ -90,9 +98,9 @@ export const permissionData = [
 // prompt-reference/modules.txt).
 export const rolePermissionMap: Record<string, string[]> = {
   'owner': [], // isSuperAdmin - all permissions implicitly granted
-  'manager': ['users.manage', 'settings.manage'],
+  'manager': ['users.manage', 'settings.manage', 'audit.view'],
   'front-desk': [],
   'fleet': [],
   'driver': [],
-  'accountant': [],
+  'accountant': ['audit.view'],
 }

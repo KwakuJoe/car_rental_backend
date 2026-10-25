@@ -1,5 +1,6 @@
 CAR RENTAL BACKEND — SETTINGS MODULE REFERENCE
-(business profile, branches, opening hours, closure dates, lookups)
+(business profile, business rules, branches, opening hours, closure
+dates, lookups)
 =====================================================================
 Base URL prefix: /api/v1. Standard envelope { message, data, meta? } - see
 auth_module.txt. Runnable examples: http/business.http, http/branches.http,
@@ -41,6 +42,50 @@ GET /admin/lookups/branches  -> [{ id, name, code, isMain }] active only,
                                   main first
 Use these for dropdowns and display instead of the full admin resources
 (which need roles.manage / settings.manage). Not paginated.
+
+
+BUSINESS RULES (M1.3)
+---------------------
+Policy numbers every later module reads through SettingsService.get(key)
+- never hardcode them. Defaults and validation live in
+app/services/settings/definitions.ts; the settings table stores only
+values that differ from the default (branch_id NULL = business-wide;
+per-branch overrides are reserved for later).
+
+GET /admin/settings
+  -> { groups: { bookings: "Bookings", ... },
+       settings: [{ key, group, type, label, description, value, default,
+                    isDefault, min?, max?, unit?, options? }] }
+PUT /admin/settings   { "values": { "<key>": <value>, ... } } (partial)
+  - integer/money: whole numbers within min-max (money = pesewas)
+  - boolean: true/false; enum: one of options[].value
+  - a value equal to the default removes the stored override
+  - 422 errors[].field = "values.<key>" for each bad value; unknown keys
+    are rejected; nothing is saved if any value is invalid
+  - audited as settings.updated with only the changed keys
+
+Current keys (group - key - default):
+  bookings  booking.min_driver_age 25 years, booking.min_licence_years 2,
+            booking.min_rental_days 1, booking.max_rental_days 90,
+            booking.turnaround_buffer_minutes 120,
+            booking.return_grace_minutes 59, booking.hold_minutes 30,
+            booking.min_lead_hours 3,
+            booking.require_verified_customer_for_checkout true,
+            booking.after_hours_fee 0 (pesewas)
+  rental    rental.fuel_policy full_to_full | same_to_same,
+            rental.mileage_policy unlimited | daily_allowance,
+            rental.daily_km_allowance 200
+  payments  payment.allow_pay_at_pickup true,
+            payment.reservation_fee_type percent | fixed,
+            payment.reservation_fee_percent 20,
+            payment.reservation_fee_amount 50000 (GHS 500)
+  pricing   pricing.weekly_threshold_days 7,
+            pricing.monthly_threshold_days 28,
+            pricing.display_tax_inclusive true
+Adding a rule = add it to definitions.ts (no migration); it appears in
+GET /admin/settings and the Settings > Business rules tab automatically.
+Cancellation tiers (Phase 3) and rental terms (Phase 4) arrive with
+their modules.
 
 
 BUSINESS PROFILE
@@ -115,4 +160,7 @@ Filter:       app/filters/branch_filter.ts
 Transformers: business_, branch_, opening_hour_, closure_date_transformer.ts
 Models:       business.ts, branch.ts, opening_hour.ts, closure_date.ts
 Tests:        tests/functional/settings.spec.ts
-HTTP:         http/business.http, http/branches.http, http/lookups.http
+              tests/functional/business_rules.spec.ts
+Services:     app/services/settings/definitions.ts, settings_service.ts
+HTTP:         http/business.http, http/branches.http, http/lookups.http,
+              http/settings.http

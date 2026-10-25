@@ -25,14 +25,14 @@ test.group('role_permission_seeder', (group) => {
     const permissions = await Permission.query().orderBy('slug', 'asc')
     assert.deepEqual(
       permissions.map((permission) => permission.slug),
-      ['permissions.manage', 'roles.manage', 'settings.manage', 'users.manage']
+      ['audit.view', 'permissions.manage', 'roles.manage', 'settings.manage', 'users.manage']
     )
 
     const manager = roles.find((role) => role.slug === 'manager')!
     await manager.load('permissions')
     assert.sameMembers(
       manager.permissions.map((permission) => permission.slug),
-      ['users.manage', 'settings.manage']
+      ['users.manage', 'settings.manage', 'audit.view']
     )
   })
 

@@ -7,6 +7,39 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class AuditLogSchema extends BaseModel {
+  static $columns = ['action', 'actorLabel', 'actorType', 'after', 'before', 'createdAt', 'id', 'ip', 'metadata', 'subjectId', 'subjectLabel', 'subjectType', 'userAgent', 'userId'] as const
+  $columns = AuditLogSchema.$columns
+  @column()
+  declare action: string
+  @column()
+  declare actorLabel: string | null
+  @column()
+  declare actorType: string
+  @column()
+  declare after: any | null
+  @column()
+  declare before: any | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare ip: string | null
+  @column()
+  declare metadata: any | null
+  @column()
+  declare subjectId: string | null
+  @column()
+  declare subjectLabel: string | null
+  @column()
+  declare subjectType: string | null
+  @column()
+  declare userAgent: string | null
+  @column()
+  declare userId: string | null
+}
+
 export class AuthAccessTokenSchema extends BaseModel {
   static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
   $columns = AuthAccessTokenSchema.$columns
@@ -221,6 +254,25 @@ export class RoleSchema extends BaseModel {
   declare slug: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class SettingSchema extends BaseModel {
+  static $columns = ['branchId', 'createdAt', 'id', 'key', 'updatedAt', 'updatedBy', 'value'] as const
+  $columns = SettingSchema.$columns
+  @column()
+  declare branchId: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare key: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare updatedBy: string | null
+  @column()
+  declare value: any
 }
 
 export class UserSchema extends BaseModel {

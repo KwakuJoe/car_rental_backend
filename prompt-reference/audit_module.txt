@@ -1,0 +1,75 @@
+CAR RENTAL BACKEND — AUDIT LOG MODULE REFERENCE (M1.4)
+=========================================================
+Append-only record of who did what, when, from where. Runnable examples:
+http/audit-logs.http.
+
+Permission: audit.view (Owner via isSuperAdmin; seeded on Manager and
+Accountant). There are NO update/delete endpoints - entries are permanent.
+
+
+DATA MODEL (audit_logs)
+-----------------------
+id            ULID
+userId        the staff member who acted (null: system, failed sign-in)
+actorType     staff | system | customer | webhook
+actorLabel    name/email snapshot at the time (survives renames/deletes;
+              for a failed sign-in, the email that was tried)
+action        <module>.<verb> - see ACTIONS
+subjectType   user | role | business | branch | settings | ...
+subjectId     the record's id
+subjectLabel  readable name snapshot of the record
+before/after  ONLY the fields that changed (null for creates/deletes as
+              appropriate). Readable values: role/branch NAMES, permission
+              SLUGS, opening hours as { Monday: "08:00-18:00" }.
+              Keys containing password/token/secret/hash -> "[redacted]".
+metadata      extra context, e.g. { reason: "invalid_credentials" }
+ip            client IP (X-Forwarded-For from the trusted Next.js proxy)
+userAgent     browser/device string (max 255 chars)
+createdAt
+
+
+ACTIONS (so far)
+----------------
+auth.login, auth.login_failed, auth.login_blocked (deactivated),
+auth.logout, auth.password_changed (metadata.replacedTemporaryPassword)
+user.created, user.updated, user.password_reset
+role.created, role.updated, role.deleted (metadata.staffLeftWithoutRole),
+role.permissions_synced
+business.updated
+branch.created, branch.updated, branch.deleted
+opening_hours.updated, closure_date.created, closure_date.deleted
+settings.updated
+Every new module adds its own <module>.<verb> actions (and the frontend
+adds labels in src/modules/audit/audit.labels.ts).
+
+
+ENDPOINTS
+---------
+GET /api/v1/admin/audit-logs
+  search        action, subject label or actor label (partial)
+  userId        exact
+  action        exact ("user.updated") or module prefix ending in "."
+                ("user.")
+  subjectType + subjectId   one record's full history
+  from, to      YYYY-MM-DD (inclusive, whole days)
+  sortOrder     desc (default, newest first) | asc
+  page, limit   standard pagination, meta in response
+GET /api/v1/admin/audit-logs/:id
+GET /api/v1/admin/lookups/staff     (any staff) id, fullName, email,
+                                     isActive - for "done by" pickers
+
+
+RULES FOR NEW CODE
+------------------
+- Record with AuditService.record(ctx, { action, subject, before, after,
+  metadata }, trx) from the controller/service that knows the intent -
+  not from model hooks.
+- Pass the transaction when there is one, so the change and its entry
+  commit together.
+- Snapshot with AuditService.pick(model, [...fields]); diffing,
+  redaction and "nothing changed -> no entry" are automatic.
+
+Files: app/services/audit_service.ts, app/models/audit_log.ts,
+app/controllers/admin/audit_logs_controller.ts,
+app/validators/audit_log.ts, app/transformers/audit_log_transformer.ts,
+tests/functional/audit_log.spec.ts

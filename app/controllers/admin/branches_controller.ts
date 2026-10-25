@@ -10,6 +10,23 @@ import {
   createBranchValidator,
   updateBranchValidator,
 } from '#validators/branch'
+import AuditService from '#services/audit_service'
+
+const AUDITED_FIELDS = [
+  'name',
+  'code',
+  'isMain',
+  'isActive',
+  'email',
+  'phone',
+  'address',
+  'digitalAddress',
+  'city',
+  'region',
+  'latitude',
+  'longitude',
+] as const
+const auditSubject = (branch: Branch) => ({ type: 'branch', id: branch.id, label: branch.name })
 
 export default class BranchesController {
   async index({ request, response, serialize }: HttpContext) {
@@ -32,7 +49,8 @@ export default class BranchesController {
    * New branches are never created as main (promote via update) and start
    * with a copy of the main branch's opening hours.
    */
-  async store({ request, response, serialize }: HttpContext) {
+  async store(ctx: HttpContext) {
+    const { request, response, serialize } = ctx
     const data = await request.validateUsing(createBranchValidator)
     const business = await Business.current()
 
@@ -66,6 +84,16 @@ export default class BranchesController {
         )
       }
 
+      await AuditService.record(
+        ctx,
+        {
+          action: 'branch.created',
+          subject: auditSubject(newBranch),
+          after: AuditService.pick(newBranch, [...AUDITED_FIELDS]),
+        },
+        trx
+      )
+
       return newBranch
     })
 
@@ -84,7 +112,8 @@ export default class BranchesController {
    * the same transaction. The main branch can't be un-set or deactivated
    * directly - promote another branch first.
    */
-  async update({ params, request, response, serialize }: HttpContext) {
+  async update(ctx: HttpContext) {
+    const { params, request, response, serialize } = ctx
     const branch = await Branch.findOrFail(params.id)
     const { isMain, latitude, longitude, ...data } = await request.validateUsing(
       updateBranchValidator,
@@ -105,6 +134,7 @@ export default class BranchesController {
       return response.badRequest({ message: 'Only an active branch can be made the main branch' })
     }
 
+    const before = AuditService.pick(branch, [...AUDITED_FIELDS])
     await db.transaction(async (trx) => {
       branch.useTransaction(trx)
       branch.merge(data)
@@ -121,6 +151,16 @@ export default class BranchesController {
       }
 
       await branch.save()
+      await AuditService.record(
+        ctx,
+        {
+          action: 'branch.updated',
+          subject: auditSubject(branch),
+          before,
+          after: AuditService.pick(branch, [...AUDITED_FIELDS]),
+        },
+        trx
+      )
     })
 
     const transformed = await serialize(BranchTransformer.transform(branch))
@@ -132,7 +172,8 @@ export default class BranchesController {
    * bookings, payments) also reference branches - deactivate instead of
    * deleting once a branch has history.
    */
-  async destroy({ params, response }: HttpContext) {
+  async destroy(ctx: HttpContext) {
+    const { params, response } = ctx
     const branch = await Branch.findOrFail(params.id)
     if (branch.isMain) {
       return response.badRequest({ message: 'The main branch cannot be deleted' })
@@ -151,6 +192,11 @@ export default class BranchesController {
     }
 
     await branch.delete()
+    await AuditService.record(ctx, {
+      action: 'branch.deleted',
+      subject: auditSubject(branch),
+      before: AuditService.pick(branch, [...AUDITED_FIELDS]),
+    })
     return response.ok({ message: 'Branch deleted successfully' })
   }
 }

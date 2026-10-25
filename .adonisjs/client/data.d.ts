@@ -5,6 +5,7 @@
 
 /// <reference path="./manifest.d.ts" />
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
+import type AuditLogTransformer from '#transformers/audit_log_transformer'
 import type BranchTransformer from '#transformers/branch_transformer'
 import type BusinessTransformer from '#transformers/business_transformer'
 import type ClosureDateTransformer from '#transformers/closure_date_transformer'
@@ -14,6 +15,10 @@ import type RoleTransformer from '#transformers/role_transformer'
 import type UserTransformer from '#transformers/user_transformer'
 
 export namespace Data {
+  export type AuditLog = InferData<AuditLogTransformer>
+  export namespace AuditLog {
+    export type Variants = InferVariants<AuditLogTransformer>
+  }
   export type Branch = InferData<BranchTransformer>
   export namespace Branch {
     export type Variants = InferVariants<BranchTransformer>

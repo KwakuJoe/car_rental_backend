@@ -6,6 +6,7 @@
 export const controllers = {
   AccessTokens: () => import('#controllers/access_tokens_controller'),
   admin: {
+    AuditLogs: () => import('#controllers/admin/audit_logs_controller'),
     Branches: () => import('#controllers/admin/branches_controller'),
     Business: () => import('#controllers/admin/business_controller'),
     ClosureDates: () => import('#controllers/admin/closure_dates_controller'),
@@ -13,6 +14,7 @@ export const controllers = {
     OpeningHours: () => import('#controllers/admin/opening_hours_controller'),
     Permissions: () => import('#controllers/admin/permissions_controller'),
     Roles: () => import('#controllers/admin/roles_controller'),
+    Settings: () => import('#controllers/admin/settings_controller'),
     Users: () => import('#controllers/admin/users_controller'),
   },
   ChangePassword: () => import('#controllers/change_password_controller'),
