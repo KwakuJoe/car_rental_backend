@@ -195,3 +195,59 @@ Content-Type: application/json
 DELETE {{baseUrl}}/admin/cars/{{carId}}/blocks/{{blockId}}
 Authorization: Bearer {{token}}
 
+### List vehicle documents and compliance status (roadworthy, insurance, etc.)
+GET {{baseUrl}}/admin/cars/{{carId}}/documents
+Authorization: Bearer {{token}}
+
+### Upload and record a vehicle document
+POST {{baseUrl}}/admin/cars/{{carId}}/documents
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "type": "roadworthy",
+  "documentNumber": "DVLA-RW-2026-0012",
+  "provider": "Driver and Vehicle Licensing Authority",
+  "issuedOn": "2026-01-15",
+  "expiresOn": "2027-01-15",
+  "fileId": "01JM000000000000000000FILE",
+  "notes": "Passed technical roadworthiness inspection at 37 Military DVLA center"
+}
+
+### Update vehicle document details
+@documentId = 01JM0000000000000000000DOC
+PUT {{baseUrl}}/admin/cars/{{carId}}/documents/{{documentId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "provider": "DVLA Accra West (Weija)",
+  "notes": "Decal verified and placed on windscreen"
+}
+
+### Delete vehicle document
+DELETE {{baseUrl}}/admin/cars/{{carId}}/documents/{{documentId}}
+Authorization: Bearer {{token}}
+
+### List fleet-wide documents expiring soon (within 30 days or already expired)
+GET {{baseUrl}}/admin/documents/expiring?days=30
+Authorization: Bearer {{token}}
+
+### List in-app notifications (M1.8)
+GET {{baseUrl}}/admin/notifications?unreadOnly=true
+Authorization: Bearer {{token}}
+
+### Get unread notifications count
+GET {{baseUrl}}/admin/notifications/unread-count
+Authorization: Bearer {{token}}
+
+### Mark notification as read
+@notificationId = 01JM00000000000000000NOTIF
+PATCH {{baseUrl}}/admin/notifications/{{notificationId}}/read
+Authorization: Bearer {{token}}
+
+### Mark all notifications as read
+POST {{baseUrl}}/admin/notifications/read-all
+Authorization: Bearer {{token}}
+
+

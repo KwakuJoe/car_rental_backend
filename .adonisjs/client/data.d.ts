@@ -13,11 +13,13 @@ import type CarTransformer from '#transformers/car_transformer'
 import type CategoryTransformer from '#transformers/category_transformer'
 import type ClosureDateTransformer from '#transformers/closure_date_transformer'
 import type FileTransformer from '#transformers/file_transformer'
+import type NotificationTransformer from '#transformers/notification_transformer'
 import type OdometerLogTransformer from '#transformers/odometer_log_transformer'
 import type OpeningHourTransformer from '#transformers/opening_hour_transformer'
 import type PermissionTransformer from '#transformers/permission_transformer'
 import type RoleTransformer from '#transformers/role_transformer'
 import type UserTransformer from '#transformers/user_transformer'
+import type VehicleDocumentTransformer from '#transformers/vehicle_document_transformer'
 
 export namespace Data {
   export type AuditLog = InferData<AuditLogTransformer>
@@ -52,6 +54,10 @@ export namespace Data {
   export namespace File {
     export type Variants = InferVariants<FileTransformer>
   }
+  export type Notification = InferData<NotificationTransformer>
+  export namespace Notification {
+    export type Variants = InferVariants<NotificationTransformer>
+  }
   export type OdometerLog = InferData<OdometerLogTransformer>
   export namespace OdometerLog {
     export type Variants = InferVariants<OdometerLogTransformer>
@@ -71,5 +77,9 @@ export namespace Data {
   export type User = InferData<UserTransformer>
   export namespace User {
     export type Variants = InferVariants<UserTransformer>
+  }
+  export type VehicleDocument = InferData<VehicleDocumentTransformer>
+  export namespace VehicleDocument {
+    export type Variants = InferVariants<VehicleDocumentTransformer>
   }
 }

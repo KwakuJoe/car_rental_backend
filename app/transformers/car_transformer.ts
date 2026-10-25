@@ -1,5 +1,6 @@
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import type Car from '#models/car'
+import DocumentComplianceService from '#services/document_compliance_service'
 
 export default class CarTransformer extends BaseTransformer<Car> {
   toObject() {
@@ -59,6 +60,9 @@ export default class CarTransformer extends BaseTransformer<Car> {
         : undefined,
       photos,
       coverPhotoUrl: cover,
+      compliance: this.resource.documents
+        ? DocumentComplianceService.computeCarCompliance(this.resource.documents)
+        : undefined,
       createdAt: this.resource.createdAt,
       updatedAt: this.resource.updatedAt,
     }

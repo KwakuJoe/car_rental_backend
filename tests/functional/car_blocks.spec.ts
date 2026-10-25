@@ -116,11 +116,18 @@ test.group('fleet / car blocks (availability & exclusion constraint)', (group) =
     return { branch, category, carA, carB, fleetOfficer, frontDesk }
   }
 
-  test('fleet officer can create an availability block and it is audited', async ({ client, assert }) => {
+  test('fleet officer can create an availability block and it is audited', async ({
+    client,
+    assert,
+  }) => {
     const { carA, fleetOfficer } = await setupFixture()
 
-    const startsAt = DateTime.now().plus({ days: 1 }).set({ hour: 9, minute: 0, second: 0, millisecond: 0 })
-    const endsAt = DateTime.now().plus({ days: 3 }).set({ hour: 18, minute: 0, second: 0, millisecond: 0 })
+    const startsAt = DateTime.now()
+      .plus({ days: 1 })
+      .set({ hour: 9, minute: 0, second: 0, millisecond: 0 })
+    const endsAt = DateTime.now()
+      .plus({ days: 3 })
+      .set({ hour: 18, minute: 0, second: 0, millisecond: 0 })
 
     const response = await client
       .post(`/api/v1/admin/cars/${carA.id}/blocks`)
@@ -149,11 +156,18 @@ test.group('fleet / car blocks (availability & exclusion constraint)', (group) =
     assert.isNotNull(audit)
   })
 
-  test('prevents overlapping availability blocks on the same car with 409 Conflict', async ({ client, assert }) => {
+  test('prevents overlapping availability blocks on the same car with 409 Conflict', async ({
+    client,
+    assert,
+  }) => {
     const { carA, fleetOfficer } = await setupFixture()
 
-    const startsAt = DateTime.now().plus({ days: 5 }).set({ hour: 10, minute: 0, second: 0, millisecond: 0 })
-    const endsAt = DateTime.now().plus({ days: 8 }).set({ hour: 12, minute: 0, second: 0, millisecond: 0 })
+    const startsAt = DateTime.now()
+      .plus({ days: 5 })
+      .set({ hour: 10, minute: 0, second: 0, millisecond: 0 })
+    const endsAt = DateTime.now()
+      .plus({ days: 8 })
+      .set({ hour: 12, minute: 0, second: 0, millisecond: 0 })
 
     // First block
     const first = await client
@@ -202,7 +216,10 @@ test.group('fleet / car blocks (availability & exclusion constraint)', (group) =
     resB.assertStatus(201)
   })
 
-  test('releasing a block unblocks the car and permits new allocations for that range', async ({ client, assert }) => {
+  test('releasing a block unblocks the car and permits new allocations for that range', async ({
+    client,
+    assert,
+  }) => {
     const { carA, fleetOfficer } = await setupFixture()
 
     const startsAt = DateTime.now().plus({ days: 15 }).toISO()

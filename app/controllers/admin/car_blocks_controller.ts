@@ -38,12 +38,7 @@ export default class CarBlocksController {
     const payload = await request.validateUsing(createCarBlockValidator)
 
     try {
-      const block = await AvailabilityService.createBlock(
-        ctx,
-        params.carId,
-        payload,
-        user
-      )
+      const block = await AvailabilityService.createBlock(ctx, params.carId, payload, user)
 
       return response.created({
         message: 'Vehicle availability block created successfully',

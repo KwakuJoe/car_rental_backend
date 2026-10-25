@@ -6,12 +6,7 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.string('id', 26).primary()
-      table
-        .string('car_id', 26)
-        .notNullable()
-        .references('id')
-        .inTable('cars')
-        .onDelete('CASCADE')
+      table.string('car_id', 26).notNullable().references('id').inTable('cars').onDelete('CASCADE')
       table.string('booking_id', 26).nullable() // Will reference bookings(id) once M3.5 is added
       table.string('source', 30).notNullable() // 'booking' | 'hold' | 'block' | 'maintenance'
       table.text('reason').nullable()

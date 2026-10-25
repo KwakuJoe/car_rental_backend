@@ -31,12 +31,20 @@ export type ScannedRoutes = {
     'admin.files.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.files.signed_url': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.files.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.notifications.index': { paramsTuple?: []; params?: {} }
+    'admin.notifications.unread_count': { paramsTuple?: []; params?: {} }
+    'admin.notifications.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.notifications.mark_all_read': { paramsTuple?: []; params?: {} }
+    'admin.notifications.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.categories.index': { paramsTuple?: []; params?: {} }
     'admin.categories.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.index': { paramsTuple?: []; params?: {} }
     'admin.cars.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.odometer_history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.car_blocks.index': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
+    'admin.vehicle_documents.index': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
+    'admin.vehicle_documents.show': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
+    'admin.vehicle_documents.expiring': { paramsTuple?: []; params?: {} }
     'admin.categories.store': { paramsTuple?: []; params?: {} }
     'admin.categories.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.categories.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -51,6 +59,9 @@ export type ScannedRoutes = {
     'admin.cars.delete_photo': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'photoId': ParamValue} }
     'admin.car_blocks.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
     'admin.car_blocks.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
+    'admin.vehicle_documents.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
+    'admin.vehicle_documents.update': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
+    'admin.vehicle_documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.settings.update': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
@@ -82,12 +93,17 @@ export type ScannedRoutes = {
     'admin.lookups.lookups.categories': { paramsTuple?: []; params?: {} }
     'admin.files.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.files.signed_url': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.notifications.index': { paramsTuple?: []; params?: {} }
+    'admin.notifications.unread_count': { paramsTuple?: []; params?: {} }
     'admin.categories.index': { paramsTuple?: []; params?: {} }
     'admin.categories.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.index': { paramsTuple?: []; params?: {} }
     'admin.cars.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.odometer_history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.car_blocks.index': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
+    'admin.vehicle_documents.index': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
+    'admin.vehicle_documents.show': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
+    'admin.vehicle_documents.expiring': { paramsTuple?: []; params?: {} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
@@ -111,12 +127,17 @@ export type ScannedRoutes = {
     'admin.lookups.lookups.categories': { paramsTuple?: []; params?: {} }
     'admin.files.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.files.signed_url': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.notifications.index': { paramsTuple?: []; params?: {} }
+    'admin.notifications.unread_count': { paramsTuple?: []; params?: {} }
     'admin.categories.index': { paramsTuple?: []; params?: {} }
     'admin.categories.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.index': { paramsTuple?: []; params?: {} }
     'admin.cars.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.odometer_history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.car_blocks.index': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
+    'admin.vehicle_documents.index': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
+    'admin.vehicle_documents.show': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
+    'admin.vehicle_documents.expiring': { paramsTuple?: []; params?: {} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
@@ -132,11 +153,13 @@ export type ScannedRoutes = {
     'admin.users.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.roles.store': { paramsTuple?: []; params?: {} }
     'admin.files.upload': { paramsTuple?: []; params?: {} }
+    'admin.notifications.mark_all_read': { paramsTuple?: []; params?: {} }
     'admin.categories.store': { paramsTuple?: []; params?: {} }
     'admin.cars.store': { paramsTuple?: []; params?: {} }
     'admin.cars.update_odometer': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.add_photo': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.car_blocks.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
+    'admin.vehicle_documents.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
     'admin.branches.store': { paramsTuple?: []; params?: {} }
     'admin.closure_dates.store': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
   }
@@ -149,6 +172,7 @@ export type ScannedRoutes = {
     'admin.cars.update_status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.reorder_photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.set_cover_photo': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'photoId': ParamValue} }
+    'admin.vehicle_documents.update': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.settings.update': { paramsTuple?: []; params?: {} }
     'admin.business.update': { paramsTuple?: []; params?: {} }
     'admin.branches.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -157,12 +181,17 @@ export type ScannedRoutes = {
   DELETE: {
     'admin.roles.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.files.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.notifications.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.categories.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.delete_photo': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'photoId': ParamValue} }
     'admin.car_blocks.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
+    'admin.vehicle_documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.branches.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.closure_dates.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'branchId': ParamValue,'id': ParamValue} }
+  }
+  PATCH: {
+    'admin.notifications.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

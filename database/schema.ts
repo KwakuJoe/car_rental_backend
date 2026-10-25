@@ -348,6 +348,29 @@ export class FileSchema extends BaseModel {
   declare url: string
 }
 
+export class NotificationSchema extends BaseModel {
+  static $columns = ['body', 'createdAt', 'id', 'link', 'readAt', 'title', 'type', 'updatedAt', 'userId'] as const
+  $columns = NotificationSchema.$columns
+  @column()
+  declare body: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare link: string | null
+  @column.dateTime()
+  declare readAt: DateTime | null
+  @column()
+  declare title: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: string
+}
+
 export class OdometerLogSchema extends BaseModel {
   static $columns = ['carId', 'createdAt', 'id', 'newKm', 'previousKm', 'reason', 'recordedBy', 'source'] as const
   $columns = OdometerLogSchema.$columns
@@ -500,4 +523,35 @@ export class UserSchema extends BaseModel {
   declare roleId: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class VehicleDocumentSchema extends BaseModel {
+  static $columns = ['carId', 'coverType', 'createdAt', 'createdBy', 'documentNumber', 'expiresOn', 'fileId', 'id', 'issuedOn', 'notes', 'provider', 'type', 'updatedAt'] as const
+  $columns = VehicleDocumentSchema.$columns
+  @column()
+  declare carId: string
+  @column()
+  declare coverType: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare documentNumber: string | null
+  @column.date()
+  declare expiresOn: DateTime | null
+  @column()
+  declare fileId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column.date()
+  declare issuedOn: DateTime | null
+  @column()
+  declare notes: string | null
+  @column()
+  declare provider: string | null
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
 }

@@ -168,6 +168,36 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"files"],[1,"id"]],
     types: placeholder as Registry['admin.files.destroy']['types'],
   },
+  'admin.notifications.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/notifications',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"notifications"]],
+    types: placeholder as Registry['admin.notifications.index']['types'],
+  },
+  'admin.notifications.unread_count': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/notifications/unread-count',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"notifications"],[0,"unread-count"]],
+    types: placeholder as Registry['admin.notifications.unread_count']['types'],
+  },
+  'admin.notifications.mark_read': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/admin/notifications/:id/read',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"notifications"],[1,"id"],[0,"read"]],
+    types: placeholder as Registry['admin.notifications.mark_read']['types'],
+  },
+  'admin.notifications.mark_all_read': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/notifications/read-all',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"notifications"],[0,"read-all"]],
+    types: placeholder as Registry['admin.notifications.mark_all_read']['types'],
+  },
+  'admin.notifications.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/admin/notifications/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"notifications"],[1,"id"]],
+    types: placeholder as Registry['admin.notifications.destroy']['types'],
+  },
   'admin.categories.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/categories',
@@ -203,6 +233,24 @@ const routes = {
     pattern: '/api/v1/admin/cars/:carId/blocks',
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"blocks"]],
     types: placeholder as Registry['admin.car_blocks.index']['types'],
+  },
+  'admin.vehicle_documents.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/cars/:carId/documents',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"documents"]],
+    types: placeholder as Registry['admin.vehicle_documents.index']['types'],
+  },
+  'admin.vehicle_documents.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/cars/:carId/documents/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"documents"],[1,"id"]],
+    types: placeholder as Registry['admin.vehicle_documents.show']['types'],
+  },
+  'admin.vehicle_documents.expiring': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/documents/expiring',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"documents"],[0,"expiring"]],
+    types: placeholder as Registry['admin.vehicle_documents.expiring']['types'],
   },
   'admin.categories.store': {
     methods: ["POST"],
@@ -287,6 +335,24 @@ const routes = {
     pattern: '/api/v1/admin/cars/:carId/blocks/:id',
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"blocks"],[1,"id"]],
     types: placeholder as Registry['admin.car_blocks.destroy']['types'],
+  },
+  'admin.vehicle_documents.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/cars/:carId/documents',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"documents"]],
+    types: placeholder as Registry['admin.vehicle_documents.store']['types'],
+  },
+  'admin.vehicle_documents.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/cars/:carId/documents/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"documents"],[1,"id"]],
+    types: placeholder as Registry['admin.vehicle_documents.update']['types'],
+  },
+  'admin.vehicle_documents.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/admin/cars/:carId/documents/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"documents"],[1,"id"]],
+    types: placeholder as Registry['admin.vehicle_documents.destroy']['types'],
   },
   'admin.settings.index': {
     methods: ["GET","HEAD"],

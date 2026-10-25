@@ -56,6 +56,13 @@ export interface ApiDefinition {
       signedUrl: typeof routes['admin.files.signed_url']
       destroy: typeof routes['admin.files.destroy']
     }
+    notifications: {
+      index: typeof routes['admin.notifications.index']
+      unreadCount: typeof routes['admin.notifications.unread_count']
+      markRead: typeof routes['admin.notifications.mark_read']
+      markAllRead: typeof routes['admin.notifications.mark_all_read']
+      destroy: typeof routes['admin.notifications.destroy']
+    }
     categories: {
       index: typeof routes['admin.categories.index']
       show: typeof routes['admin.categories.show']
@@ -81,6 +88,14 @@ export interface ApiDefinition {
       index: typeof routes['admin.car_blocks.index']
       store: typeof routes['admin.car_blocks.store']
       destroy: typeof routes['admin.car_blocks.destroy']
+    }
+    vehicleDocuments: {
+      index: typeof routes['admin.vehicle_documents.index']
+      show: typeof routes['admin.vehicle_documents.show']
+      expiring: typeof routes['admin.vehicle_documents.expiring']
+      store: typeof routes['admin.vehicle_documents.store']
+      update: typeof routes['admin.vehicle_documents.update']
+      destroy: typeof routes['admin.vehicle_documents.destroy']
     }
     settings: {
       index: typeof routes['admin.settings.index']

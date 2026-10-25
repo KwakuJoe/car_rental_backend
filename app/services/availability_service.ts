@@ -29,14 +29,10 @@ export default class AvailabilityService {
     const shouldCommit = !client
 
     const startsAt =
-      typeof payload.startsAt === 'string'
-        ? DateTime.fromISO(payload.startsAt)
-        : payload.startsAt
+      typeof payload.startsAt === 'string' ? DateTime.fromISO(payload.startsAt) : payload.startsAt
 
     const endsAt =
-      typeof payload.endsAt === 'string'
-        ? DateTime.fromISO(payload.endsAt)
-        : payload.endsAt
+      typeof payload.endsAt === 'string' ? DateTime.fromISO(payload.endsAt) : payload.endsAt
 
     if (endsAt <= startsAt) {
       throw new Error('End date and time must be after the start date and time')
@@ -168,10 +164,10 @@ export default class AvailabilityService {
     const overlap = await CarAllocation.query()
       .where('car_id', carId)
       .where('active', true)
-      .whereRaw(
-        'tstzrange(starts_at, ends_at_with_buffer) && tstzrange(?, ?)',
-        [from.toSQL({ includeOffset: true })!, to.toSQL({ includeOffset: true })!]
-      )
+      .whereRaw('tstzrange(starts_at, ends_at_with_buffer) && tstzrange(?, ?)', [
+        from.toSQL({ includeOffset: true })!,
+        to.toSQL({ includeOffset: true })!,
+      ])
       .first()
 
     return !overlap

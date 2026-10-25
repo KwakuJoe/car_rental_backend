@@ -91,6 +91,15 @@ router
           router.delete('files/:id', [controllers.admin.Files, 'destroy'])
         })
 
+        // In-App Notifications (M1.8)
+        router.group(() => {
+          router.get('notifications', [controllers.admin.Notifications, 'index'])
+          router.get('notifications/unread-count', [controllers.admin.Notifications, 'unreadCount'])
+          router.patch('notifications/:id/read', [controllers.admin.Notifications, 'markRead'])
+          router.post('notifications/read-all', [controllers.admin.Notifications, 'markAllRead'])
+          router.delete('notifications/:id', [controllers.admin.Notifications, 'destroy'])
+        })
+
         // Fleet: Categories & Cars (Read)
         router
           .group(() => {
@@ -100,6 +109,9 @@ router
             router.get('cars/:id', [controllers.admin.Cars, 'show'])
             router.get('cars/:id/odometer-history', [controllers.admin.Cars, 'odometerHistory'])
             router.get('cars/:carId/blocks', [controllers.admin.CarBlocks, 'index'])
+            router.get('cars/:carId/documents', [controllers.admin.VehicleDocuments, 'index'])
+            router.get('cars/:carId/documents/:id', [controllers.admin.VehicleDocuments, 'show'])
+            router.get('documents/expiring', [controllers.admin.VehicleDocuments, 'expiring'])
           })
           .use(middleware.permission({ permissions: ['fleet.view'] }))
 
@@ -122,6 +134,13 @@ router
 
             router.post('cars/:carId/blocks', [controllers.admin.CarBlocks, 'store'])
             router.delete('cars/:carId/blocks/:id', [controllers.admin.CarBlocks, 'destroy'])
+
+            router.post('cars/:carId/documents', [controllers.admin.VehicleDocuments, 'store'])
+            router.put('cars/:carId/documents/:id', [controllers.admin.VehicleDocuments, 'update'])
+            router.delete('cars/:carId/documents/:id', [
+              controllers.admin.VehicleDocuments,
+              'destroy',
+            ])
           })
           .use(middleware.permission({ permissions: ['fleet.manage'] }))
 

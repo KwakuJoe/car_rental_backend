@@ -26,6 +26,7 @@ export default class CarsController {
       .preload('category')
       .preload('branch')
       .preload('photos', (pq) => pq.preload('file').orderBy('sort_order', 'asc'))
+      .preload('documents')
 
     const cars = await new CarFilter(query, { ...payload })
       .apply()
@@ -110,6 +111,7 @@ export default class CarsController {
       .preload('category')
       .preload('branch')
       .preload('photos', (pq) => pq.preload('file').orderBy('sort_order', 'asc'))
+      .preload('documents')
       .firstOrFail()
 
     return response.ok({

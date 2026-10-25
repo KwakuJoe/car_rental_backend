@@ -358,6 +358,71 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['destroy']>>>
     }
   }
+  'admin.notifications.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/notifications'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/notification').listNotificationsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.notifications.unread_count': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/notifications/unread-count'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['unreadCount']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['unreadCount']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['unreadCount']>>>
+    }
+  }
+  'admin.notifications.mark_read': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/admin/notifications/:id/read'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['markRead']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['markRead']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['markRead']>>>
+    }
+  }
+  'admin.notifications.mark_all_read': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/notifications/read-all'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['markAllRead']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['markAllRead']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['markAllRead']>>>
+    }
+  }
+  'admin.notifications.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/notifications/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/notifications_controller').default['destroy']>>>
+    }
+  }
   'admin.categories.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/categories'
@@ -434,6 +499,45 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['index']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.vehicle_documents.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/cars/:carId/documents'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { carId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['index']>>>
+    }
+  }
+  'admin.vehicle_documents.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/cars/:carId/documents/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { carId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['show']>>>
+    }
+  }
+  'admin.vehicle_documents.expiring': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/documents/expiring'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/vehicle_document').listExpiringDocumentsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['expiring']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['expiring']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['expiring']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.categories.store': {
@@ -616,6 +720,45 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['destroy']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['destroy']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/car_blocks_controller').default['destroy']>>>
+    }
+  }
+  'admin.vehicle_documents.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/cars/:carId/documents'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/vehicle_document').createVehicleDocumentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { carId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/vehicle_document').createVehicleDocumentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.vehicle_documents.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/cars/:carId/documents/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/vehicle_document').updateVehicleDocumentValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { carId: ParamValue; id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/vehicle_document').updateVehicleDocumentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.vehicle_documents.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/cars/:carId/documents/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { carId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['destroy']>>>
     }
   }
   'admin.settings.index': {
