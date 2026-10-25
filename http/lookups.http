@@ -23,3 +23,7 @@ Authorization: Bearer {{token}}
 ### Active branches - id, name, code, isMain (main first)
 GET {{baseUrl}}/admin/lookups/branches
 Authorization: Bearer {{token}}
+
+### Active categories - id, name, slug, dailyRate, seats, luggage, transmission
+GET {{baseUrl}}/admin/lookups/categories
+Authorization: Bearer {{token}}

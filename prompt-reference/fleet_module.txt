@@ -1,0 +1,113 @@
+CAR RENTAL BACKEND — FLEET MODULE REFERENCE (M2.1 & M2.2)
+=========================================================
+Vehicle categories, individual fleet vehicles, photo galleries, and odometer audit logs.
+
+Runnable examples: http/fleet.http.
+
+
+DATA MODEL
+----------
+1. categories
+   id               ULID
+   name             String(100), unique
+   slug             String(100), unique
+   daily_rate       BigInteger (Ghana Pesewas)
+   description      Text nullable
+   seats            Integer (default 5)
+   doors            Integer (default 4)
+   luggage          Integer (default 2)
+   transmission     'auto' | 'manual' (default 'auto')
+   air_conditioned  Boolean (default true)
+   sort_order       Integer (default 0)
+   is_active        Boolean (default true)
+   created_at, updated_at
+
+2. cars
+   id                   ULID
+   branch_id            ULID (references branches.id RESTRICT)
+   category_id          ULID (references categories.id RESTRICT)
+   make                 String(80) (e.g. 'Toyota')
+   model                String(80) (e.g. 'RAV4')
+   year                 Integer (e.g. 2023)
+   colour               String(50) (e.g. 'Pearl White')
+   registration_no      String(50), unique (e.g. 'GS 1234-23')
+   vin_chassis_no       String(80), unique
+   engine_no            String(80) nullable
+   transmission         'auto' | 'manual'
+   fuel_type            'petrol' | 'diesel' | 'hybrid' | 'electric'
+   fuel_capacity_l      Integer nullable
+   seats, doors, luggage Integer
+   features             Jsonb array of strings (e.g. ['AC', 'Reverse Camera'])
+   current_odometer_km  Integer (default 0)
+   purchase_date        Date nullable
+   purchase_amount      BigInteger nullable (Pesewas)
+   ownership            'company' | 'partner'
+   public_title         String(150) nullable
+   public_description   Text nullable
+   is_listed_online     Boolean (default true)
+   status               'active' | 'in_maintenance' | 'out_of_service' | 'retired'
+   archived_at          Timestamp nullable (soft-delete)
+   created_at, updated_at
+
+3. car_photos
+   id          ULID
+   car_id      ULID (references cars.id CASCADE)
+   file_id     ULID (references files.id RESTRICT)
+   sort_order  Integer (default 0)
+   is_cover    Boolean (default false)
+   created_at, updated_at
+
+4. odometer_logs
+   id            ULID
+   car_id        ULID (references cars.id CASCADE)
+   previous_km   Integer
+   new_km        Integer
+   source        'manual_entry' | 'trip_dispatch' | 'trip_return' | 'maintenance' | 'correction'
+   reason        Text nullable
+   recorded_by   ULID (references users.id RESTRICT)
+   created_at, updated_at
+
+
+BUSINESS RULES & CONSTRAINTS
+----------------------------
+1. Categories cannot be deleted if there are any cars (including archived ones) assigned to them.
+2. Unique registration numbers and VIN / chassis numbers across all cars.
+3. Car status transitions require an explicit `reason` string and write an audit log entry.
+4. Odometer updates:
+   - Upward updates log automatically.
+   - Downward updates represent corrections (e.g. typo correction) and REQUIRE a reason with at least 10 characters.
+   - Initial odometer reading at vehicle creation automatically seeds the first `odometer_logs` record.
+5. Deleting a car performs a soft-delete: sets `archived_at` and sets status to `'retired'`.
+6. Setting a photo as cover resets any other cover photo for that car so exactly one cover photo is active.
+
+
+PERMISSIONS
+-----------
+fleet.view    - View categories, cars, specs, photos, odometer logs
+fleet.manage  - Create/edit/delete categories and cars, update status, record odometer, manage photos
+
+
+ENDPOINTS
+---------
+Categories:
+  GET    /api/v1/admin/categories            Filter by search, isActive, sort, pagination
+  POST   /api/v1/admin/categories            Create category
+  GET    /api/v1/admin/categories/:id        Get category details
+  PUT    /api/v1/admin/categories/:id        Update category
+  DELETE /api/v1/admin/categories/:id        Delete category
+
+Cars:
+  GET    /api/v1/admin/cars                  Filter by search, categoryId, branchId, transmission, fuelType, status, isListedOnline
+  POST   /api/v1/admin/cars                  Create vehicle (seeds initial odometer log)
+  GET    /api/v1/admin/cars/:id              Get vehicle details (includes category, branch, photos, coverPhotoUrl)
+  PUT    /api/v1/admin/cars/:id              Update vehicle specifications
+  DELETE /api/v1/admin/cars/:id              Soft-delete (archives and marks status 'retired')
+  PATCH  /api/v1/admin/cars/:id/status       Change status (active, in_maintenance, out_of_service, retired) with reason
+  POST   /api/v1/admin/cars/:id/odometer     Record odometer reading or correction
+  POST   /api/v1/admin/cars/:id/photos       Attach photo from files table (optional isCover)
+  PUT    /api/v1/admin/cars/:id/photos/reorder Reorder photo array
+  PATCH  /api/v1/admin/cars/:id/photos/:photoId/cover Set cover photo
+  DELETE /api/v1/admin/cars/:id/photos/:photoId Delete photo attachment
+
+Lookups:
+  GET    /api/v1/admin/lookups/categories    Lightweight list of active categories for dropdowns

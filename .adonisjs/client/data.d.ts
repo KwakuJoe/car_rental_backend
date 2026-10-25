@@ -8,8 +8,11 @@ import type { InferData, InferVariants } from '@adonisjs/core/types/transformers
 import type AuditLogTransformer from '#transformers/audit_log_transformer'
 import type BranchTransformer from '#transformers/branch_transformer'
 import type BusinessTransformer from '#transformers/business_transformer'
+import type CarTransformer from '#transformers/car_transformer'
+import type CategoryTransformer from '#transformers/category_transformer'
 import type ClosureDateTransformer from '#transformers/closure_date_transformer'
 import type FileTransformer from '#transformers/file_transformer'
+import type OdometerLogTransformer from '#transformers/odometer_log_transformer'
 import type OpeningHourTransformer from '#transformers/opening_hour_transformer'
 import type PermissionTransformer from '#transformers/permission_transformer'
 import type RoleTransformer from '#transformers/role_transformer'
@@ -28,6 +31,14 @@ export namespace Data {
   export namespace Business {
     export type Variants = InferVariants<BusinessTransformer>
   }
+  export type Car = InferData<CarTransformer>
+  export namespace Car {
+    export type Variants = InferVariants<CarTransformer>
+  }
+  export type Category = InferData<CategoryTransformer>
+  export namespace Category {
+    export type Variants = InferVariants<CategoryTransformer>
+  }
   export type ClosureDate = InferData<ClosureDateTransformer>
   export namespace ClosureDate {
     export type Variants = InferVariants<ClosureDateTransformer>
@@ -35,6 +46,10 @@ export namespace Data {
   export type File = InferData<FileTransformer>
   export namespace File {
     export type Variants = InferVariants<FileTransformer>
+  }
+  export type OdometerLog = InferData<OdometerLogTransformer>
+  export namespace OdometerLog {
+    export type Variants = InferVariants<OdometerLogTransformer>
   }
   export type OpeningHour = InferData<OpeningHourTransformer>
   export namespace OpeningHour {

@@ -1,0 +1,174 @@
+# Fleet Module - Categories and Cars (M2.1 & M2.2)
+# Requires fleet.view to read, fleet.manage to create/edit/delete/status/photos/odometer.
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+# ── CATEGORIES ──────────────────────────────────────────────────
+
+### List categories
+# @name listCategories
+GET {{baseUrl}}/admin/categories?page=1&limit=20
+Authorization: Bearer {{token}}
+
+### Filter categories by search
+GET {{baseUrl}}/admin/categories?search=economy&isActive=true
+Authorization: Bearer {{token}}
+
+### Create category
+# @name createCategory
+POST {{baseUrl}}/admin/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Mid-size SUV",
+  "dailyRate": 65000,
+  "description": "Comfortable 5-seater SUV ideal for city and intercity travel.",
+  "seats": 5,
+  "doors": 4,
+  "luggage": 3,
+  "transmission": "auto",
+  "airConditioned": true,
+  "sortOrder": 1,
+  "isActive": true
+}
+
+###
+@categoryId = {{createCategory.response.body.$.data.id}}
+
+### Get category by ID
+GET {{baseUrl}}/admin/categories/{{categoryId}}
+Authorization: Bearer {{token}}
+
+### Update category
+PUT {{baseUrl}}/admin/categories/{{categoryId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Mid-size SUV (Updated)",
+  "dailyRate": 70000,
+  "description": "Premium 5-seater crossover.",
+  "seats": 5,
+  "doors": 4,
+  "luggage": 3,
+  "transmission": "auto",
+  "airConditioned": true,
+  "sortOrder": 2,
+  "isActive": true
+}
+
+### Delete category (fails if cars are attached)
+DELETE {{baseUrl}}/admin/categories/{{categoryId}}
+Authorization: Bearer {{token}}
+
+
+# ── CARS ────────────────────────────────────────────────────────
+
+### List cars
+# @name listCars
+GET {{baseUrl}}/admin/cars?page=1&limit=20
+Authorization: Bearer {{token}}
+
+### Filter cars by status, category, transmission
+GET {{baseUrl}}/admin/cars?status=active&transmission=auto
+Authorization: Bearer {{token}}
+
+### Create car
+# @name createCar
+POST {{baseUrl}}/admin/cars
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "branchId": "01JM0000000000000000000001",
+  "categoryId": "{{categoryId}}",
+  "make": "Toyota",
+  "model": "RAV4",
+  "year": 2023,
+  "colour": "Pearl White",
+  "registrationNo": "GS 1234-23",
+  "vinChassisNo": "4T3ZR10V901234567",
+  "transmission": "auto",
+  "fuelType": "petrol",
+  "seats": 5,
+  "doors": 4,
+  "luggage": 3,
+  "features": ["AC", "Reverse Camera", "Bluetooth", "Cruise Control", "Apple CarPlay"],
+  "currentOdometerKm": 18500,
+  "ownership": "company",
+  "isListedOnline": true
+}
+
+###
+@carId = {{createCar.response.body.$.data.id}}
+
+### Get car by ID (with preloaded photos, category, branch)
+GET {{baseUrl}}/admin/cars/{{carId}}
+Authorization: Bearer {{token}}
+
+### Update car details
+PUT {{baseUrl}}/admin/cars/{{carId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "make": "Toyota",
+  "model": "RAV4 Limited",
+  "year": 2023,
+  "colour": "Pearl White",
+  "registrationNo": "GS 1234-23",
+  "vinChassisNo": "4T3ZR10V901234567",
+  "transmission": "auto",
+  "fuelType": "petrol",
+  "seats": 5,
+  "doors": 4,
+  "luggage": 3,
+  "features": ["AC", "Reverse Camera", "Bluetooth", "Cruise Control", "Apple CarPlay", "Leather Seats"],
+  "ownership": "company",
+  "isListedOnline": true
+}
+
+### Update car status (requires reason, records audit)
+PATCH {{baseUrl}}/admin/cars/{{carId}}/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "in_maintenance",
+  "reason": "Scheduled 20,000 km brake pads replacement"
+}
+
+### Update odometer (downward correction requires reason with >= 10 characters)
+POST {{baseUrl}}/admin/cars/{{carId}}/odometer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentOdometerKm": 19200,
+  "reason": "Routine post-trip verification"
+}
+
+### Attach photo to car
+# Note: First upload photo via /admin/files to get fileId
+POST {{baseUrl}}/admin/cars/{{carId}}/photos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fileId": "01JM000000000000000000FILE",
+  "isCover": true
+}
+
+### Delete car (soft-delete / archives and marks retired)
+DELETE {{baseUrl}}/admin/cars/{{carId}}
+Authorization: Bearer {{token}}

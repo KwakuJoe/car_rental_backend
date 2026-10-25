@@ -293,6 +293,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['staff']>>>
     }
   }
+  'admin.lookups.lookups.categories': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/lookups/categories'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['categories']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['categories']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['categories']>>>
+    }
+  }
   'admin.files.upload': {
     methods: ["POST"]
     pattern: '/api/v1/admin/files/upload'
@@ -343,6 +356,227 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['destroy']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['destroy']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['destroy']>>>
+    }
+  }
+  'admin.categories.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/categories'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/category').categoryFilterValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.categories.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/categories/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['show']>>>
+    }
+  }
+  'admin.cars.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/cars'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/car').carFilterValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.cars.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/cars/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['show']>>>
+    }
+  }
+  'admin.cars.odometer_history': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/cars/:id/odometer-history'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['odometerHistory']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['odometerHistory']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['odometerHistory']>>>
+    }
+  }
+  'admin.categories.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/categories'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/category').createCategoryValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/category').createCategoryValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.categories.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/categories/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/category').updateCategoryValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/category').updateCategoryValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.categories.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/categories/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/categories_controller').default['destroy']>>>
+    }
+  }
+  'admin.cars.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/cars'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/car').createCarValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/car').createCarValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.cars.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/cars/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/car').updateCarValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/car').updateCarValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.cars.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/cars/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['destroy']>>>
+    }
+  }
+  'admin.cars.update_status': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/cars/:id/status'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/car').updateCarStatusValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/car').updateCarStatusValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['updateStatus']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['updateStatus']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['updateStatus']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.cars.update_odometer': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/cars/:id/odometer'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/car').updateOdometerValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/car').updateOdometerValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['updateOdometer']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['updateOdometer']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['updateOdometer']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.cars.add_photo': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/cars/:id/photos'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/car').attachCarPhotoValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/car').attachCarPhotoValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['addPhoto']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['addPhoto']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['addPhoto']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.cars.reorder_photos': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/cars/:id/photos/reorder'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/car').reorderPhotosValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/car').reorderPhotosValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['reorderPhotos']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['reorderPhotos']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['reorderPhotos']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.cars.set_cover_photo': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/cars/:id/photos/:photoId/cover'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; photoId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['setCoverPhoto']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['setCoverPhoto']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['setCoverPhoto']>>>
+    }
+  }
+  'admin.cars.delete_photo': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/cars/:id/photos/:photoId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; photoId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['deletePhoto']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['deletePhoto']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/cars_controller').default['deletePhoto']>>>
     }
   }
   'admin.settings.index': {

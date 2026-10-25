@@ -58,6 +58,10 @@ Update this list as modules land.
   [x] M1.5  file storage: Cloudinary integration, files table, polymorphic
             attachments, FileService, signed URLs for private documents (Act 843),
             upload/show/url/delete endpoints, audited
+  [x] M2.1  categories: categories table, daily rates, specifications,
+            sort order, activation, lookup, audited
+  [x] M2.2  cars: cars, car_photos, odometer_logs tables, CRUD, specifications,
+            status changes with audit, odometer tracking/corrections, photo gallery
   [ ] M1.6  jobs/scheduler, M1.7 numbering, M1.8 in-app notifications
 
 

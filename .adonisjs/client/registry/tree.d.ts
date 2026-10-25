@@ -47,6 +47,7 @@ export interface ApiDefinition {
         roles: typeof routes['admin.lookups.lookups.roles']
         branches: typeof routes['admin.lookups.lookups.branches']
         staff: typeof routes['admin.lookups.lookups.staff']
+        categories: typeof routes['admin.lookups.lookups.categories']
       }
     }
     files: {
@@ -54,6 +55,27 @@ export interface ApiDefinition {
       show: typeof routes['admin.files.show']
       signedUrl: typeof routes['admin.files.signed_url']
       destroy: typeof routes['admin.files.destroy']
+    }
+    categories: {
+      index: typeof routes['admin.categories.index']
+      show: typeof routes['admin.categories.show']
+      store: typeof routes['admin.categories.store']
+      update: typeof routes['admin.categories.update']
+      destroy: typeof routes['admin.categories.destroy']
+    }
+    cars: {
+      index: typeof routes['admin.cars.index']
+      show: typeof routes['admin.cars.show']
+      odometerHistory: typeof routes['admin.cars.odometer_history']
+      store: typeof routes['admin.cars.store']
+      update: typeof routes['admin.cars.update']
+      destroy: typeof routes['admin.cars.destroy']
+      updateStatus: typeof routes['admin.cars.update_status']
+      updateOdometer: typeof routes['admin.cars.update_odometer']
+      addPhoto: typeof routes['admin.cars.add_photo']
+      reorderPhotos: typeof routes['admin.cars.reorder_photos']
+      setCoverPhoto: typeof routes['admin.cars.set_cover_photo']
+      deletePhoto: typeof routes['admin.cars.delete_photo']
     }
     settings: {
       index: typeof routes['admin.settings.index']

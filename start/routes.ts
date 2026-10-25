@@ -78,6 +78,7 @@ router
             router.get('roles', [controllers.admin.Lookups, 'roles'])
             router.get('branches', [controllers.admin.Lookups, 'branches'])
             router.get('staff', [controllers.admin.Lookups, 'staff'])
+            router.get('categories', [controllers.admin.Lookups, 'categories'])
           })
           .prefix('lookups')
           .as('lookups')
@@ -89,6 +90,36 @@ router
           router.get('files/:id/url', [controllers.admin.Files, 'signedUrl'])
           router.delete('files/:id', [controllers.admin.Files, 'destroy'])
         })
+
+        // Fleet: Categories & Cars (Read)
+        router
+          .group(() => {
+            router.get('categories', [controllers.admin.Categories, 'index'])
+            router.get('categories/:id', [controllers.admin.Categories, 'show'])
+            router.get('cars', [controllers.admin.Cars, 'index'])
+            router.get('cars/:id', [controllers.admin.Cars, 'show'])
+            router.get('cars/:id/odometer-history', [controllers.admin.Cars, 'odometerHistory'])
+          })
+          .use(middleware.permission({ permissions: ['fleet.view'] }))
+
+        // Fleet: Categories & Cars (Write)
+        router
+          .group(() => {
+            router.post('categories', [controllers.admin.Categories, 'store'])
+            router.put('categories/:id', [controllers.admin.Categories, 'update'])
+            router.delete('categories/:id', [controllers.admin.Categories, 'destroy'])
+
+            router.post('cars', [controllers.admin.Cars, 'store'])
+            router.put('cars/:id', [controllers.admin.Cars, 'update'])
+            router.delete('cars/:id', [controllers.admin.Cars, 'destroy'])
+            router.put('cars/:id/status', [controllers.admin.Cars, 'updateStatus'])
+            router.post('cars/:id/odometer', [controllers.admin.Cars, 'updateOdometer'])
+            router.post('cars/:id/photos', [controllers.admin.Cars, 'addPhoto'])
+            router.put('cars/:id/photos/reorder', [controllers.admin.Cars, 'reorderPhotos'])
+            router.put('cars/:id/photos/:photoId/cover', [controllers.admin.Cars, 'setCoverPhoto'])
+            router.delete('cars/:id/photos/:photoId', [controllers.admin.Cars, 'deletePhoto'])
+          })
+          .use(middleware.permission({ permissions: ['fleet.manage'] }))
 
         router
           .group(() => {

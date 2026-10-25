@@ -154,6 +154,117 @@ export class BusinessSchema extends BaseModel {
   declare whatsappPhone: string | null
 }
 
+export class CarPhotoSchema extends BaseModel {
+  static $columns = ['carId', 'createdAt', 'fileId', 'id', 'isCover', 'sortOrder', 'updatedAt'] as const
+  $columns = CarPhotoSchema.$columns
+  @column()
+  declare carId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare fileId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isCover: boolean
+  @column()
+  declare sortOrder: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class CarSchema extends BaseModel {
+  static $columns = ['archivedAt', 'branchId', 'categoryId', 'colour', 'createdAt', 'currentOdometerKm', 'doors', 'engineNo', 'features', 'fuelCapacityL', 'fuelType', 'id', 'isListedOnline', 'luggage', 'make', 'model', 'ownership', 'publicDescription', 'publicTitle', 'purchaseAmount', 'purchaseDate', 'registrationNo', 'seats', 'status', 'transmission', 'updatedAt', 'vinChassisNo', 'year'] as const
+  $columns = CarSchema.$columns
+  @column.dateTime()
+  declare archivedAt: DateTime | null
+  @column()
+  declare branchId: string
+  @column()
+  declare categoryId: string
+  @column()
+  declare colour: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare currentOdometerKm: number
+  @column()
+  declare doors: number
+  @column()
+  declare engineNo: string | null
+  @column()
+  declare features: any
+  @column()
+  declare fuelCapacityL: number | null
+  @column()
+  declare fuelType: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isListedOnline: boolean
+  @column()
+  declare luggage: number
+  @column()
+  declare make: string
+  @column()
+  declare model: string
+  @column()
+  declare ownership: string
+  @column()
+  declare publicDescription: string | null
+  @column()
+  declare publicTitle: string | null
+  @column()
+  declare purchaseAmount: bigint | number | null
+  @column.date()
+  declare purchaseDate: DateTime | null
+  @column()
+  declare registrationNo: string
+  @column()
+  declare seats: number
+  @column()
+  declare status: string
+  @column()
+  declare transmission: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare vinChassisNo: string
+  @column()
+  declare year: number
+}
+
+export class CategorySchema extends BaseModel {
+  static $columns = ['active', 'createdAt', 'defaultDepositAmount', 'description', 'id', 'image', 'minDriverAgeOverride', 'name', 'seats', 'selfDriveAllowed', 'slug', 'sortOrder', 'updatedAt'] as const
+  $columns = CategorySchema.$columns
+  @column()
+  declare active: boolean
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare defaultDepositAmount: number
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare image: string | null
+  @column()
+  declare minDriverAgeOverride: number | null
+  @column()
+  declare name: string
+  @column()
+  declare seats: number
+  @column()
+  declare selfDriveAllowed: boolean
+  @column()
+  declare slug: string
+  @column()
+  declare sortOrder: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class ClosureDateSchema extends BaseModel {
   static $columns = ['branchId', 'createdAt', 'date', 'id', 'reason', 'updatedAt'] as const
   $columns = ClosureDateSchema.$columns
@@ -204,6 +315,27 @@ export class FileSchema extends BaseModel {
   declare uploadedBy: string | null
   @column()
   declare url: string
+}
+
+export class OdometerLogSchema extends BaseModel {
+  static $columns = ['carId', 'createdAt', 'id', 'newKm', 'previousKm', 'reason', 'recordedBy', 'source'] as const
+  $columns = OdometerLogSchema.$columns
+  @column()
+  declare carId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare newKm: number
+  @column()
+  declare previousKm: number
+  @column()
+  declare reason: string | null
+  @column()
+  declare recordedBy: string | null
+  @column()
+  declare source: string
 }
 
 export class OpeningHourSchema extends BaseModel {

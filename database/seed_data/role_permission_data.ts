@@ -89,6 +89,20 @@ export const permissionData = [
     group: 'settings',
     description: 'Update business profile, branches, opening hours, closure dates and settings',
   },
+
+  // fleet
+  {
+    name: 'View fleet',
+    slug: 'fleet.view',
+    group: 'fleet',
+    description: 'View vehicle categories, cars, specifications, and availability',
+  },
+  {
+    name: 'Manage fleet',
+    slug: 'fleet.manage',
+    group: 'fleet',
+    description: 'Create and update categories, cars, photos, odometer corrections, and status',
+  },
 ]
 
 // ── Role → Permission mapping ──────────────────────────────────
@@ -98,9 +112,9 @@ export const permissionData = [
 // prompt-reference/modules.txt).
 export const rolePermissionMap: Record<string, string[]> = {
   'owner': [], // isSuperAdmin - all permissions implicitly granted
-  'manager': ['users.manage', 'settings.manage', 'audit.view'],
-  'front-desk': [],
-  'fleet': [],
+  'manager': ['users.manage', 'settings.manage', 'audit.view', 'fleet.view', 'fleet.manage'],
+  'front-desk': ['fleet.view'],
+  'fleet': ['fleet.view', 'fleet.manage'],
   'driver': [],
   'accountant': ['audit.view'],
 }

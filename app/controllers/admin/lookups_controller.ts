@@ -69,4 +69,20 @@ export default class LookupsController {
       })),
     })
   }
+
+  async categories({ response }: HttpContext) {
+    const { default: Category } = await import('#models/category')
+    const categories = await Category.query().where('active', true).orderBy('sort_order', 'asc')
+    return response.ok({
+      message: 'Categories fetched successfully',
+      data: categories.map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        seats: cat.seats,
+        defaultDepositAmount: cat.defaultDepositAmount,
+        selfDriveAllowed: cat.selfDriveAllowed,
+      })),
+    })
+  }
 }
