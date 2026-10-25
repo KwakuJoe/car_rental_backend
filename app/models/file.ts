@@ -25,6 +25,9 @@ export const FILE_PURPOSES = [
 
 export type FilePurpose = (typeof FILE_PURPOSES)[number]
 
+/** Public image purposes that may be imported from a pasted link. */
+export const IMPORTABLE_PURPOSES = ['car_photo', 'category_image', 'business_logo'] as const
+
 /**
  * Purposes considered private by default under Ghana Data Protection Act 2012 (Act 843)
  * or sensitive operational business requirements.

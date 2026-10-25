@@ -1,5 +1,6 @@
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary'
 import env from '#start/env'
+import logger from '@adonisjs/core/services/logger'
 import File, { type FilePurpose, PRIVATE_PURPOSES } from '#models/file'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type { MultipartFile } from '@adonisjs/core/bodyparser'
@@ -38,9 +39,17 @@ export interface UploadResult {
 }
 
 export type MockUploader = (file: MultipartFile, options: UploadOptions) => Promise<UploadResult>
+export type MockUrlImporter = (url: string, options: UploadOptions) => Promise<UploadResult>
+
+/**
+ * The image at a pasted link could not be imported (unreachable, not an image,
+ * unsupported format). The message is safe to show to staff.
+ */
+export class ImageImportError extends Error {}
 
 export class FileService {
   private static mockUploader: MockUploader | null = null
+  private static mockUrlImporter: MockUrlImporter | null = null
 
   /**
    * Allowed MIME types and extensions.
@@ -55,6 +64,13 @@ export class FileService {
    */
   static setMockUploader(mock: MockUploader | null) {
     this.mockUploader = mock
+  }
+
+  /**
+   * Set a mock link importer for testing.
+   */
+  static setMockUrlImporter(mock: MockUrlImporter | null) {
+    this.mockUrlImporter = mock
   }
 
   /**
@@ -138,6 +154,111 @@ export class FileService {
     )
 
     return fileRecord
+  }
+
+  /**
+   * Import a public image from a pasted link and record it in the files table.
+   *
+   * Cloudinary fetches the link itself, so our server never requests a
+   * user-supplied address. The image is copied (and resized like uploads), so
+   * it keeps working if the original is moved or deleted.
+   */
+  static async importFromUrl(
+    url: string,
+    options: UploadOptions,
+    trx?: TransactionClientContract
+  ): Promise<File> {
+    const folder = options.folder ?? `wynk/${options.purpose}`
+    let uploadResult: UploadResult
+
+    if (this.mockUrlImporter) {
+      uploadResult = await this.mockUrlImporter(url, options)
+    } else {
+      let result: UploadApiResponse
+      try {
+        result = await cloudinary.uploader.upload(url, {
+          folder,
+          resource_type: 'image',
+          type: 'upload',
+          allowed_formats: this.IMAGE_EXTENSIONS,
+          transformation: [
+            { width: 1920, height: 1080, crop: 'limit' },
+            { quality: 'auto' },
+            { fetch_format: 'auto' },
+          ],
+        })
+      } catch (error) {
+        const reason =
+          (error as { error?: { message?: string } })?.error?.message ??
+          (error as Error)?.message ??
+          ''
+        logger.warn({ url, reason }, 'Image import from link failed')
+        throw new ImageImportError(this.importErrorMessage(reason))
+      }
+
+      uploadResult = {
+        url: result.secure_url,
+        publicId: result.public_id,
+        width: result.width,
+        height: result.height,
+        format: result.format,
+        bytes: result.bytes,
+        resourceType: result.resource_type,
+      }
+    }
+
+    const format = uploadResult.format ?? 'jpg'
+
+    return File.create(
+      {
+        disk: 'cloudinary',
+        path: uploadResult.publicId,
+        url: uploadResult.url,
+        originalName: this.nameFromUrl(url, format),
+        mime: `image/${format === 'jpg' ? 'jpeg' : format}`,
+        size: uploadResult.bytes,
+        uploadedBy: options.uploadedBy ?? null,
+        attachableType: options.attachableType ?? null,
+        attachableId: options.attachableId ?? null,
+        purpose: options.purpose,
+        isPrivate: false,
+        metadata: {
+          width: uploadResult.width,
+          height: uploadResult.height,
+          format: uploadResult.format,
+          resourceType: uploadResult.resourceType,
+          sourceUrl: url,
+        },
+      },
+      trx ? { client: trx } : undefined
+    )
+  }
+
+  /** Turn Cloudinary's fetch error into something staff can act on. */
+  static importErrorMessage(reason: string): string {
+    if (/HTML response/i.test(reason)) {
+      return 'That link opens a web page, not an image. Right-click the image and choose “Copy image address”.'
+    }
+    if (/format/i.test(reason)) {
+      return 'That link is not a supported image. Use a JPG, PNG or WebP image.'
+    }
+    if (/\b(401|403|429)\b/.test(reason)) {
+      return 'That website does not allow its images to be copied. Download the image and upload it instead.'
+    }
+    if (/not found|DNS/i.test(reason)) {
+      return 'Nothing was found at that link. Check it is complete and still works.'
+    }
+    return 'We could not get an image from that link. Try again, or download the image and upload it.'
+  }
+
+  /** "https://x.com/a/red%20car.png?w=2" -> "red car.png" */
+  private static nameFromUrl(url: string, format: string): string {
+    let name = ''
+    try {
+      name = decodeURIComponent(new URL(url).pathname.split('/').pop() ?? '')
+    } catch {}
+    name = name.trim().slice(0, 200)
+    return name || `image-from-link.${format}`
   }
 
   /**

@@ -33,6 +33,15 @@ Content-Type: image/jpeg
 ###
 @fileId = {{uploadPhoto.response.body.$.data.id}}
 
+### 1b. Import a public image from a link (copied into our storage, not hotlinked)
+# purpose: car_photo | category_image | business_logo. Attach the returned id like an upload.
+# Some sites (e.g. Wikimedia) block copying - the 422 message tells staff to download + upload.
+POST {{baseUrl}}/admin/files/import
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1600", "purpose": "car_photo" }
+
 ### 2. Get file details
 GET {{baseUrl}}/admin/files/{{fileId}}
 Authorization: Bearer {{token}}

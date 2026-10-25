@@ -4,7 +4,7 @@ import Role from '#models/role'
 import Permission from '#models/permission'
 import User from '#models/user'
 import File from '#models/file'
-import FileService from '#services/file_service'
+import FileService, { ImageImportError } from '#services/file_service'
 import AuditLog from '#models/audit_log'
 import path from 'node:path'
 import fs from 'node:fs'
@@ -153,7 +153,7 @@ test.group('files / upload and signed URLs', (group) => {
     const upload = await client
       .post('/api/v1/admin/files/upload')
       .file('file', tempFilePath, { filename: 'ghana_card.jpg', contentType: 'image/jpeg' })
-      .fields({ purpose: 'id_front' })
+      .fields({ purpose: 'id_front' as any })
       .loginAs(owner)
 
     upload.assertStatus(201)
@@ -218,5 +218,101 @@ test.group('files / upload and signed URLs', (group) => {
     assert.equal(audit.subjectId, fileId)
 
     fs.unlinkSync(tempFilePath)
+  })
+})
+
+test.group('files / import from a link', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  group.setup(() => {
+    FileService.setMockUrlImporter(async (url, options) => {
+      if (url.includes('not-an-image')) {
+        throw new ImageImportError(
+          'That link is not a supported image. Use a JPG, PNG or WebP image.'
+        )
+      }
+      return {
+        url: `https://res.cloudinary.com/test/${options.purpose}/imported.jpg`,
+        publicId: `wynk/${options.purpose}/imported`,
+        width: 1600,
+        height: 900,
+        format: 'jpg',
+        bytes: 120_000,
+        resourceType: 'image',
+      }
+    })
+  })
+
+  group.teardown(() => {
+    FileService.setMockUrlImporter(null)
+  })
+
+  test('imports an image link into our storage and audits it', async ({ client, assert }) => {
+    const { owner } = await setup()
+    const sourceUrl = 'https://images.example.com/fleet/land%20cruiser.jpg?w=2000'
+
+    const response = await client
+      .post('/api/v1/admin/files/import')
+      .json({ url: sourceUrl, purpose: 'car_photo' })
+      .loginAs(owner)
+
+    response.assertStatus(201)
+    const body = json(response)
+    assert.equal(body.message, 'Image imported successfully')
+    // Served from our storage, not hotlinked from the source
+    assert.include(body.data.url, 'res.cloudinary.com')
+    assert.equal(body.data.originalName, 'land cruiser.jpg')
+    assert.equal(body.data.mime, 'image/jpeg')
+    assert.isFalse(body.data.isPrivate)
+    assert.equal(body.data.metadata.sourceUrl, sourceUrl)
+
+    const audit = await AuditLog.findByOrFail('action', 'file.imported')
+    assert.equal(audit.subjectId, body.data.id)
+  })
+
+  test('an imported image can be attached as a car photo', async ({ client, assert }) => {
+    const { owner } = await setup()
+    const imported = await client
+      .post('/api/v1/admin/files/import')
+      .json({ url: 'https://images.example.com/car.png', purpose: 'car_photo' })
+      .loginAs(owner)
+    imported.assertStatus(201)
+
+    const file = await File.findOrFail(json(imported).data.id)
+    assert.equal(file.purpose, 'car_photo')
+    assert.isNull(file.attachableId)
+  })
+
+  test('rejects links that are not http(s) and private purposes', async ({ client }) => {
+    const { owner } = await setup()
+
+    for (const url of ['ftp://example.com/car.jpg', 'file:///etc/passwd', 'not a link']) {
+      const response = await client
+        .post('/api/v1/admin/files/import')
+        .json({ url, purpose: 'car_photo' })
+        .loginAs(owner)
+      response.assertStatus(422)
+    }
+
+    // ID scans and documents must be uploaded from the device, never pulled from a link
+    const privatePurpose = await client
+      .post('/api/v1/admin/files/import')
+      .json({ url: 'https://images.example.com/card.jpg', purpose: 'id_front' as any })
+      .loginAs(owner)
+    privatePurpose.assertStatus(422)
+  })
+
+  test('explains when the link is not an image and stores nothing', async ({ client, assert }) => {
+    const { owner } = await setup()
+
+    const response = await client
+      .post('/api/v1/admin/files/import')
+      .json({ url: 'https://example.com/not-an-image.html', purpose: 'car_photo' })
+      .loginAs(owner)
+
+    response.assertStatus(422)
+    assert.include(json(response).message, 'not a supported image')
+    const files = await File.all()
+    assert.lengthOf(files, 0)
   })
 })

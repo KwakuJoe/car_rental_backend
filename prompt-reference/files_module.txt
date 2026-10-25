@@ -44,18 +44,27 @@ SERVICE API (FileService)
   Options: { purpose, uploadedBy?, attachableType?, attachableId?, isPrivate?, folder? }
   Uploads to Cloudinary (with quality/auto, fetch_format/auto and width/height limit 1920x1080 for images;
   raw/auto for PDFs), records in the `files` table, returns `File` model.
+- `FileService.importFromUrl(url, options, trx?)`
+  Copies a public image from a pasted http(s) link into Cloudinary (same resize as uploads,
+  formats limited to IMAGE_EXTENSIONS). Cloudinary fetches the link, so our server never requests
+  user-supplied addresses (no SSRF). Throws `ImageImportError` (staff-safe message) when the link
+  is unreachable or not an image. The source link is kept in `metadata.sourceUrl`.
 - `FileService.getUrl(file, { expiresInSeconds? })`
   Returns the direct CDN URL for public files, or generates a signed URL with expiration for private files.
 - `FileService.attach(fileId, attachableType, attachableId, trx?)`
   Attaches an unattached file to a parent model.
 - `FileService.delete(file, trx?)`
   Destroys the asset on Cloudinary and deletes the record from `files`.
-- Testing: `FileService.setMockUploader(mockFn)` allows deterministic offline testing in Japa without API calls.
+- Testing: `FileService.setMockUploader(mockFn)` and `FileService.setMockUrlImporter(mockFn)` allow deterministic offline testing in Japa without API calls.
 
 
 ENDPOINTS
 ---------
 POST   /api/v1/admin/files/upload   Multipart: file + purpose (optional attachableType, attachableId, isPrivate)
+POST   /api/v1/admin/files/import   JSON: { url, purpose } - purpose car_photo | category_image |
+                                    business_logo only (private documents must come from the device).
+                                    422 with a readable message if the link is not an image.
+                                    Returns the same file record as upload; attach it the same way.
 GET    /api/v1/admin/files/:id      File record details
 GET    /api/v1/admin/files/:id/url  Accessible URL (signed if private, CDN direct if public)
 DELETE /api/v1/admin/files/:id      Delete asset from Cloudinary and DB (audited)
@@ -64,5 +73,6 @@ DELETE /api/v1/admin/files/:id      Delete asset from Cloudinary and DB (audited
 AUDIT ACTIONS
 -------------
 file.uploaded           Recorded on creation
+file.imported           Recorded when an image is imported from a link (metadata.sourceUrl)
 file.viewed_signed_url  Recorded when staff request a signed URL for sensitive customer docs
 file.deleted            Recorded when a file is deleted

@@ -1,9 +1,13 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import File, { type FilePurpose } from '#models/file'
-import FileService from '#services/file_service'
+import FileService, { ImageImportError } from '#services/file_service'
 import AuditService from '#services/audit_service'
 import FileTransformer from '#transformers/file_transformer'
-import { uploadFileMetadataValidator, getSignedUrlValidator } from '#validators/file'
+import {
+  uploadFileMetadataValidator,
+  getSignedUrlValidator,
+  importFileFromUrlValidator,
+} from '#validators/file'
 import type User from '#models/user'
 
 async function canAccessPrivateFile(user: User, file: File): Promise<boolean> {
@@ -89,6 +93,51 @@ export default class FilesController {
 
     return response.created({
       message: 'File uploaded successfully',
+      data: new FileTransformer(fileRecord).toObject(),
+    })
+  }
+
+  /**
+   * Copy a public image from a pasted link into our storage (not hotlinked).
+   */
+  async importFromUrl(ctx: HttpContext) {
+    const { auth, request, response } = ctx
+    const user = auth.getUserOrFail()
+    const payload = await request.validateUsing(importFileFromUrlValidator)
+
+    let fileRecord: File
+    try {
+      fileRecord = await FileService.importFromUrl(payload.url, {
+        purpose: payload.purpose,
+        uploadedBy: user.id,
+        attachableType: payload.attachableType ?? null,
+        attachableId: payload.attachableId ?? null,
+      })
+    } catch (error) {
+      if (error instanceof ImageImportError) {
+        return response.unprocessableEntity({
+          message: error.message,
+          errors: [{ field: 'url', rule: 'image_import', message: error.message }],
+        })
+      }
+      throw error
+    }
+
+    await AuditService.record(ctx, {
+      action: 'file.imported',
+      subject: { type: 'file', id: fileRecord.id, label: fileRecord.originalName },
+      after: {
+        id: fileRecord.id,
+        purpose: fileRecord.purpose,
+        originalName: fileRecord.originalName,
+        mime: fileRecord.mime,
+        size: Number(fileRecord.size),
+      },
+      metadata: { sourceUrl: payload.url },
+    })
+
+    return response.created({
+      message: 'Image imported successfully',
       data: new FileTransformer(fileRecord).toObject(),
     })
   }
