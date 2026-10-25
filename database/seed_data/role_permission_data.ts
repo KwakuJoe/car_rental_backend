@@ -103,6 +103,26 @@ export const permissionData = [
     group: 'fleet',
     description: 'Create and update categories, cars, photos, odometer corrections, and status',
   },
+
+  // pricing
+  {
+    name: 'View pricing',
+    slug: 'pricing.view',
+    group: 'pricing',
+    description: 'See rates, price rules, protection plans, delivery zones and fees',
+  },
+  {
+    name: 'Manage pricing',
+    slug: 'pricing.manage',
+    group: 'pricing',
+    description: 'Change rates, price rules, protection plans, delivery zones and fees',
+  },
+  {
+    name: 'Manage extras',
+    slug: 'extras.manage',
+    group: 'pricing',
+    description: 'Add and change rental extras (child seats, extra driver, GPS, ...)',
+  },
 ]
 
 // ── Role → Permission mapping ──────────────────────────────────
@@ -112,9 +132,18 @@ export const permissionData = [
 // prompt-reference/modules.txt).
 export const rolePermissionMap: Record<string, string[]> = {
   'owner': [], // isSuperAdmin - all permissions implicitly granted
-  'manager': ['users.manage', 'settings.manage', 'audit.view', 'fleet.view', 'fleet.manage'],
-  'front-desk': ['fleet.view'],
-  'fleet': ['fleet.view', 'fleet.manage'],
+  'manager': [
+    'users.manage',
+    'settings.manage',
+    'audit.view',
+    'fleet.view',
+    'fleet.manage',
+    'pricing.view',
+    'pricing.manage',
+    'extras.manage',
+  ],
+  'front-desk': ['fleet.view', 'pricing.view'],
+  'fleet': ['fleet.view', 'fleet.manage', 'pricing.view'],
   'driver': [],
   'accountant': ['audit.view'],
 }

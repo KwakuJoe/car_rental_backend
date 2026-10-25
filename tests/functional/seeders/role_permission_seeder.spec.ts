@@ -27,9 +27,12 @@ test.group('role_permission_seeder', (group) => {
       permissions.map((permission) => permission.slug),
       [
         'audit.view',
+        'extras.manage',
         'fleet.manage',
         'fleet.view',
         'permissions.manage',
+        'pricing.manage',
+        'pricing.view',
         'roles.manage',
         'settings.manage',
         'users.manage',
@@ -40,7 +43,16 @@ test.group('role_permission_seeder', (group) => {
     await manager.load('permissions')
     assert.sameMembers(
       manager.permissions.map((permission) => permission.slug),
-      ['users.manage', 'settings.manage', 'audit.view', 'fleet.view', 'fleet.manage']
+      [
+        'users.manage',
+        'settings.manage',
+        'audit.view',
+        'fleet.view',
+        'fleet.manage',
+        'pricing.view',
+        'pricing.manage',
+        'extras.manage',
+      ]
     )
   })
 
@@ -56,7 +68,7 @@ test.group('role_permission_seeder', (group) => {
     await frontDesk.load('permissions')
     assert.sameMembers(
       frontDesk.permissions.map((permission) => permission.slug),
-      ['fleet.view', 'roles.manage']
+      ['fleet.view', 'pricing.view', 'roles.manage']
     )
   })
 })

@@ -445,6 +445,55 @@ export class RateLimitSchema extends BaseModel {
   declare points: number
 }
 
+export class RatePlanSchema extends BaseModel {
+  static $columns = ['active', 'carId', 'categoryId', 'createdAt', 'createdBy', 'dailyAmount', 'driveType', 'driverHoursPerDay', 'driverOvernightAmount', 'driverOvertimeHourAmount', 'effectiveFrom', 'effectiveTo', 'excessKmAmount', 'fuelIncluded', 'id', 'includedKmPerDay', 'mileageMode', 'monthlyAmount', 'notes', 'outOfTownDailyAmount', 'updatedAt', 'weeklyAmount'] as const
+  $columns = RatePlanSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare carId: string | null
+  @column()
+  declare categoryId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare dailyAmount: number
+  @column()
+  declare driveType: string
+  @column()
+  declare driverHoursPerDay: number | null
+  @column()
+  declare driverOvernightAmount: number | null
+  @column()
+  declare driverOvertimeHourAmount: number | null
+  @column.date()
+  declare effectiveFrom: DateTime | null
+  @column.date()
+  declare effectiveTo: DateTime | null
+  @column()
+  declare excessKmAmount: number | null
+  @column()
+  declare fuelIncluded: boolean
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare includedKmPerDay: number | null
+  @column()
+  declare mileageMode: string
+  @column()
+  declare monthlyAmount: number | null
+  @column()
+  declare notes: string | null
+  @column()
+  declare outOfTownDailyAmount: number | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare weeklyAmount: number | null
+}
+
 export class RolePermissionSchema extends BaseModel {
   static $columns = ['createdAt', 'permissionId', 'roleId', 'updatedAt'] as const
   $columns = RolePermissionSchema.$columns

@@ -98,6 +98,12 @@ export interface ApiDefinition {
       update: typeof routes['admin.vehicle_documents.update']
       destroy: typeof routes['admin.vehicle_documents.destroy']
     }
+    ratePlans: {
+      index: typeof routes['admin.rate_plans.index']
+      show: typeof routes['admin.rate_plans.show']
+      store: typeof routes['admin.rate_plans.store']
+      update: typeof routes['admin.rate_plans.update']
+    }
     settings: {
       index: typeof routes['admin.settings.index']
       update: typeof routes['admin.settings.update']

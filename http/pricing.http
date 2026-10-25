@@ -1,0 +1,90 @@
+# Pricing: rates (M2.5). See prompt-reference/pricing_module.txt
+# Money is integer pesewas (GHS 450.00 = 45000).
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### Pick a category to price
+# @name categories
+GET {{baseUrl}}/admin/lookups/categories
+Authorization: Bearer {{token}}
+
+###
+@categoryId = {{categories.response.body.$.data[0].id}}
+
+### 1. List rates (filters: categoryId, carId, driveType, active, scope=category|car)
+GET {{baseUrl}}/admin/rate-plans?scope=category
+Authorization: Bearer {{token}}
+
+### 2. Self-drive rate for a category: GHS 450/day, 2,800/week, 10,500/month, unlimited km
+# @name createRate
+POST {{baseUrl}}/admin/rate-plans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "categoryId": "{{categoryId}}",
+  "driveType": "self_drive",
+  "dailyAmount": 45000,
+  "weeklyAmount": 280000,
+  "monthlyAmount": 1050000,
+  "mileageMode": "unlimited"
+}
+
+###
+@rateId = {{createRate.response.body.$.data.id}}
+
+### 3. Chauffeur rate: in town 650/day, out of town 900/day, GHS 200 driver night allowance,
+###    12h driver day then GHS 50/hour overtime, fuel not included
+POST {{baseUrl}}/admin/rate-plans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "categoryId": "{{categoryId}}",
+  "driveType": "chauffeur",
+  "dailyAmount": 65000,
+  "outOfTownDailyAmount": 90000,
+  "driverOvernightAmount": 20000,
+  "driverHoursPerDay": 12,
+  "driverOvertimeHourAmount": 5000,
+  "fuelIncluded": false
+}
+
+### 4. Schedule a price change: end the current rate on 31 Dec (PUT sends the full rate)...
+PUT {{baseUrl}}/admin/rate-plans/{{rateId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "categoryId": "{{categoryId}}",
+  "driveType": "self_drive",
+  "dailyAmount": 45000,
+  "weeklyAmount": 280000,
+  "monthlyAmount": 1050000,
+  "mileageMode": "unlimited",
+  "effectiveTo": "2026-12-31"
+}
+
+### 5. ...and add the new one from 1 Jan (409 E_RATE_OVERLAP if the dates overlap)
+POST {{baseUrl}}/admin/rate-plans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "categoryId": "{{categoryId}}",
+  "driveType": "self_drive",
+  "dailyAmount": 50000,
+  "mileageMode": "limited",
+  "includedKmPerDay": 200,
+  "excessKmAmount": 150,
+  "effectiveFrom": "2027-01-01"
+}

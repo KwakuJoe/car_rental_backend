@@ -360,6 +360,30 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"cars"],[1,"carId"],[0,"documents"],[1,"id"]],
     types: placeholder as Registry['admin.vehicle_documents.destroy']['types'],
   },
+  'admin.rate_plans.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/rate-plans',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"rate-plans"]],
+    types: placeholder as Registry['admin.rate_plans.index']['types'],
+  },
+  'admin.rate_plans.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/rate-plans/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"rate-plans"],[1,"id"]],
+    types: placeholder as Registry['admin.rate_plans.show']['types'],
+  },
+  'admin.rate_plans.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/rate-plans',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"rate-plans"]],
+    types: placeholder as Registry['admin.rate_plans.store']['types'],
+  },
+  'admin.rate_plans.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/rate-plans/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"rate-plans"],[1,"id"]],
+    types: placeholder as Registry['admin.rate_plans.update']['types'],
+  },
   'admin.settings.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/settings',

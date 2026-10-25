@@ -18,6 +18,7 @@ export const controllers = {
     Notifications: () => import('#controllers/admin/notifications_controller'),
     OpeningHours: () => import('#controllers/admin/opening_hours_controller'),
     Permissions: () => import('#controllers/admin/permissions_controller'),
+    RatePlans: () => import('#controllers/admin/rate_plans_controller'),
     Roles: () => import('#controllers/admin/roles_controller'),
     Settings: () => import('#controllers/admin/settings_controller'),
     Users: () => import('#controllers/admin/users_controller'),

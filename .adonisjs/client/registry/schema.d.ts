@@ -774,6 +774,58 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['destroy']>>>
     }
   }
+  'admin.rate_plans.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/rate-plans'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['index']>>>
+    }
+  }
+  'admin.rate_plans.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/rate-plans/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['show']>>>
+    }
+  }
+  'admin.rate_plans.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/rate-plans'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['store']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['store']>>>
+    }
+  }
+  'admin.rate_plans.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/rate-plans/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['update']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['update']>>>
+    }
+  }
   'admin.settings.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/settings'
