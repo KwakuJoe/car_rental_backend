@@ -18,8 +18,10 @@ export default class RatePlanFilter extends BaseFilter<typeof RatePlan> {
     if (this.get('scope') === 'category') this.query = this.query.whereNull('car_id') as any
     if (this.get('scope') === 'car') this.query = this.query.whereNotNull('car_id') as any
 
-    // Category plans first, then car overrides; newest dates first within each
+    // Grouped by category name; within it the category plans before car overrides,
+    // by drive type, then newest start date first
     this.query = this.query
+      .orderByRaw('(SELECT name FROM categories WHERE categories.id = rate_plans.category_id)')
       .orderByRaw('car_id IS NOT NULL')
       .orderBy('drive_type', 'asc')
       .orderByRaw('effective_from DESC NULLS LAST') as any
