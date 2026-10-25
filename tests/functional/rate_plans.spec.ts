@@ -234,11 +234,21 @@ test.group('rate plans', (group) => {
     chauffeur.assertStatus(201)
   })
 
-  test('front desk can view rates but not change them; drivers see nothing', async ({ client }) => {
+  test('front desk can view rates but not change them; drivers see nothing', async ({
+    client,
+    assert,
+  }) => {
     const { desk, driver, economy } = await setup()
 
     const list = await client.get('/api/v1/admin/rate-plans').loginAs(desk)
     list.assertStatus(200)
+    // The settings rates depend on, readable without settings.manage
+    assert.deepEqual(json(list).context, {
+      weeklyThresholdDays: 7,
+      monthlyThresholdDays: 28,
+      mileagePolicy: 'unlimited',
+      dailyKmAllowance: 200,
+    })
 
     const create = await client
       .post('/api/v1/admin/rate-plans')
@@ -277,18 +287,21 @@ test.group('RateService.resolve', (group) => {
       dailyAmount: 60000,
     })
 
-    const resolve = (carId: string | null, day: string) =>
-      RateService.resolve({
+    // Daily price of the plan that applies to a car (or the category) on a day
+    const priceOn = async (carId: string | null, day: string) => {
+      const plan = await RateService.resolve({
         categoryId: economy.id,
         carId,
         driveType: 'self_drive',
         on: DateTime.fromISO(day),
       })
+      return plan?.dailyAmount
+    }
 
-    assert.equal((await resolve(car.id, '2026-11-01'))?.dailyAmount, 60000)
-    assert.equal((await resolve(otherCar.id, '2026-11-01'))?.dailyAmount, 45000)
-    assert.equal((await resolve(otherCar.id, '2027-02-01'))?.dailyAmount, 50000)
-    assert.equal((await resolve(null, '2026-12-31'))?.dailyAmount, 45000)
+    assert.equal(await priceOn(car.id, '2026-11-01'), 60000)
+    assert.equal(await priceOn(otherCar.id, '2026-11-01'), 45000)
+    assert.equal(await priceOn(otherCar.id, '2027-02-01'), 50000)
+    assert.equal(await priceOn(null, '2026-12-31'), 45000)
     assert.isNull(
       await RateService.resolve({
         categoryId: economy.id,

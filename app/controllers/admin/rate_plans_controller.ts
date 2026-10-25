@@ -6,6 +6,7 @@ import RatePlan from '#models/rate_plan'
 import RatePlanFilter from '#filters/rate_plan_filter'
 import RatePlanTransformer from '#transformers/rate_plan_transformer'
 import AuditService from '#services/audit_service'
+import SettingsService from '#services/settings/settings_service'
 import {
   createRatePlanValidator,
   ratePlanFilterValidator,
@@ -127,6 +128,14 @@ export default class RatePlansController {
       message: 'Rate plans fetched successfully',
       data: plans.all().map((plan) => new RatePlanTransformer(plan).toObject()),
       meta: plans.getMeta(),
+      // The business rules rates depend on - shown on the rates page to anyone
+      // with pricing.view (Settings itself needs settings.manage).
+      context: {
+        weeklyThresholdDays: await SettingsService.get('pricing.weekly_threshold_days'),
+        monthlyThresholdDays: await SettingsService.get('pricing.monthly_threshold_days'),
+        mileagePolicy: await SettingsService.get('rental.mileage_policy'),
+        dailyKmAllowance: await SettingsService.get('rental.daily_km_allowance'),
+      },
     })
   }
 

@@ -19,7 +19,7 @@ daily_amount     price per day (required, > 0)
 weekly_amount    price for 7 days, used from settings pricing.weekly_threshold_days
                  (default 7); null = daily price applies
 monthly_amount   price for 30 days, used from pricing.monthly_threshold_days (default
-                 30); null = weekly (or daily) applies
+                 28); null = weekly (or daily) applies
 mileage_mode     default (business setting rental.mileage_policy +
                  rental.daily_km_allowance) | unlimited | limited
 included_km_per_day, excess_km_amount   limited only (both required then)
@@ -46,6 +46,9 @@ RateService.resolve({ categoryId, carId?, driveType, on }) -> plan | null
 Endpoints
 GET  /api/v1/admin/rate-plans       pricing.view  filters: categoryId, carId, driveType,
                                                   active, scope (category | car), page, limit
+                                     response also has `context`: weeklyThresholdDays,
+                                     monthlyThresholdDays, mileagePolicy, dailyKmAllowance
+                                     (the settings rates depend on, for the rates page)
 GET  /api/v1/admin/rate-plans/:id   pricing.view
 POST /api/v1/admin/rate-plans       pricing.manage
 PUT  /api/v1/admin/rate-plans/:id   pricing.manage (full payload)

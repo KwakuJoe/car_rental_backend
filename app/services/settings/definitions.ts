@@ -152,7 +152,7 @@ export const settingDefinitions = {
     group: 'rental',
     type: 'enum',
     label: 'Mileage',
-    description: 'Default mileage terms (rates can override per category later).',
+    description: 'Default mileage terms. A rate can override this for a category or car.',
     default: 'unlimited',
     options: [
       { value: 'unlimited', label: 'Unlimited', description: 'No limit on kilometres driven.' },
