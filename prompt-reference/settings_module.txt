@@ -82,6 +82,8 @@ Current keys (group - key - default):
   pricing   pricing.weekly_threshold_days 7,
             pricing.monthly_threshold_days 28,
             pricing.display_tax_inclusive true
+Enum options are { value, label, description? } - keep label short (the
+closed dropdown shows it), put the explanation in description.
 Adding a rule = add it to definitions.ts (no migration); it appears in
 GET /admin/settings and the Settings > Business rules tab automatically.
 Cancellation tiers (Phase 3) and rental terms (Phase 4) arrive with

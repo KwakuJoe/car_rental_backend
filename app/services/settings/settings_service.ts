@@ -4,6 +4,7 @@ import {
   isSettingKey,
   settingDefinitions,
   type SettingDefinition,
+  type SettingOption,
   type SettingKey,
   type SettingValue,
 } from '#services/settings/definitions'
@@ -20,7 +21,7 @@ export type SettingView = {
   min?: number
   max?: number
   unit?: string
-  options?: readonly { value: string; label: string }[]
+  options?: readonly SettingOption[]
 }
 
 /** Returns an error message, or null when the value is valid for the definition. */

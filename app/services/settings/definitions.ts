@@ -8,11 +8,14 @@
 
 type Base = { group: SettingGroup; label: string; description: string }
 
+/** Keep `label` short (it's what the closed dropdown shows); explain in `description`. */
+export type SettingOption = { value: string; label: string; description?: string }
+
 export type SettingDefinition =
   | (Base & { type: 'integer'; default: number; min: number; max: number; unit?: string })
   | (Base & { type: 'money'; default: number; min: number; max: number })
   | (Base & { type: 'boolean'; default: boolean })
-  | (Base & { type: 'enum'; default: string; options: readonly { value: string; label: string }[] })
+  | (Base & { type: 'enum'; default: string; options: readonly SettingOption[] })
 
 export const settingGroups = {
   bookings: 'Bookings',
@@ -133,8 +136,16 @@ export const settingDefinitions = {
     description: 'How fuel is charged at return.',
     default: 'full_to_full',
     options: [
-      { value: 'full_to_full', label: 'Full to full - picked up full, returned full' },
-      { value: 'same_to_same', label: 'Same to same - returned at the pickup level' },
+      {
+        value: 'full_to_full',
+        label: 'Full to full',
+        description: 'Picked up with a full tank, returned full.',
+      },
+      {
+        value: 'same_to_same',
+        label: 'Same to same',
+        description: 'Returned with the same fuel level it was picked up with.',
+      },
     ],
   },
   'rental.mileage_policy': {
@@ -144,8 +155,12 @@ export const settingDefinitions = {
     description: 'Default mileage terms (rates can override per category later).',
     default: 'unlimited',
     options: [
-      { value: 'unlimited', label: 'Unlimited mileage' },
-      { value: 'daily_allowance', label: 'Daily allowance, excess charged per km' },
+      { value: 'unlimited', label: 'Unlimited', description: 'No limit on kilometres driven.' },
+      {
+        value: 'daily_allowance',
+        label: 'Daily allowance',
+        description: 'A set number of free km per day; extra km are charged.',
+      },
     ],
   },
   'rental.daily_km_allowance': {
@@ -175,8 +190,8 @@ export const settingDefinitions = {
     description: 'How the reservation fee for pay-at-pickup bookings is worked out.',
     default: 'percent',
     options: [
-      { value: 'percent', label: 'Percentage of the booking total' },
-      { value: 'fixed', label: 'Fixed amount' },
+      { value: 'percent', label: 'Percentage', description: 'A percentage of the booking total.' },
+      { value: 'fixed', label: 'Fixed amount', description: 'The same amount for every booking.' },
     ],
   },
   'payment.reservation_fee_percent': {
