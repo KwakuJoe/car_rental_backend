@@ -319,6 +319,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['upload']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.files.import_from_url': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/files/import'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/file').importFileFromUrlValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/file').importFileFromUrlValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['importFromUrl']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['importFromUrl']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['importFromUrl']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.files.show': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/files/:id'

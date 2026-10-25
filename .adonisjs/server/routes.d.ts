@@ -28,6 +28,7 @@ export type ScannedRoutes = {
     'admin.lookups.lookups.staff': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.categories': { paramsTuple?: []; params?: {} }
     'admin.files.upload': { paramsTuple?: []; params?: {} }
+    'admin.files.import_from_url': { paramsTuple?: []; params?: {} }
     'admin.files.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.files.signed_url': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.files.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -153,6 +154,7 @@ export type ScannedRoutes = {
     'admin.users.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.roles.store': { paramsTuple?: []; params?: {} }
     'admin.files.upload': { paramsTuple?: []; params?: {} }
+    'admin.files.import_from_url': { paramsTuple?: []; params?: {} }
     'admin.notifications.mark_all_read': { paramsTuple?: []; params?: {} }
     'admin.categories.store': { paramsTuple?: []; params?: {} }
     'admin.cars.store': { paramsTuple?: []; params?: {} }

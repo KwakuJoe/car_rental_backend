@@ -150,6 +150,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"files"],[0,"upload"]],
     types: placeholder as Registry['admin.files.upload']['types'],
   },
+  'admin.files.import_from_url': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/files/import',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"files"],[0,"import"]],
+    types: placeholder as Registry['admin.files.import_from_url']['types'],
+  },
   'admin.files.show': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/files/:id',

@@ -52,6 +52,7 @@ export interface ApiDefinition {
     }
     files: {
       upload: typeof routes['admin.files.upload']
+      importFromUrl: typeof routes['admin.files.import_from_url']
       show: typeof routes['admin.files.show']
       signedUrl: typeof routes['admin.files.signed_url']
       destroy: typeof routes['admin.files.destroy']
