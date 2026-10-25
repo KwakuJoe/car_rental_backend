@@ -58,11 +58,21 @@ Update this list as modules land.
   [x] M1.5  file storage: Cloudinary integration, files table, polymorphic
             attachments, FileService, signed URLs for private documents (Act 843),
             upload/show/url/delete endpoints, audited
-  [x] M2.1  categories: categories table, daily rates, specifications,
-            sort order, activation, lookup, audited
+  [x] M2.1  categories: name/slug, seats, default deposit (pesewas),
+            self-drive allowed, min driver age override, sort order, active
+            (rates are M2.5 - categories hold no prices yet)
   [x] M2.2  cars: cars, car_photos, odometer_logs tables, CRUD, specifications,
             status changes with audit, odometer tracking/corrections, photo gallery
-  [ ] M1.6  jobs/scheduler, M1.7 numbering, M1.8 in-app notifications
+  [x] M2.3  car blocks on car_allocations (Postgres exclusion constraint, the
+            M3.4 foundation) - AvailabilityService
+  [x] M2.4  vehicle documents + compliance summary; daily expiry alerts
+            (30/14/7/1 days + expiry day, current document per type only, once
+            per document+milestone via notifications.dedupe_key)
+  [x] M1.8  in-app notifications (bell, mark read)
+  [~] M1.6  scheduling via system cron calling ace commands (see
+            setup_command.txt "SCHEDULED JOBS") - a queue for slow work
+            (PDFs, SMS) still to come with Phase 4/6
+  [ ] M1.7  document numbering - with bookings/invoices
 
 
 PHASE OVERVIEW

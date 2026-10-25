@@ -1,8 +1,15 @@
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import type VehicleDocument from '#models/vehicle_document'
+import FileService from '#services/file_service'
 
 export default class VehicleDocumentTransformer extends BaseTransformer<VehicleDocument> {
   toObject() {
+    // Always go through FileService: private documents need a signed URL,
+    // the stored URL alone doesn't open.
+    const fileUrl = this.resource.file
+      ? (this.resource.$extras?.signedUrl ?? FileService.getUrl(this.resource.file))
+      : null
+
     return {
       id: this.resource.id,
       carId: this.resource.carId,
@@ -24,10 +31,10 @@ export default class VehicleDocumentTransformer extends BaseTransformer<VehicleD
             originalName: this.resource.file.originalName,
             mime: this.resource.file.mime,
             size: Number(this.resource.file.size),
-            url: this.resource.$extras?.signedUrl ?? this.resource.file.url,
+            url: fileUrl,
           }
         : null,
-      signedUrl: this.resource.$extras?.signedUrl ?? null,
+      signedUrl: fileUrl,
       creator: this.resource.creator
         ? {
             id: this.resource.creator.id,

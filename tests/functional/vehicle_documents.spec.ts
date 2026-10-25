@@ -298,4 +298,78 @@ test.group('fleet / vehicle documents & expiry alerts (M2.4)', (group) => {
 
     res.assertStatus(403)
   })
+  test('expiry alerts: a renewed document stops the old one alerting', async ({ assert }) => {
+    const { car } = await setupFixture()
+    // Old policy expired 14 days ago... and its renewal expires in 14 days.
+    await VehicleDocument.create({
+      carId: car.id,
+      type: 'insurance',
+      documentNumber: 'INS-OLD',
+      expiresOn: DateTime.now().minus({ days: 14 }) as any,
+    })
+    await VehicleDocument.create({
+      carId: car.id,
+      type: 'insurance',
+      documentNumber: 'INS-NEW',
+      expiresOn: DateTime.now().plus({ days: 14 }) as any,
+    })
+
+    const result = await DocumentComplianceService.checkAndAlertExpiringDocuments()
+    assert.equal(result.alertsCreated, 1)
+    const keys = await Notification.query().distinct('dedupe_key').whereNotNull('dedupe_key')
+    assert.lengthOf(keys, 1)
+    assert.match(keys[0].dedupeKey!, /:expires-in-14$/)
+  })
+
+  test('expiry alerts: two documents of one car on the same day both alert', async ({ assert }) => {
+    const { car } = await setupFixture()
+    for (const type of ['insurance', 'roadworthy'] as const) {
+      await VehicleDocument.create({
+        carId: car.id,
+        type,
+        documentNumber: `${type}-7`,
+        expiresOn: DateTime.now().plus({ days: 7 }) as any,
+      })
+    }
+
+    const result = await DocumentComplianceService.checkAndAlertExpiringDocuments()
+    assert.equal(result.alertsCreated, 2)
+  })
+
+  test('expiry alerts: running twice the same day sends nothing new', async ({ assert }) => {
+    const { car } = await setupFixture()
+    await VehicleDocument.create({
+      carId: car.id,
+      type: 'roadworthy',
+      documentNumber: 'RW-1',
+      expiresOn: DateTime.now().plus({ days: 1 }) as any,
+    })
+
+    const first = await DocumentComplianceService.checkAndAlertExpiringDocuments()
+    const second = await DocumentComplianceService.checkAndAlertExpiringDocuments()
+    assert.equal(first.alertsCreated, 1)
+    assert.equal(second.alertsCreated, 0)
+  })
+
+  test('expiry alerts: only milestones fire - not every day after expiry', async ({ assert }) => {
+    const { car } = await setupFixture()
+    await VehicleDocument.create({
+      carId: car.id,
+      type: 'insurance',
+      documentNumber: 'INS-EXPIRED-3',
+      expiresOn: DateTime.now().minus({ days: 3 }) as any,
+    })
+    await VehicleDocument.create({
+      carId: car.id,
+      type: 'roadworthy',
+      documentNumber: 'RW-TODAY',
+      expiresOn: DateTime.now() as any,
+    })
+
+    const result = await DocumentComplianceService.checkAndAlertExpiringDocuments()
+    assert.equal(result.alertsCreated, 1) // the expires-today one only
+    const notification = await Notification.query().whereNotNull('dedupe_key').firstOrFail()
+    assert.equal(notification.link, `/dashboard/cars/${car.id}?tab=documents`)
+    assert.include(notification.title, 'expires today')
+  })
 })

@@ -14,6 +14,8 @@ export default class NotificationService {
       title: string
       body: string
       link?: string | null
+      /** Event identity for scheduled alerts - see DocumentComplianceService. */
+      dedupeKey?: string | null
     },
     client?: TransactionClientContract
   ) {
@@ -26,6 +28,7 @@ export default class NotificationService {
       title: payload.title,
       body: payload.body,
       link: payload.link ?? null,
+      dedupeKey: payload.dedupeKey ?? null,
       readAt: null,
     }))
 
@@ -42,6 +45,8 @@ export default class NotificationService {
       title: string
       body: string
       link?: string | null
+      /** Event identity for scheduled alerts - see DocumentComplianceService. */
+      dedupeKey?: string | null
     },
     client?: TransactionClientContract
   ) {
@@ -78,6 +83,8 @@ export default class NotificationService {
       title: string
       body: string
       link?: string | null
+      /** Event identity for scheduled alerts - see DocumentComplianceService. */
+      dedupeKey?: string | null
     },
     client?: TransactionClientContract
   ) {

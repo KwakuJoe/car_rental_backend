@@ -120,20 +120,35 @@ export default class DocumentComplianceService {
   }
 
   /**
-   * Automated cron/scheduler check:
-   * Inspects documents and creates alerts for staff when approaching 30, 14, 7, 1, or 0 days.
+   * Daily expiry check (run by the scheduler - see setup_command.txt).
+   *
+   * - Only each car's CURRENT document per type counts (the one with the latest
+   *   expiry). A renewed policy's old, expired record never alerts again.
+   * - Alerts fire on exact milestones only - 30, 14, 7 and 1 day(s) before and on
+   *   the expiry day - not every day while something is expired.
+   * - Each (document, milestone) pair alerts once, however often the job runs,
+   *   via the notification's dedupe_key.
    */
   static async checkAndAlertExpiringDocuments(milestones = [30, 14, 7, 1, 0]): Promise<{
     checked: number
     alertsCreated: number
   }> {
     const today = DateTime.now().startOf('day')
-    const maxMilestone = Math.max(...milestones)
-    const threshold = today.plus({ days: maxMilestone }).toISODate()!
 
+    // Latest document per (car, type): expiry descending, then newest record.
     const documents = await VehicleDocument.query()
       .whereNotNull('expires_on')
-      .where('expires_on', '<=', threshold)
+      .whereIn(
+        'id',
+        VehicleDocument.query()
+          .select('id')
+          .distinctOn('car_id', 'type')
+          .whereNotNull('expires_on')
+          .orderBy('car_id')
+          .orderBy('type')
+          .orderBy('expires_on', 'desc')
+          .orderBy('created_at', 'desc')
+      )
       .preload('car')
 
     let alertsCreated = 0
@@ -145,37 +160,27 @@ export default class DocumentComplianceService {
         typeof doc.expiresOn === 'string'
           ? DateTime.fromISO(doc.expiresOn).startOf('day')
           : doc.expiresOn!.startOf('day')
+      const daysLeft = Math.round(expiry.diff(today, 'days').days)
+      if (!milestones.includes(daysLeft)) continue
 
-      const diffDays = Math.ceil(expiry.diff(today, 'days').days)
-
-      // Check if diff matches any milestone (or is already expired <= 0)
-      const matchedMilestone = milestones.find((m) => diffDays === m || (m === 0 && diffDays < 0))
-      if (matchedMilestone === undefined) continue
-
-      // Avoid spamming duplicate notification if already sent in last 24h for this document
-      const recentNotification = await Notification.query()
-        .where('type', 'document_expiring')
-        .where('link', `/dashboard/cars?carId=${doc.carId}&tab=documents`)
-        .where('created_at', '>=', today.minus({ hours: 24 }).toSQL()!)
-        .first()
-
-      if (recentNotification) continue
+      const dedupeKey = `document:${doc.id}:expires-in-${daysLeft}`
+      const alreadySent = await Notification.query().where('dedupe_key', dedupeKey).first()
+      if (alreadySent) continue
 
       const typeLabel = doc.type.replace(/_/g, ' ')
-      const isExpired = diffDays <= 0
-      const title = isExpired
-        ? `Expired Document: ${doc.car.registrationNo}`
-        : `Document Expiring Soon: ${doc.car.registrationNo}`
-
-      const body = isExpired
-        ? `${typeLabel} for ${doc.car.make} ${doc.car.model} (${doc.car.registrationNo}) expired on ${expiry.toISODate()}. Renew immediately.`
-        : `${typeLabel} for ${doc.car.make} ${doc.car.model} (${doc.car.registrationNo}) expires on ${expiry.toISODate()} (${diffDays} days remaining).`
+      const vehicle = `${doc.car.make} ${doc.car.model} (${doc.car.registrationNo})`
+      const expiresToday = daysLeft === 0
 
       await NotificationService.sendToPermission('fleet.manage', {
         type: 'document_expiring',
-        title,
-        body,
-        link: `/dashboard/cars?carId=${doc.carId}&tab=documents`,
+        title: expiresToday
+          ? `Document expires today: ${doc.car.registrationNo}`
+          : `Document expiring soon: ${doc.car.registrationNo}`,
+        body: expiresToday
+          ? `The ${typeLabel} for ${vehicle} expires today (${expiry.toISODate()}). Renew it before the car goes out.`
+          : `The ${typeLabel} for ${vehicle} expires on ${expiry.toISODate()} - ${daysLeft} day${daysLeft === 1 ? '' : 's'} left.`,
+        link: `/dashboard/cars/${doc.carId}?tab=documents`,
+        dedupeKey,
       })
 
       alertsCreated++

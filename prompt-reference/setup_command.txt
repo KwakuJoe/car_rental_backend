@@ -187,6 +187,21 @@ and can create staff accounts via POST /admin/users - new staff are
 assigned to the main branch automatically.
 
 
+SCHEDULED JOBS (required in production)
+------------------------------------------
+Timed work runs as ace commands from the server's cron (simple, survives
+restarts, no extra service). Add to the crontab of the user that runs the
+app (`crontab -e`), adjusting the path:
+
+  # Vehicle document expiry alerts - daily at 06:00 Africa/Accra (= UTC)
+  0 6 * * * cd /srv/car_rental_backend/build && node ace check:document-expiries >> storage/logs/cron.log 2>&1
+
+Each job is safe to re-run: alerts are de-duplicated per document and
+milestone (30/14/7/1 days and the expiry day), so a missed or doubled run
+never spams staff. New scheduled jobs (overdue rentals, hold expiry) get a
+line here as their modules are built.
+
+
 OTHER OPERATIONAL COMMANDS
 -------------------------------
 node ace password:reset <email>

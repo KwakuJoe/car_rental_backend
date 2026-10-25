@@ -349,12 +349,14 @@ export class FileSchema extends BaseModel {
 }
 
 export class NotificationSchema extends BaseModel {
-  static $columns = ['body', 'createdAt', 'id', 'link', 'readAt', 'title', 'type', 'updatedAt', 'userId'] as const
+  static $columns = ['body', 'createdAt', 'dedupeKey', 'id', 'link', 'readAt', 'title', 'type', 'updatedAt', 'userId'] as const
   $columns = NotificationSchema.$columns
   @column()
   declare body: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
+  @column()
+  declare dedupeKey: string | null
   @column({ isPrimary: true })
   declare id: string
   @column()
