@@ -1,0 +1,47 @@
+# File storage & signed URLs. See prompt-reference/files_module.txt
+# Backed by Cloudinary; handles public assets (car photos, category images) and private documents
+# (Ghana Card IDs, driving licences, vehicle documents, signatures) via short-lived signed URLs.
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### 1. Upload a public car photo (multipart/form-data)
+# @name uploadPhoto
+POST {{baseUrl}}/admin/files/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="purpose"
+
+car_photo
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="car_sample.jpg"
+Content-Type: image/jpeg
+
+< ./sample.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+@fileId = {{uploadPhoto.response.body.$.data.id}}
+
+### 2. Get file details
+GET {{baseUrl}}/admin/files/{{fileId}}
+Authorization: Bearer {{token}}
+
+### 3. Generate accessible URL (signed if private, CDN direct if public)
+# Query param: expiresInSeconds (default: 3600, range: 60 - 86400)
+GET {{baseUrl}}/admin/files/{{fileId}}/url?expiresInSeconds=3600
+Authorization: Bearer {{token}}
+
+### 4. Delete file (removes from Cloudinary and deletes database row)
+DELETE {{baseUrl}}/admin/files/{{fileId}}
+Authorization: Bearer {{token}}

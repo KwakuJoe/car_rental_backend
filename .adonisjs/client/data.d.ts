@@ -9,6 +9,7 @@ import type AuditLogTransformer from '#transformers/audit_log_transformer'
 import type BranchTransformer from '#transformers/branch_transformer'
 import type BusinessTransformer from '#transformers/business_transformer'
 import type ClosureDateTransformer from '#transformers/closure_date_transformer'
+import type FileTransformer from '#transformers/file_transformer'
 import type OpeningHourTransformer from '#transformers/opening_hour_transformer'
 import type PermissionTransformer from '#transformers/permission_transformer'
 import type RoleTransformer from '#transformers/role_transformer'
@@ -30,6 +31,10 @@ export namespace Data {
   export type ClosureDate = InferData<ClosureDateTransformer>
   export namespace ClosureDate {
     export type Variants = InferVariants<ClosureDateTransformer>
+  }
+  export type File = InferData<FileTransformer>
+  export namespace File {
+    export type Variants = InferVariants<FileTransformer>
   }
   export type OpeningHour = InferData<OpeningHourTransformer>
   export namespace OpeningHour {

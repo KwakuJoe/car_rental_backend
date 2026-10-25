@@ -1,0 +1,68 @@
+CAR RENTAL BACKEND — FILE STORAGE MODULE REFERENCE (M1.5)
+===========================================================
+Polymorphic file storage engine backed by Cloudinary (configured via CLOUDINARY_*
+env variables). Handles both public marketing assets (car photos, category images,
+business logo) and private compliance documents (Ghana Card scans, driving licences,
+vehicle documents, signatures, rental agreements) via short-lived signed delivery URLs.
+
+Runnable examples: http/files.http.
+
+
+DATA MODEL (files)
+------------------
+id              ULID
+disk            'cloudinary'
+path            Cloudinary public_id (e.g. 'wynk/car_photo/sample_abc123')
+url             Cloudinary secure delivery URL (direct CDN URL)
+originalName    Original uploaded filename
+mime            MIME type (e.g. 'image/jpeg', 'application/pdf')
+size            Integer bytes
+uploadedBy      Staff user ULID (nullable, references users.id ON DELETE SET NULL)
+attachableType  Polymorphic entity type ('car', 'category', 'vehicle_document', etc.)
+attachableId    Polymorphic entity ULID
+purpose         'car_photo' | 'category_image' | 'business_logo' | 'vehicle_document' |
+                'id_front' | 'id_back' | 'licence' | 'signature' | 'receipt_proof' | 'other'
+isPrivate       Boolean (defaults to true for identity/compliance docs)
+metadata        jsonb: { width, height, format, resourceType }
+createdAt, updatedAt
+
+
+SECURITY & PRIVACY (ACT 843 COMPLIANCE)
+---------------------------------------
+Under the Ghana Data Protection Act 2012 (Act 843):
+- Customer identity documents (id_front, id_back, licence) are never exposed via
+  unauthenticated public URLs.
+- Accessing signed URLs for identity documents requires `customers.view_documents`
+  (or superAdmin) and writes an audit log entry (`file.viewed_signed_url`).
+- Vehicle documents require `fleet.view` (or superAdmin) to generate signed URLs.
+- Signed URLs have a configurable expiry (default 1 hour / 3600 seconds).
+
+
+SERVICE API (FileService)
+-------------------------
+- `FileService.upload(file, options, trx?)`
+  Options: { purpose, uploadedBy?, attachableType?, attachableId?, isPrivate?, folder? }
+  Uploads to Cloudinary (with quality/auto, fetch_format/auto and width/height limit 1920x1080 for images;
+  raw/auto for PDFs), records in the `files` table, returns `File` model.
+- `FileService.getUrl(file, { expiresInSeconds? })`
+  Returns the direct CDN URL for public files, or generates a signed URL with expiration for private files.
+- `FileService.attach(fileId, attachableType, attachableId, trx?)`
+  Attaches an unattached file to a parent model.
+- `FileService.delete(file, trx?)`
+  Destroys the asset on Cloudinary and deletes the record from `files`.
+- Testing: `FileService.setMockUploader(mockFn)` allows deterministic offline testing in Japa without API calls.
+
+
+ENDPOINTS
+---------
+POST   /api/v1/admin/files/upload   Multipart: file + purpose (optional attachableType, attachableId, isPrivate)
+GET    /api/v1/admin/files/:id      File record details
+GET    /api/v1/admin/files/:id/url  Accessible URL (signed if private, CDN direct if public)
+DELETE /api/v1/admin/files/:id      Delete asset from Cloudinary and DB (audited)
+
+
+AUDIT ACTIONS
+-------------
+file.uploaded           Recorded on creation
+file.viewed_signed_url  Recorded when staff request a signed URL for sensitive customer docs
+file.deleted            Recorded when a file is deleted

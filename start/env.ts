@@ -38,4 +38,9 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   */
   LIMITER_STORE: Env.schema.enum(['database', 'memory'] as const),
+
+  // Cloudinary (file storage)
+  CLOUDINARY_CLOUD_NAME: Env.schema.string.optional(),
+  CLOUDINARY_API_KEY: Env.schema.string.optional(),
+  CLOUDINARY_API_SECRET: Env.schema.secret.optional(),
 })

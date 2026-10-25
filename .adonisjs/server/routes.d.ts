@@ -26,6 +26,10 @@ export type ScannedRoutes = {
     'admin.lookups.lookups.roles': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.branches': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.staff': { paramsTuple?: []; params?: {} }
+    'admin.files.upload': { paramsTuple?: []; params?: {} }
+    'admin.files.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.files.signed_url': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.files.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.settings.update': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
@@ -54,6 +58,8 @@ export type ScannedRoutes = {
     'admin.lookups.lookups.roles': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.branches': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.staff': { paramsTuple?: []; params?: {} }
+    'admin.files.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.files.signed_url': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
@@ -74,6 +80,8 @@ export type ScannedRoutes = {
     'admin.lookups.lookups.roles': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.branches': { paramsTuple?: []; params?: {} }
     'admin.lookups.lookups.staff': { paramsTuple?: []; params?: {} }
+    'admin.files.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.files.signed_url': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
@@ -88,6 +96,7 @@ export type ScannedRoutes = {
     'admin.users.store': { paramsTuple?: []; params?: {} }
     'admin.users.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.roles.store': { paramsTuple?: []; params?: {} }
+    'admin.files.upload': { paramsTuple?: []; params?: {} }
     'admin.branches.store': { paramsTuple?: []; params?: {} }
     'admin.closure_dates.store': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
   }
@@ -102,6 +111,7 @@ export type ScannedRoutes = {
   }
   DELETE: {
     'admin.roles.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.files.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.branches.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.closure_dates.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'branchId': ParamValue,'id': ParamValue} }
   }

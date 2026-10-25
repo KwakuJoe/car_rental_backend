@@ -171,6 +171,41 @@ export class ClosureDateSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class FileSchema extends BaseModel {
+  static $columns = ['attachableId', 'attachableType', 'createdAt', 'disk', 'id', 'isPrivate', 'metadata', 'mime', 'originalName', 'path', 'purpose', 'size', 'updatedAt', 'uploadedBy', 'url'] as const
+  $columns = FileSchema.$columns
+  @column()
+  declare attachableId: string | null
+  @column()
+  declare attachableType: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare disk: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isPrivate: boolean
+  @column()
+  declare metadata: any | null
+  @column()
+  declare mime: string
+  @column()
+  declare originalName: string
+  @column()
+  declare path: string
+  @column()
+  declare purpose: string
+  @column()
+  declare size: bigint | number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare uploadedBy: string | null
+  @column()
+  declare url: string
+}
+
 export class OpeningHourSchema extends BaseModel {
   static $columns = ['branchId', 'closesAt', 'createdAt', 'id', 'isClosed', 'opensAt', 'updatedAt', 'weekday'] as const
   $columns = OpeningHourSchema.$columns

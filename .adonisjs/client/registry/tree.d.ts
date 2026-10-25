@@ -49,6 +49,12 @@ export interface ApiDefinition {
         staff: typeof routes['admin.lookups.lookups.staff']
       }
     }
+    files: {
+      upload: typeof routes['admin.files.upload']
+      show: typeof routes['admin.files.show']
+      signedUrl: typeof routes['admin.files.signed_url']
+      destroy: typeof routes['admin.files.destroy']
+    }
     settings: {
       index: typeof routes['admin.settings.index']
       update: typeof routes['admin.settings.update']

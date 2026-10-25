@@ -293,6 +293,58 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/lookups_controller').default['staff']>>>
     }
   }
+  'admin.files.upload': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/files/upload'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/file').uploadFileMetadataValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/file').uploadFileMetadataValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['upload']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['upload']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['upload']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.files.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/files/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['show']>>>
+    }
+  }
+  'admin.files.signed_url': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/files/:id/url'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/file').getSignedUrlValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['signedUrl']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['signedUrl']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['signedUrl']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.files.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/files/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/files_controller').default['destroy']>>>
+    }
+  }
   'admin.settings.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/settings'

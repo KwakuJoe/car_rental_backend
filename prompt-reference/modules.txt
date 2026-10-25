@@ -55,8 +55,10 @@ Update this list as modules land.
             redaction, same transaction), all Phase 1 actions recorded,
             GET /admin/audit-logs, audit.view (prompt-reference/
             audit_module.txt)
-  [ ] M1.5 file storage, M1.6 jobs/scheduler, M1.7 numbering,
-      M1.8 in-app notifications - build when Phase 2 first needs them
+  [x] M1.5  file storage: Cloudinary integration, files table, polymorphic
+            attachments, FileService, signed URLs for private documents (Act 843),
+            upload/show/url/delete endpoints, audited
+  [ ] M1.6  jobs/scheduler, M1.7 numbering, M1.8 in-app notifications
 
 
 PHASE OVERVIEW

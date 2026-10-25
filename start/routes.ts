@@ -82,6 +82,14 @@ router
           .prefix('lookups')
           .as('lookups')
 
+        // File upload and signed URL management
+        router.group(() => {
+          router.post('files/upload', [controllers.admin.Files, 'upload'])
+          router.get('files/:id', [controllers.admin.Files, 'show'])
+          router.get('files/:id/url', [controllers.admin.Files, 'signedUrl'])
+          router.delete('files/:id', [controllers.admin.Files, 'destroy'])
+        })
+
         router
           .group(() => {
             router.get('settings', [controllers.admin.Settings, 'index'])

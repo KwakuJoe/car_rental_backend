@@ -10,6 +10,7 @@ export const controllers = {
     Branches: () => import('#controllers/admin/branches_controller'),
     Business: () => import('#controllers/admin/business_controller'),
     ClosureDates: () => import('#controllers/admin/closure_dates_controller'),
+    Files: () => import('#controllers/admin/files_controller'),
     Lookups: () => import('#controllers/admin/lookups_controller'),
     OpeningHours: () => import('#controllers/admin/opening_hours_controller'),
     Permissions: () => import('#controllers/admin/permissions_controller'),

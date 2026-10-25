@@ -138,6 +138,30 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"lookups"],[0,"staff"]],
     types: placeholder as Registry['admin.lookups.lookups.staff']['types'],
   },
+  'admin.files.upload': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/files/upload',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"files"],[0,"upload"]],
+    types: placeholder as Registry['admin.files.upload']['types'],
+  },
+  'admin.files.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/files/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"files"],[1,"id"]],
+    types: placeholder as Registry['admin.files.show']['types'],
+  },
+  'admin.files.signed_url': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/files/:id/url',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"files"],[1,"id"],[0,"url"]],
+    types: placeholder as Registry['admin.files.signed_url']['types'],
+  },
+  'admin.files.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/admin/files/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"files"],[1,"id"]],
+    types: placeholder as Registry['admin.files.destroy']['types'],
+  },
   'admin.settings.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/settings',
