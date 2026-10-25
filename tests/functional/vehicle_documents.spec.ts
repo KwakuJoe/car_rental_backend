@@ -372,4 +372,17 @@ test.group('fleet / vehicle documents & expiry alerts (M2.4)', (group) => {
     assert.equal(notification.link, `/dashboard/cars/${car.id}?tab=documents`)
     assert.include(notification.title, 'expires today')
   })
+  test('a document can be recorded without a file or dates', async ({ client, assert }) => {
+    const { car, fleetOfficer } = await setupFixture()
+
+    const response = await client
+      .post(`/api/v1/admin/cars/${car.id}/documents`)
+      .loginAs(fleetOfficer)
+      .json({ type: 'registration', documentNumber: 'REG-NO-FILE' })
+
+    response.assertStatus(201)
+    assert.equal(json(response).data.documentNumber, 'REG-NO-FILE')
+    assert.isNull(json(response).data.file)
+    assert.isNull(json(response).data.expiresOn)
+  })
 })

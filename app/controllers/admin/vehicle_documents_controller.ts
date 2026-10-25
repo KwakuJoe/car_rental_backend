@@ -46,15 +46,17 @@ export default class VehicleDocumentsController {
     const document = await db.transaction(async (trx) => {
       const doc = await VehicleDocument.create(
         {
+          // Optional fields default to null: undefined would leave e.g. fileId
+          // unset on the model and break loading the file relation below.
           carId: car.id,
           type: payload.type,
-          documentNumber: payload.documentNumber,
-          provider: payload.provider,
-          coverType: payload.coverType,
-          issuedOn: payload.issuedOn as any,
-          expiresOn: payload.expiresOn as any,
-          fileId: payload.fileId,
-          notes: payload.notes,
+          documentNumber: payload.documentNumber ?? null,
+          provider: payload.provider ?? null,
+          coverType: payload.coverType ?? null,
+          issuedOn: (payload.issuedOn ?? null) as any,
+          expiresOn: (payload.expiresOn ?? null) as any,
+          fileId: payload.fileId ?? null,
+          notes: payload.notes ?? null,
           createdBy: user.id,
         },
         { client: trx }
