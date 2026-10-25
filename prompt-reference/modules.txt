@@ -463,6 +463,13 @@ tax_rates  name (VAT, NHIL, GETFund, ...), code, rate (basis points, e.g.
   1500 = 15%), calculation (simple_on_net | compound_on_net_plus_levies),
   applies_to (rental, extras, fees, delivery), effective_from, effective_to,
   active.
+DECIDED with the owner (2026-10-25): taxes attach to the TYPE OF CHARGE
+(rental, extras, delivery, fees), never to individual vehicles - per-vehicle
+ticking makes it easy to miss tax on one car, which becomes the business's
+liability with GRA. Staff create/manage any number of taxes; a master
+"VAT registered" switch turns them all off; an item that is genuinely exempt
+(e.g. one extra) gets taxable=false. Every quote/booking shows each tax as
+its own line.
 Never hardcode rates: Ghana's VAT and levy structure has been reformed
 recently (2025-2026). Load the current structure from the accountant and
 keep old rows so past invoices stay reproducible. Taxes apply only if
