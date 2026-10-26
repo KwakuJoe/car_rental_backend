@@ -414,6 +414,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"taxes"]],
     types: placeholder as Registry['admin.taxes.index']['types'],
   },
+  'admin.quotes.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/quotes',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"quotes"]],
+    types: placeholder as Registry['admin.quotes.store']['types'],
+  },
   'admin.rate_plans.store': {
     methods: ["POST"],
     pattern: '/api/v1/admin/rate-plans',

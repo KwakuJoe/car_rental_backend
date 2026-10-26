@@ -23,6 +23,7 @@ export const controllers = {
     Permissions: () => import('#controllers/admin/permissions_controller'),
     PricingRules: () => import('#controllers/admin/pricing_rules_controller'),
     ProtectionPlans: () => import('#controllers/admin/protection_plans_controller'),
+    Quotes: () => import('#controllers/admin/quotes_controller'),
     RatePlans: () => import('#controllers/admin/rate_plans_controller'),
     Roles: () => import('#controllers/admin/roles_controller'),
     Settings: () => import('#controllers/admin/settings_controller'),

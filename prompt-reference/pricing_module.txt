@@ -5,8 +5,8 @@ hardcode prices, thresholds or taxes. Money is integer pesewas.
 Runnable examples: http/pricing.http. Permissions: pricing.view (read),
 pricing.manage (write), extras.manage (extras).
 
-Status: M2.5 - M2.10 DONE (rates, price rules, extras, protection plans,
-delivery zones, fees, taxes). M2.11 quote engine - next.
+Status: M2.5 - M2.11 DONE - Phase 2 pricing complete (rates, price rules, extras,
+protection plans, delivery zones, fees, taxes, quote engine).
 
 
 M2.5 RATES (rate_plans)
@@ -162,3 +162,44 @@ POST /api/v1/admin/taxes       settings.manage
 PUT  /api/v1/admin/taxes/:id   settings.manage
 Registration itself: PUT /api/v1/admin/business { vatRegistered, vatNumber } (settings.manage)
 Audit: tax.created / tax.updated (+ business.updated for registration)
+
+
+M2.11 QUOTE ENGINE - PricingService.quote(input) (app/services/pricing/pricing_service.ts)
+------------------------------------------------------------------------------------------
+THE single price calculation: staff quotes now; bookings, changes, check-in and the public
+site later. Input: carId, pickupAt, returnAt (DateTime, business time zone), driveType,
+outOfTown?, driverNightsAway?, extras[{extraId, quantity}], protectionPlanId (undefined =
+default plan, null = none), deliveryZoneId?, collectionZoneId?.
+
+Steps
+1. Car must exist, not archived, status active; self-drive needs category.self_drive_allowed.
+2. rentalDays = max(1, ceil((minutes - booking.return_grace_minutes) / 1440)).
+3. Per calendar day from the pickup date: plan = car override else category plan covering
+   that day (planOn); base = out-of-town price (chauffeur + outOfTown) | monthly/30 (days >=
+   pricing.monthly_threshold_days) | weekly/7 (>= weekly threshold) | daily; then
+   PricingRuleService.adjustDay. Any day without a plan -> QuoteError (lists the dates).
+4. Lines: rental (sum of days), driver overnight allowance x nights, extras (per day x days
+   or per rental, x quantity <= max_quantity), protection (per day x days), delivery /
+   collection zone fees + the zone's after-hours fee when the time is outside opening
+   hours; office handover outside hours -> booking.after_hours_fee (0 = warning instead).
+5. Taxes: TaxService.forLines - rental per day, other lines per line, by charge type
+   (driver allowance = rental, after hours = fees), on the pickup date.
+6. total = subtotal + taxes. deposit = plan.deposit_amount_override ?? category deposit
+   (never taxed, not in total). reservationFee when payment.allow_pay_at_pickup
+   (percent of total, or fixed capped at total).
+Output also: days[{date, base, adjustments[{name, change}], amount}], tier, protection
+{name, excessAmount}, mileage {unlimited, includedKm, excessKmAmount} (rate mode, else
+settings; excess from the rate or the excess_km fee), chauffeur terms, vatRegistered,
+displayTaxInclusive, warnings[{code, message}].
+
+QuoteError (-> 422 with field): car missing/archived/not active, chauffeur-only category,
+return <= pickup, no rate for some days, inactive/over-quantity extra, inactive plan/zone.
+Warnings (quote still returned): unavailable (allocation overlap), min/max rental days,
+lead time / past pickup, rule_min_days:<ruleId>, pickup/return_after_hours (no fee),
+pickup/return_closure (closed weekday or closure date).
+Opening hours: weekday 0 = Sunday..6; no hours set = open.
+
+Endpoint: POST /api/v1/admin/quotes (pricing.view for now; bookings.create in Phase 3).
+Body times are ISO strings, e.g. "2026-12-20T09:00", read in the business time zone.
+Tests: tests/functional/quotes.spec.ts (grace, tiers, season crossing, weekends, extras,
+protection/deposit, delivery & after hours, closures, taxes, chauffeur, errors).

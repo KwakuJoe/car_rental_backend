@@ -157,6 +157,8 @@ router
             router.get('delivery-zones', [controllers.admin.DeliveryZones, 'index'])
             router.get('fees', [controllers.admin.Fees, 'index'])
             router.get('taxes', [controllers.admin.Taxes, 'index'])
+            // Staff quote (preview). Phase 3: bookings.create.
+            router.post('quotes', [controllers.admin.Quotes, 'store'])
           })
           .use(middleware.permission({ permissions: ['pricing.view'] }))
 

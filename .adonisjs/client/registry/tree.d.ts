@@ -136,6 +136,9 @@ export interface ApiDefinition {
       store: typeof routes['admin.taxes.store']
       update: typeof routes['admin.taxes.update']
     }
+    quotes: {
+      store: typeof routes['admin.quotes.store']
+    }
     settings: {
       index: typeof routes['admin.settings.index']
       update: typeof routes['admin.settings.update']

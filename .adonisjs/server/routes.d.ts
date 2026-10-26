@@ -72,6 +72,7 @@ export type ScannedRoutes = {
     'admin.delivery_zones.index': { paramsTuple?: []; params?: {} }
     'admin.fees.index': { paramsTuple?: []; params?: {} }
     'admin.taxes.index': { paramsTuple?: []; params?: {} }
+    'admin.quotes.store': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
@@ -204,6 +205,7 @@ export type ScannedRoutes = {
     'admin.cars.add_photo': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.car_blocks.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
     'admin.vehicle_documents.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
+    'admin.quotes.store': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
     'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
     'admin.protection_plans.store': { paramsTuple?: []; params?: {} }

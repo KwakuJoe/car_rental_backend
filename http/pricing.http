@@ -215,3 +215,27 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "vatRegistered": true, "vatNumber": "C0001234567" }
+
+
+### ── Quote (M2.11) ─────────────────────────────────────────────────
+
+### 22. Pick a car for the quote
+# @name cars
+GET {{baseUrl}}/admin/cars?limit=1
+Authorization: Bearer {{token}}
+
+###
+@carId = {{cars.response.body.$.data[0].id}}
+
+### 23. Quote: 3 days self-drive, default protection, airport delivery (zone id optional)
+POST {{baseUrl}}/admin/quotes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "carId": "{{carId}}",
+  "pickupAt": "2026-12-18T09:00",
+  "returnAt": "2026-12-21T09:00",
+  "driveType": "self_drive",
+  "extras": []
+}

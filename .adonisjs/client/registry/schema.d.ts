@@ -891,6 +891,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.quotes.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/quotes'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/quote').quoteValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/quote').quoteValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/quotes_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/quotes_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/quotes_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.rate_plans.store': {
     methods: ["POST"]
     pattern: '/api/v1/admin/rate-plans'

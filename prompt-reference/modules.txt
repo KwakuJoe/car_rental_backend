@@ -81,7 +81,11 @@ Update this list as modules land.
   [x] M2.9  delivery zones (delivery / collection / after hours) + fee schedule
             (standard codes for check-in); safe example seeder (inactive)
   [x] M2.10 taxes per charge type, VAT-registered switch (off by default),
-            compound levies, per-line rounding, effective dates; none seeded
+            compound levies, per-line rounding, effective dates; none seeded;
+            charged only while business.vat_registered
+  [x] M2.11 quote engine PricingService.quote + POST /admin/quotes (grace, tiers,
+            rules per day, extras, protection, delivery/after hours, taxes,
+            deposit, reservation fee, warnings) - Phase 2 pricing done
   [~] M1.6  scheduling via system cron calling ace commands (see
             setup_command.txt "SCHEDULED JOBS") - a queue for slow work
             (PDFs, SMS) still to come with Phase 4/6
