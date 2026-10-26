@@ -545,7 +545,7 @@ Rules:
     customers.view_documents (Data Protection Act 2012, Act 843). Access to
     document images is audited.
   - Retention: archived customers' document images purged after a
-    configurable period (e.g. 24 months after last rental)
+    configurable period (default 24 months after last rental)
   - Optional later: NIA Ghana Card verification API
 Endpoints: CRUD /admin/customers, POST/PUT /admin/customers/:id/identities,
   POST /admin/customers/:id/identities/:identityId/verify|reject,
@@ -631,7 +631,10 @@ Rules:
   - Price is frozen in price_snapshot; later rate changes never alter
     existing bookings
   - Manual price override / discount above a staff limit requires
-    bookings.override (manager) and a reason - audited
+    bookings.override (manager) and a reason - audited. DECIDED: staff limit 10%
+    (setting)
+  - DECIDED: reference format WYK-2026-00123 (business prefix + year + 5-digit
+    number, restarting each year) - M1.7 document numbering
   - Car's documents must be valid through return_at (warning at booking)
 Endpoints: GET/POST /admin/bookings, GET/PUT /admin/bookings/:id,
   POST /admin/bookings/:id/confirm|cancel|no-show, GET /admin/bookings/:id/history
@@ -642,6 +645,9 @@ Permissions: bookings.view, bookings.create, bookings.update,
 
 M3.6 Cancellation & no-show policy
 ------------------------------------
+DECIDED with the owner (2026-10-26): the tiered policy below, ALL configurable as
+settings (hours of each tier, what is kept). Defaults: >= 72h full refund; 24-72h keep
+the reservation fee; < 24h or no-show keep the fee + 1 day.
 Policy tiers in settings, e.g.:
   >= 72h before pickup   full refund (minus payment provider fees, setting)
   24-72h                 reservation fee kept
@@ -675,6 +681,8 @@ Rules:
     rate / credit)
   - Every modification re-runs the quote engine and posts the difference to
     the folio (Phase 5)
+DECIDED: extensions use TODAY's rates and rules for the extra days (re-run the quote).
+Early return: no refund by default (setting).
 Endpoints: POST /admin/bookings/:id/extend|swap|change-dates|extras,
   POST /admin/bookings/:id/modifications/preview (price diff before saving)
 
