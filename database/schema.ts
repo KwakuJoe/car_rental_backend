@@ -123,8 +123,35 @@ export class BookingExtraSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class BookingModificationSchema extends BaseModel {
+  static $columns = ['after', 'before', 'bookingId', 'createdAt', 'createdBy', 'id', 'priceDifferenceAmount', 'quote', 'reason', 'type', 'updatedAt'] as const
+  $columns = BookingModificationSchema.$columns
+  @column()
+  declare after: any
+  @column()
+  declare before: any
+  @column()
+  declare bookingId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare priceDifferenceAmount: number
+  @column()
+  declare quote: any | null
+  @column()
+  declare reason: string | null
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class BookingSchema extends BaseModel {
-  static $columns = ['balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
+  static $columns = ['balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverId', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
   $columns = BookingSchema.$columns
   @column()
   declare balanceAmount: number
@@ -170,6 +197,8 @@ export class BookingSchema extends BaseModel {
   declare discountReason: string | null
   @column()
   declare driveType: string
+  @column()
+  declare driverId: string | null
   @column()
   declare driverNightsAway: number
   @column.dateTime()
@@ -602,6 +631,56 @@ export class DocumentSequenceSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare year: number
+}
+
+export class DriverAllocationSchema extends BaseModel {
+  static $columns = ['active', 'bookingId', 'createdAt', 'driverId', 'endsAt', 'id', 'startsAt', 'updatedAt'] as const
+  $columns = DriverAllocationSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare bookingId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare driverId: string
+  @column.dateTime()
+  declare endsAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column.dateTime()
+  declare startsAt: DateTime
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class DriverSchema extends BaseModel {
+  static $columns = ['createdAt', 'dailyRateAmount', 'fullName', 'id', 'licenceClass', 'licenceExpiresOn', 'licenceNo', 'notes', 'phone', 'status', 'updatedAt', 'userId'] as const
+  $columns = DriverSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare dailyRateAmount: number
+  @column()
+  declare fullName: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare licenceClass: string | null
+  @column.date()
+  declare licenceExpiresOn: DateTime
+  @column()
+  declare licenceNo: string
+  @column()
+  declare notes: string | null
+  @column()
+  declare phone: string
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: string | null
 }
 
 export class ExtraSchema extends BaseModel {

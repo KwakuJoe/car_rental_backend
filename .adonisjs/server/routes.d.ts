@@ -88,8 +88,15 @@ export type ScannedRoutes = {
     'admin.bookings.store': { paramsTuple?: []; params?: {} }
     'admin.bookings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.confirm': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.preview_modification': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.modify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.assign_driver': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.no_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.drivers.index': { paramsTuple?: []; params?: {} }
+    'admin.drivers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.drivers.store': { paramsTuple?: []; params?: {} }
+    'admin.drivers.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
@@ -168,6 +175,8 @@ export type ScannedRoutes = {
     'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.drivers.index': { paramsTuple?: []; params?: {} }
+    'admin.drivers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
@@ -223,6 +232,8 @@ export type ScannedRoutes = {
     'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.drivers.index': { paramsTuple?: []; params?: {} }
+    'admin.drivers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
@@ -264,8 +275,11 @@ export type ScannedRoutes = {
     'admin.quotes.store': { paramsTuple?: []; params?: {} }
     'admin.bookings.store': { paramsTuple?: []; params?: {} }
     'admin.bookings.confirm': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.preview_modification': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.modify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.no_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.drivers.store': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
     'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
     'admin.protection_plans.store': { paramsTuple?: []; params?: {} }
@@ -289,6 +303,8 @@ export type ScannedRoutes = {
     'admin.customers.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.customer_identities.update': { paramsTuple: [ParamValue,ParamValue]; params: {'customerId': ParamValue,'id': ParamValue} }
     'admin.bookings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.assign_driver': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.drivers.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.protection_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

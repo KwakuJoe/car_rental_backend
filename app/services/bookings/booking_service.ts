@@ -7,6 +7,7 @@ import Booking, { type BookingStatus } from '#models/booking'
 import BookingExtra from '#models/booking_extra'
 import Business from '#models/business'
 import CarAllocation from '#models/car_allocation'
+import DriverAllocation from '#models/driver_allocation'
 import Category from '#models/category'
 import Customer from '#models/customer'
 import CustomerIdentity, { LICENCE_TYPES } from '#models/customer_identity'
@@ -324,7 +325,7 @@ export default class BookingService {
   }
 
   /** Snapshot rows for the extras (name and price as booked). */
-  private static async extraRows(chosen: { extraId: string; quantity: number }[], days: number) {
+  static async extraRows(chosen: { extraId: string; quantity: number }[], days: number) {
     const rows = []
     for (const { extraId, quantity } of chosen) {
       const extra = await Extra.findOrFail(extraId)
@@ -349,8 +350,13 @@ export default class BookingService {
     }
   }
 
+  /** Frees the car and the driver (cancel, no-show, expired hold). */
   private static async releaseCar(booking: Booking, trx: TransactionClientContract) {
     await CarAllocation.query({ client: trx })
+      .where('booking_id', booking.id)
+      .where('active', true)
+      .update({ active: false, updated_at: new Date() })
+    await DriverAllocation.query({ client: trx })
       .where('booking_id', booking.id)
       .where('active', true)
       .update({ active: false, updated_at: new Date() })

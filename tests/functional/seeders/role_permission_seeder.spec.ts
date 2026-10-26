@@ -37,6 +37,8 @@ test.group('role_permission_seeder', (group) => {
         'customers.verify',
         'customers.view',
         'customers.view_documents',
+        'drivers.manage',
+        'drivers.view',
         'extras.manage',
         'fleet.manage',
         'fleet.view',
@@ -72,6 +74,8 @@ test.group('role_permission_seeder', (group) => {
         'bookings.update',
         'bookings.cancel',
         'bookings.override',
+        'drivers.view',
+        'drivers.manage',
       ]
     )
   })
@@ -99,6 +103,7 @@ test.group('role_permission_seeder', (group) => {
         'bookings.create',
         'bookings.update',
         'bookings.cancel',
+        'drivers.view',
         'roles.manage',
       ]
     )

@@ -87,6 +87,34 @@ cancellation.no_show_after_hours (2).
   later, or a no-show                 reservation fee + late_charge_days x average day
 Fee capped at the total; refundable = paid - fee (never negative). Refunds: Phase 5.
 
+CHANGES (M3.8) - booking_modifications (type, before, after, price_difference_amount,
+quote, reason, created_by); ModificationService.plan / apply (bookings.update)
+POST /admin/bookings/:id/modifications/preview  -> the plan, nothing saved
+POST /admin/bookings/:id/modifications          -> applies it
+  { type: extend, returnAt }            pending/confirmed/on_rent. The extra time is priced
+      at TODAY's rates (quote from the old return to the new one, extension mode: no
+      pickup fees, lead time or minimum length) and ADDED to the agreed total.
+  { type: change_dates, pickupAt, returnAt }  pending/confirmed. The whole booking is
+      re-priced (new snapshot, discount kept, extras re-priced); difference = new - old.
+  { type: swap_car, carId, charge: none|difference, reason }  pending/confirmed.
+      none = the agreed price stays (e.g. our car broke down); difference = re-priced.
+  { type: early_return, returnAt? (default now) }  on_rent only (Phase 4). Refund per
+      setting booking.early_return_refund: none (default) | unused_days.
+  The car allocation (and the driver's) moves in the same transaction: a clash is 409.
+  Same refusals as booking (closure days, after hours, min/max days). A driver's licence
+  must still cover the new return. Audit: booking.modified (metadata type, difference).
+
+DRIVERS (M3.9) - drivers (user_id nullable, full_name, phone E.164, licence_no,
+licence_class, licence_expires_on, status active|on_leave|inactive, daily_rate_amount =
+cost to the business, notes); driver_allocations with an exclusion constraint like cars.
+GET  /admin/drivers ?search &status &availableFrom &availableTo &excludeBookingId (drivers.view)
+POST /admin/drivers, PUT /admin/drivers/:id (drivers.manage) - never deleted, set inactive
+PUT  /admin/bookings/:id/driver { driverId | null } (bookings.update) - with-driver bookings
+  only; driver active with a licence valid through the return; 409 E_DRIVER_UNAVAILABLE
+  when they drive another booking then. Cancel / no-show / expiry free the driver too.
+  Today board: a with-driver pickup without a driver is "not ready".
+Roles: manager drivers.view + manage; front desk and fleet drivers.view.
+
 CALENDAR (M3.7) - GET /admin/calendar?from=&to=&categoryId=&search=&page=&limit=
 (bookings.view). Days YYYY-MM-DD in the business time zone (default today + 13 days, at
 most ~2 months). One row per car (paginated, default 20; archived and retired cars left

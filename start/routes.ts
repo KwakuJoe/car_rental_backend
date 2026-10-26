@@ -220,6 +220,12 @@ router
           .group(() => {
             router.put('bookings/:id', [controllers.admin.Bookings, 'update'])
             router.post('bookings/:id/confirm', [controllers.admin.Bookings, 'confirm'])
+            router.post('bookings/:id/modifications/preview', [
+              controllers.admin.Bookings,
+              'previewModification',
+            ])
+            router.post('bookings/:id/modifications', [controllers.admin.Bookings, 'modify'])
+            router.put('bookings/:id/driver', [controllers.admin.Bookings, 'assignDriver'])
           })
           .use(middleware.permission({ permissions: ['bookings.update'] }))
 
@@ -229,6 +235,20 @@ router
             router.post('bookings/:id/no-show', [controllers.admin.Bookings, 'noShow'])
           })
           .use(middleware.permission({ permissions: ['bookings.cancel'] }))
+
+        // Drivers (M3.9)
+        router
+          .group(() => {
+            router.get('drivers', [controllers.admin.Drivers, 'index'])
+            router.get('drivers/:id', [controllers.admin.Drivers, 'show'])
+          })
+          .use(middleware.permission({ permissions: ['drivers.view'] }))
+        router
+          .group(() => {
+            router.post('drivers', [controllers.admin.Drivers, 'store'])
+            router.put('drivers/:id', [controllers.admin.Drivers, 'update'])
+          })
+          .use(middleware.permission({ permissions: ['drivers.manage'] }))
 
         // Pricing (M2.5+)
         router

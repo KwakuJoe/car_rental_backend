@@ -381,6 +381,195 @@ test.group('today board', (group) => {
   })
 })
 
+test.group('changes and drivers', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test("extend at today's rates, refuse a clash, change dates, swap the car", async ({
+    client,
+    assert,
+  }) => {
+    const { car, customer, desk } = await setup()
+    const url = '/api/v1/admin/bookings'
+    const created = await client
+      .post(url)
+      .json(booking(customer.id, car.id, { confirm: true }))
+      .loginAs(desk)
+    const id = json(created).data.id
+    const change = (body: Record<string, unknown>, preview = false) =>
+      client
+        .post(`${url}/${id}/modifications${preview ? '/preview' : ''}`)
+        .json(body)
+        .loginAs(desk)
+
+    // One more day (Thu -> Fri) at GHS 450, added to the agreed GHS 1,350
+    const preview = await change({ type: 'extend', returnAt: '2030-03-08T09:00' }, true)
+    preview.assertStatus(200)
+    assert.equal(json(preview).data.priceDifference, 45_000)
+    const extended = await change({ type: 'extend', returnAt: '2030-03-08T09:00' })
+    extended.assertStatus(200)
+    assert.equal(json(extended).data.totalAmount, 180_000)
+    assert.equal(json(extended).data.modifications[0].type, 'extend')
+    const allocation = await CarAllocation.findByOrFail('booking_id', id)
+    assert.equal(
+      allocation.endsAt.toISO(),
+      DateTime.fromISO('2030-03-08T09:00', { zone: 'Africa/Accra' }).toISO()
+    )
+
+    // Someone books the car from Saturday; extending into it is refused
+    const other = await Customer.create({
+      branchId: customer.branchId,
+      fullName: 'Kojo',
+      phone: '+233241111112',
+    })
+    await expectStatus(
+      client
+        .post(url)
+        .json(
+          booking(other.id, car.id, { pickupAt: '2030-03-09T12:00', returnAt: '2030-03-10T12:00' })
+        )
+        .loginAs(desk),
+      201
+    )
+    await expectStatus(change({ type: 'extend', returnAt: '2030-03-09T13:00' }), 409)
+
+    // New dates, re-priced as a whole (4 days)
+    const moved = await change({
+      type: 'change_dates',
+      pickupAt: '2030-04-01T09:00',
+      returnAt: '2030-04-05T09:00',
+    })
+    moved.assertStatus(200)
+    assert.equal(json(moved).data.totalAmount, 180_000)
+    assert.equal(json(moved).data.quote.rentalDays, 4)
+
+    // Swap to another car at the agreed price; a reason is required
+    const second = await Car.create({
+      branchId: car.branchId,
+      categoryId: car.categoryId,
+      make: 'Kia',
+      model: 'Rio',
+      year: 2023,
+      colour: 'Red',
+      registrationNo: 'GR 5555-23',
+      vinChassisNo: 'VINSWAP0001XYZ',
+      transmission: 'auto',
+      fuelType: 'petrol',
+      seats: 5,
+      doors: 4,
+      luggage: 2,
+      currentOdometerKm: 10,
+      status: 'active',
+    })
+    await expectStatus(change({ type: 'swap_car', carId: second.id }), 422)
+    const swapped = await change({
+      type: 'swap_car',
+      carId: second.id,
+      reason: 'Corolla needs a repair',
+    })
+    swapped.assertStatus(200)
+    assert.equal(json(swapped).data.car.id, second.id)
+    assert.equal(json(swapped).data.totalAmount, 180_000)
+    await allocation.refresh()
+    assert.equal(allocation.carId, second.id)
+
+    // Early return only for a car out on rent (check-out is Phase 4)
+    await expectStatus(change({ type: 'early_return' }), 422)
+  })
+
+  test('drivers: one booking at a time, freed on cancel, licence must cover the trip', async ({
+    client,
+    assert,
+  }) => {
+    const { car, customer, desk, owner } = await setup()
+    await RatePlan.create({
+      categoryId: car.categoryId,
+      driveType: 'chauffeur',
+      dailyAmount: 80_000,
+      mileageMode: 'default',
+      fuelIncluded: false,
+      active: true,
+    })
+    const second = await Car.create({
+      branchId: car.branchId,
+      categoryId: car.categoryId,
+      make: 'Kia',
+      model: 'Rio',
+      year: 2023,
+      colour: 'Red',
+      registrationNo: 'GR 6666-23',
+      vinChassisNo: 'VINDRIVER001XYZ',
+      transmission: 'auto',
+      fuelType: 'petrol',
+      seats: 5,
+      doors: 4,
+      luggage: 2,
+      currentOdometerKm: 10,
+      status: 'active',
+    })
+    const created = await client
+      .post('/api/v1/admin/drivers')
+      .json({
+        fullName: 'Yaw Driver',
+        phone: '024 555 0001',
+        licenceNo: 'dl-777',
+        licenceExpiresOn: '2031-01-01',
+      })
+      .loginAs(owner)
+    created.assertStatus(201)
+    const driverId = json(created).data.id
+
+    const chauffeur = { driveType: 'chauffeur' }
+    const first = await client
+      .post('/api/v1/admin/bookings')
+      .json(booking(customer.id, car.id, chauffeur))
+      .loginAs(desk)
+    const secondBooking = await client
+      .post('/api/v1/admin/bookings')
+      .json(booking(customer.id, second.id, chauffeur))
+      .loginAs(desk)
+    const assign = (bookingId: string, id: string | null) =>
+      client.put(`/api/v1/admin/bookings/${bookingId}/driver`).json({ driverId: id }).loginAs(owner)
+
+    await expectStatus(assign(json(first).data.id, driverId), 200)
+    await expectStatus(assign(json(secondBooking).data.id, driverId), 409)
+    // Free drivers for that time: none
+    const free = await client
+      .get('/api/v1/admin/drivers')
+      .qs({ availableFrom: '2030-03-04T09:00', availableTo: '2030-03-07T09:00' })
+      .loginAs(owner)
+    assert.lengthOf(json(free).data, 0)
+
+    await expectStatus(
+      client
+        .post(`/api/v1/admin/bookings/${json(first).data.id}/cancel`)
+        .json({ reason: 'Trip off' })
+        .loginAs(owner),
+      200
+    )
+    await expectStatus(assign(json(secondBooking).data.id, driverId), 200)
+
+    // A licence that runs out before the return can't be assigned
+    const expiring = await client
+      .post('/api/v1/admin/drivers')
+      .json({
+        fullName: 'Ama Driver',
+        phone: '024 555 0002',
+        licenceNo: 'DL-888',
+        licenceExpiresOn: '2030-03-05',
+      })
+      .loginAs(owner)
+    await expectStatus(assign(json(secondBooking).data.id, json(expiring).data.id), 422)
+    // Self-drive bookings don't get drivers
+    const selfDrive = await client
+      .post('/api/v1/admin/bookings')
+      .json(
+        booking(customer.id, car.id, { pickupAt: '2030-06-03T09:00', returnAt: '2030-06-04T09:00' })
+      )
+      .loginAs(desk)
+    await expectStatus(assign(json(selfDrive).data.id, driverId), 422)
+  })
+})
+
 // No global transaction here: the requests must really race on separate connections
 test.group('bookings concurrency', (group) => {
   group.each.setup(() => testUtils.db().truncate())

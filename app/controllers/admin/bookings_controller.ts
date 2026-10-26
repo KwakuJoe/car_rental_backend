@@ -7,14 +7,18 @@ import Customer from '#models/customer'
 import AuditService from '#services/audit_service'
 import BookingService, { BookingError } from '#services/bookings/booking_service'
 import CancellationService from '#services/bookings/cancellation_service'
+import DriverService from '#services/bookings/driver_service'
+import ModificationService from '#services/bookings/modification_service'
 import SettingsService from '#services/settings/settings_service'
 import AuditLogTransformer from '#transformers/audit_log_transformer'
 import { bookingToJson } from '#transformers/booking_transformer'
 import { normalizePhone } from '#helpers/phone'
 import {
   bookingFilterValidator,
+  assignDriverValidator,
   cancelBookingValidator,
   createBookingValidator,
+  modificationValidator,
   updateBookingValidator,
 } from '#validators/booking'
 
@@ -37,6 +41,8 @@ const detail = (id: string) =>
         .preload('photos', (photos) => photos.preload('file').orderBy('sort_order', 'asc'))
     )
     .preload('extras', (q) => q.orderBy('created_at', 'asc'))
+    .preload('driver')
+    .preload('modifications', (q) => q.preload('creator').orderBy('created_at', 'asc'))
     .firstOrFail()
 
 export default class BookingsController {
@@ -192,6 +198,56 @@ export default class BookingsController {
       return response.ok({
         message: 'Marked as a no-show',
         data: bookingToJson(await detail(booking.id)),
+      })
+    } catch (error) {
+      if (error instanceof BookingError) return fail(response, error)
+      throw error
+    }
+  }
+
+  /** What a change would cost - nothing is saved. */
+  async previewModification({ params, request, response }: HttpContext) {
+    const booking = await Booking.findOrFail(params.id)
+    const payload = await request.validateUsing(modificationValidator)
+    try {
+      return response.ok({
+        message: 'Change preview',
+        data: await ModificationService.plan(booking, payload),
+      })
+    } catch (error) {
+      if (error instanceof BookingError) return fail(response, error)
+      throw error
+    }
+  }
+
+  /** Extend, change dates, swap the car or return early (M3.8). */
+  async modify(ctx: HttpContext) {
+    const { auth, params, request, response } = ctx
+    const booking = await Booking.findOrFail(params.id)
+    const payload = await request.validateUsing(modificationValidator)
+    try {
+      const { plan } = await ModificationService.apply(ctx, booking, payload, auth.getUserOrFail())
+      const saved = await detail(booking.id)
+      return response.ok({
+        message: 'Booking changed',
+        data: { ...bookingToJson(saved), quote: saved.priceSnapshot, change: plan },
+      })
+    } catch (error) {
+      if (error instanceof BookingError) return fail(response, error)
+      throw error
+    }
+  }
+
+  async assignDriver(ctx: HttpContext) {
+    const { params, request, response } = ctx
+    const booking = await Booking.findOrFail(params.id)
+    const { driverId } = await request.validateUsing(assignDriverValidator)
+    try {
+      await DriverService.assign(ctx, booking, driverId)
+      const saved = await detail(booking.id)
+      return response.ok({
+        message: driverId ? 'Driver assigned' : 'Driver removed',
+        data: { ...bookingToJson(saved), quote: saved.priceSnapshot },
       })
     } catch (error) {
       if (error instanceof BookingError) return fail(response, error)

@@ -14,6 +14,7 @@ import type CarTransformer from '#transformers/car_transformer'
 import type CategoryTransformer from '#transformers/category_transformer'
 import type ClosureDateTransformer from '#transformers/closure_date_transformer'
 import type CustomerTransformer from '#transformers/customer_transformer'
+import type DriverTransformer from '#transformers/driver_transformer'
 import type FileTransformer from '#transformers/file_transformer'
 import type NotificationTransformer from '#transformers/notification_transformer'
 import type OdometerLogTransformer from '#transformers/odometer_log_transformer'
@@ -63,6 +64,10 @@ export namespace Data {
   export type Customer = InferData<CustomerTransformer>
   export namespace Customer {
     export type Variants = InferVariants<CustomerTransformer>
+  }
+  export type Driver = InferData<DriverTransformer>
+  export namespace Driver {
+    export type Variants = InferVariants<DriverTransformer>
   }
   export type File = InferData<FileTransformer>
   export namespace File {

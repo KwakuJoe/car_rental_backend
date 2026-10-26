@@ -77,6 +77,7 @@ export default class TodayService {
         )
       }
       if (customer.blacklistSeverity) issues.push('On the blacklist')
+      if (booking.driveType === 'chauffeur' && !booking.driverId) issues.push('No driver assigned')
       const car = carIssues.get(booking.carId)
       if (car?.level === 'critical') issues.push('Car documents expired or missing')
       return { ready: issues.length === 0, issues }

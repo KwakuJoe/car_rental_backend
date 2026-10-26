@@ -188,6 +188,20 @@ export const permissionData = [
     description:
       'Book a blacklisted customer or an under-age driver, or give discounts above the staff limit (with a reason)',
   },
+
+  // drivers
+  {
+    name: 'View drivers',
+    slug: 'drivers.view',
+    group: 'drivers',
+    description: 'See chauffeur drivers (to assign them to bookings)',
+  },
+  {
+    name: 'Manage drivers',
+    slug: 'drivers.manage',
+    group: 'drivers',
+    description: 'Add drivers and update their licence, status and daily cost',
+  },
 ]
 
 // ── Role → Permission mapping ──────────────────────────────────
@@ -216,6 +230,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'bookings.update',
     'bookings.cancel',
     'bookings.override',
+    'drivers.view',
+    'drivers.manage',
   ],
   'front-desk': [
     'fleet.view',
@@ -228,8 +244,9 @@ export const rolePermissionMap: Record<string, string[]> = {
     'bookings.create',
     'bookings.update',
     'bookings.cancel',
+    'drivers.view',
   ],
-  'fleet': ['fleet.view', 'fleet.manage', 'pricing.view', 'bookings.view'],
+  'fleet': ['fleet.view', 'fleet.manage', 'pricing.view', 'bookings.view', 'drivers.view'],
   'driver': [],
   'accountant': ['audit.view', 'customers.view', 'bookings.view'],
 }

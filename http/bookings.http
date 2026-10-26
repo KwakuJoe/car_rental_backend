@@ -68,3 +68,35 @@ Content-Type: application/json
 ### 9. History
 GET {{baseUrl}}/admin/bookings/{{bookingId}}/history
 Authorization: Bearer {{token}}
+
+### 10. Preview a change (nothing saved): extend by a day
+POST {{baseUrl}}/admin/bookings/{{bookingId}}/modifications/preview
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "type": "extend", "returnAt": "2026-12-24T09:00" }
+
+### 11. Apply it (also: change_dates, swap_car with carId + charge + reason, early_return)
+POST {{baseUrl}}/admin/bookings/{{bookingId}}/modifications
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "type": "extend", "returnAt": "2026-12-24T09:00" }
+
+### 12. Drivers free for the booking's time
+GET {{baseUrl}}/admin/drivers?availableFrom=2026-12-20T09:00&availableTo=2026-12-24T09:00
+Authorization: Bearer {{token}}
+
+### 13. Add a driver
+POST {{baseUrl}}/admin/drivers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "fullName": "Yaw Mensah", "phone": "024 555 0001", "licenceNo": "DL-12345", "licenceClass": "B", "licenceExpiresOn": "2028-06-30", "dailyRateAmount": 15000 }
+
+### 14. Assign a driver to a with-driver booking (null removes)
+PUT {{baseUrl}}/admin/bookings/{{bookingId}}/driver
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "driverId": "REPLACE_DRIVER_ID" }

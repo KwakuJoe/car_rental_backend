@@ -152,6 +152,22 @@ export const settingDefinitions = {
     unit: '%',
   },
 
+  'booking.early_return_refund': {
+    group: 'bookings',
+    type: 'enum',
+    label: 'Early return',
+    description: 'What a customer gets back when they return the car before the booked date.',
+    default: 'none',
+    options: [
+      { value: 'none', label: 'No refund', description: 'The booked days are kept in full.' },
+      {
+        value: 'unused_days',
+        label: 'Refund unused days',
+        description: 'Whole unused days are refunded at the booking’s average daily price.',
+      },
+    ],
+  },
+
   // ── Cancellation & no-show (M3.6) ───────────────────────────
   'cancellation.full_refund_hours': {
     group: 'cancellation',

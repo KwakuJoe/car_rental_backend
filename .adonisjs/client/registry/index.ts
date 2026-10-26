@@ -510,6 +510,24 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"confirm"]],
     types: placeholder as Registry['admin.bookings.confirm']['types'],
   },
+  'admin.bookings.preview_modification': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/bookings/:id/modifications/preview',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"modifications"],[0,"preview"]],
+    types: placeholder as Registry['admin.bookings.preview_modification']['types'],
+  },
+  'admin.bookings.modify': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/bookings/:id/modifications',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"modifications"]],
+    types: placeholder as Registry['admin.bookings.modify']['types'],
+  },
+  'admin.bookings.assign_driver': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/bookings/:id/driver',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"driver"]],
+    types: placeholder as Registry['admin.bookings.assign_driver']['types'],
+  },
   'admin.bookings.cancel': {
     methods: ["POST"],
     pattern: '/api/v1/admin/bookings/:id/cancel',
@@ -521,6 +539,30 @@ const routes = {
     pattern: '/api/v1/admin/bookings/:id/no-show',
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"no-show"]],
     types: placeholder as Registry['admin.bookings.no_show']['types'],
+  },
+  'admin.drivers.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/drivers',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"drivers"]],
+    types: placeholder as Registry['admin.drivers.index']['types'],
+  },
+  'admin.drivers.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/drivers/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"drivers"],[1,"id"]],
+    types: placeholder as Registry['admin.drivers.show']['types'],
+  },
+  'admin.drivers.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/drivers',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"drivers"]],
+    types: placeholder as Registry['admin.drivers.store']['types'],
+  },
+  'admin.drivers.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/drivers/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"drivers"],[1,"id"]],
+    types: placeholder as Registry['admin.drivers.update']['types'],
   },
   'admin.rate_plans.index': {
     methods: ["GET","HEAD"],

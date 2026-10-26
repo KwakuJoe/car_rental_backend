@@ -1,5 +1,7 @@
 import vine from '@vinejs/vine'
 import { BOOKING_SOURCES, BOOKING_STATUSES } from '#models/booking'
+import { MODIFICATION_TYPES } from '#models/booking_modification'
+import { DRIVER_STATUSES } from '#models/driver'
 import { FUEL_TYPES, TRANSMISSIONS } from '#models/car'
 import { DRIVE_TYPES } from '#models/rate_plan'
 import { paginationFields } from '#validators/shared'
@@ -91,4 +93,42 @@ export const calendarValidator = vine.create({
   search: vine.string().trim().optional(),
   page: vine.number().min(1).optional(),
   limit: vine.number().min(1).max(100).optional(),
+})
+
+export const modificationValidator = vine.create({
+  type: vine.enum(MODIFICATION_TYPES),
+  // ISO date-times in the business time zone
+  pickupAt: vine.string().trim().optional(),
+  returnAt: vine.string().trim().optional(),
+  carId: vine.string().optional(),
+  charge: vine.enum(['none', 'difference'] as const).optional(),
+  reason: vine.string().trim().maxLength(500).nullable().optional(),
+})
+
+export const assignDriverValidator = vine.create({
+  driverId: vine.string().nullable(),
+})
+
+const driverFields = () => ({
+  userId: vine.string().nullable().optional(),
+  fullName: vine.string().trim().minLength(2).maxLength(150),
+  phone: vine.string().trim().maxLength(20),
+  licenceNo: vine.string().trim().toUpperCase().minLength(3).maxLength(60),
+  licenceClass: vine.string().trim().toUpperCase().maxLength(20).nullable().optional(),
+  licenceExpiresOn: vine.date({ formats: ['YYYY-MM-DD'] }),
+  status: vine.enum(DRIVER_STATUSES).optional(),
+  dailyRateAmount: vine.number().withoutDecimals().min(0).max(100_000_00).optional(),
+  notes: vine.string().trim().maxLength(2000).nullable().optional(),
+})
+
+export const driverValidator = vine.create(driverFields())
+
+export const driverFilterValidator = vine.create({
+  ...paginationFields,
+  search: vine.string().trim().optional(),
+  status: vine.enum(DRIVER_STATUSES).optional(),
+  // Free for a booking's time (YYYY-MM-DDTHH:mm, business time zone)
+  availableFrom: vine.string().trim().optional(),
+  availableTo: vine.string().trim().optional(),
+  excludeBookingId: vine.string().optional(),
 })

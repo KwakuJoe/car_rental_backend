@@ -33,6 +33,11 @@ export type QuoteInput = {
   discountAmount?: number
   /** Re-pricing an existing booking: its own hold isn't a clash */
   excludeBookingId?: string
+  /**
+   * Pricing an extension (old return -> new return): the start isn't a
+   * handover, so no pickup fees, lead time or minimum length apply.
+   */
+  extension?: boolean
 }
 
 export type QuoteDay = {
@@ -144,7 +149,7 @@ export class PricingService {
       SettingsService.get('booking.max_rental_days'),
       SettingsService.get('booking.min_lead_hours'),
     ])
-    if (rentalDays < minDays) {
+    if (rentalDays < minDays && !input.extension) {
       warnings.push({ code: 'min_rental_days', message: `The minimum rental is ${minDays} days.` })
     }
     if (rentalDays > maxDays) {
@@ -153,7 +158,7 @@ export class PricingService {
         message: `The longest single rental is ${maxDays} days - split it into more bookings.`,
       })
     }
-    if (pickupAt < DateTime.now().plus({ hours: leadHours })) {
+    if (!input.extension && pickupAt < DateTime.now().plus({ hours: leadHours })) {
       warnings.push({
         code: 'lead_time',
         message:
@@ -403,7 +408,7 @@ export class PricingService {
         })
       }
     }
-    await handover('pickup', pickupAt, input.deliveryZoneId)
+    if (!input.extension) await handover('pickup', pickupAt, input.deliveryZoneId)
     await handover('return', returnAt, input.collectionZoneId)
 
     // ── Taxes and totals ─────────────────────────────────────────────

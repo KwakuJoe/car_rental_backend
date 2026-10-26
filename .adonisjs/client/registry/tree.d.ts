@@ -135,11 +135,20 @@ export interface ApiDefinition {
       store: typeof routes['admin.bookings.store']
       update: typeof routes['admin.bookings.update']
       confirm: typeof routes['admin.bookings.confirm']
+      previewModification: typeof routes['admin.bookings.preview_modification']
+      modify: typeof routes['admin.bookings.modify']
+      assignDriver: typeof routes['admin.bookings.assign_driver']
       cancel: typeof routes['admin.bookings.cancel']
       noShow: typeof routes['admin.bookings.no_show']
     }
     quotes: {
       store: typeof routes['admin.quotes.store']
+    }
+    drivers: {
+      index: typeof routes['admin.drivers.index']
+      show: typeof routes['admin.drivers.show']
+      store: typeof routes['admin.drivers.store']
+      update: typeof routes['admin.drivers.update']
     }
     ratePlans: {
       index: typeof routes['admin.rate_plans.index']

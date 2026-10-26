@@ -3,10 +3,12 @@ import { compose } from '@adonisjs/core/helpers'
 import { belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import BookingExtra from '#models/booking_extra'
+import BookingModification from '#models/booking_modification'
 import Car from '#models/car'
 import Category from '#models/category'
 import Customer from '#models/customer'
 import DeliveryZone from '#models/delivery_zone'
+import Driver from '#models/driver'
 import ProtectionPlan from '#models/protection_plan'
 import User from '#models/user'
 import { withUlid } from '#models/mixins/with_ulid'
@@ -60,6 +62,12 @@ export default class Booking extends compose(BookingSchema, withUlid) {
 
   @hasMany(() => BookingExtra)
   declare extras: HasMany<typeof BookingExtra>
+
+  @hasMany(() => BookingModification)
+  declare modifications: HasMany<typeof BookingModification>
+
+  @belongsTo(() => Driver)
+  declare driver: BelongsTo<typeof Driver>
 
   @belongsTo(() => User, { foreignKey: 'createdBy' })
   declare creator: BelongsTo<typeof User>
