@@ -94,8 +94,7 @@ Start with M3.1 customers (Ghana Card / licence uploads are private files - see 
 module rules) and M3.4/M3.5 bookings on `car_allocations` (exclusion constraint already
 there). Move POST /admin/quotes to bookings.create when that permission exists.
 
-Small items waiting: Add rate form -> stepped dialog (to match the others); periodic cleanup
-of uploaded files never attached; the owner still has to review the (inactive) example
+Small items waiting: periodic cleanup of uploaded files never attached; the owner still has to review the (inactive) example
 extras / plans / zones / fees and add real taxes.
 
 For each module: migration → model → validator (factories!) → controller (+ audit) → routes
