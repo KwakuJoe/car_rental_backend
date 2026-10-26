@@ -35,7 +35,8 @@ export default class NotificationsController {
       .count('* as total')
 
     return response.ok({
-      count: Number(result[0].$extras.total),
+      message: 'Unread notifications counted',
+      data: { count: Number(result[0].$extras.total) },
     })
   }
 

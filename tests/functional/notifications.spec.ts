@@ -44,7 +44,7 @@ test.group('notifications (in-app notifications M1.8)', (group) => {
 
     const countRes = await client.get('/api/v1/admin/notifications/unread-count').loginAs(user)
     countRes.assertStatus(200)
-    assert.equal(json(countRes).count, 2)
+    assert.equal(json(countRes).data.count, 2)
 
     const listRes = await client.get('/api/v1/admin/notifications?unreadOnly=true').loginAs(user)
     listRes.assertStatus(200)
@@ -77,14 +77,14 @@ test.group('notifications (in-app notifications M1.8)', (group) => {
     assert.isTrue(json(readRes).data.isRead)
 
     let countRes = await client.get('/api/v1/admin/notifications/unread-count').loginAs(user)
-    assert.equal(json(countRes).count, 1)
+    assert.equal(json(countRes).data.count, 1)
 
     // Mark all as read
     const allRes = await client.post('/api/v1/admin/notifications/read-all').loginAs(user)
     allRes.assertStatus(200)
 
     countRes = await client.get('/api/v1/admin/notifications/unread-count').loginAs(user)
-    assert.equal(json(countRes).count, 0)
+    assert.equal(json(countRes).data.count, 0)
   })
 
   test('staff can delete a notification', async ({ client, assert }) => {
