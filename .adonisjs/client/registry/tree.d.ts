@@ -104,6 +104,13 @@ export interface ApiDefinition {
       store: typeof routes['admin.rate_plans.store']
       update: typeof routes['admin.rate_plans.update']
     }
+    pricingRules: {
+      index: typeof routes['admin.pricing_rules.index']
+      show: typeof routes['admin.pricing_rules.show']
+      store: typeof routes['admin.pricing_rules.store']
+      update: typeof routes['admin.pricing_rules.update']
+      destroy: typeof routes['admin.pricing_rules.destroy']
+    }
     settings: {
       index: typeof routes['admin.settings.index']
       update: typeof routes['admin.settings.update']

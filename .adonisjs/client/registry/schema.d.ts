@@ -800,6 +800,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['show']>>>
     }
   }
+  'admin.pricing_rules.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/pricing-rules'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['index']>>>
+    }
+  }
+  'admin.pricing_rules.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/pricing-rules/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['show']>>>
+    }
+  }
   'admin.rate_plans.store': {
     methods: ["POST"]
     pattern: '/api/v1/admin/rate-plans'
@@ -824,6 +850,45 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['update']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['update']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/rate_plans_controller').default['update']>>>
+    }
+  }
+  'admin.pricing_rules.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/pricing-rules'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['store']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['store']>>>
+    }
+  }
+  'admin.pricing_rules.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/pricing-rules/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['update']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['update']>>>
+    }
+  }
+  'admin.pricing_rules.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/pricing-rules/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['destroy']>>>
     }
   }
   'admin.settings.index': {

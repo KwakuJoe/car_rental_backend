@@ -150,6 +150,8 @@ router
           .group(() => {
             router.get('rate-plans', [controllers.admin.RatePlans, 'index'])
             router.get('rate-plans/:id', [controllers.admin.RatePlans, 'show'])
+            router.get('pricing-rules', [controllers.admin.PricingRules, 'index'])
+            router.get('pricing-rules/:id', [controllers.admin.PricingRules, 'show'])
           })
           .use(middleware.permission({ permissions: ['pricing.view'] }))
 
@@ -157,6 +159,9 @@ router
           .group(() => {
             router.post('rate-plans', [controllers.admin.RatePlans, 'store'])
             router.put('rate-plans/:id', [controllers.admin.RatePlans, 'update'])
+            router.post('pricing-rules', [controllers.admin.PricingRules, 'store'])
+            router.put('pricing-rules/:id', [controllers.admin.PricingRules, 'update'])
+            router.delete('pricing-rules/:id', [controllers.admin.PricingRules, 'destroy'])
           })
           .use(middleware.permission({ permissions: ['pricing.manage'] }))
 

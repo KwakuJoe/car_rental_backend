@@ -73,6 +73,9 @@ Update this list as modules land.
             daily/weekly/monthly, mileage, scheduled changes, no-overlap
             constraint), RateService.resolve, pricing.* permissions
             (prompt-reference/pricing_module.txt)
+  [x] M2.6  price rules: seasons / holidays / weekends, % or fixed, up or down,
+            yearly repeat (wraps year end), targets, min days, priority +
+            stackable, PricingRuleService.adjustDay
   [~] M1.6  scheduling via system cron calling ace commands (see
             setup_command.txt "SCHEDULED JOBS") - a queue for slow work
             (PDFs, SMS) still to come with Phase 4/6

@@ -65,8 +65,13 @@ export type ScannedRoutes = {
     'admin.vehicle_documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
+    'admin.pricing_rules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
+    'admin.pricing_rules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.pricing_rules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.settings.update': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
@@ -111,6 +116,8 @@ export type ScannedRoutes = {
     'admin.vehicle_documents.expiring': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
+    'admin.pricing_rules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
@@ -147,6 +154,8 @@ export type ScannedRoutes = {
     'admin.vehicle_documents.expiring': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
+    'admin.pricing_rules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
@@ -171,6 +180,7 @@ export type ScannedRoutes = {
     'admin.car_blocks.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
     'admin.vehicle_documents.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
+    'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
     'admin.branches.store': { paramsTuple?: []; params?: {} }
     'admin.closure_dates.store': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
   }
@@ -185,6 +195,7 @@ export type ScannedRoutes = {
     'admin.cars.set_cover_photo': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'photoId': ParamValue} }
     'admin.vehicle_documents.update': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.rate_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.pricing_rules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.update': { paramsTuple?: []; params?: {} }
     'admin.business.update': { paramsTuple?: []; params?: {} }
     'admin.branches.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -199,6 +210,7 @@ export type ScannedRoutes = {
     'admin.cars.delete_photo': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'photoId': ParamValue} }
     'admin.car_blocks.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.vehicle_documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
+    'admin.pricing_rules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.branches.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.closure_dates.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'branchId': ParamValue,'id': ParamValue} }
   }

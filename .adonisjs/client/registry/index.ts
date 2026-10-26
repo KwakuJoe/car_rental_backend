@@ -372,6 +372,18 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"rate-plans"],[1,"id"]],
     types: placeholder as Registry['admin.rate_plans.show']['types'],
   },
+  'admin.pricing_rules.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/pricing-rules',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"pricing-rules"]],
+    types: placeholder as Registry['admin.pricing_rules.index']['types'],
+  },
+  'admin.pricing_rules.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/pricing-rules/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"pricing-rules"],[1,"id"]],
+    types: placeholder as Registry['admin.pricing_rules.show']['types'],
+  },
   'admin.rate_plans.store': {
     methods: ["POST"],
     pattern: '/api/v1/admin/rate-plans',
@@ -383,6 +395,24 @@ const routes = {
     pattern: '/api/v1/admin/rate-plans/:id',
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"rate-plans"],[1,"id"]],
     types: placeholder as Registry['admin.rate_plans.update']['types'],
+  },
+  'admin.pricing_rules.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/pricing-rules',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"pricing-rules"]],
+    types: placeholder as Registry['admin.pricing_rules.store']['types'],
+  },
+  'admin.pricing_rules.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/pricing-rules/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"pricing-rules"],[1,"id"]],
+    types: placeholder as Registry['admin.pricing_rules.update']['types'],
+  },
+  'admin.pricing_rules.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/admin/pricing-rules/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"pricing-rules"],[1,"id"]],
+    types: placeholder as Registry['admin.pricing_rules.destroy']['types'],
   },
   'admin.settings.index': {
     methods: ["GET","HEAD"],

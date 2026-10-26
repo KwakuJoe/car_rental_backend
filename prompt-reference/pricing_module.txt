@@ -5,7 +5,7 @@ hardcode prices, thresholds or taxes. Money is integer pesewas.
 Runnable examples: http/pricing.http. Permissions: pricing.view (read),
 pricing.manage (write), extras.manage (extras).
 
-Status: M2.5 rates DONE. M2.6 price rules, M2.7 extras, M2.8 protection,
+Status: M2.5 rates, M2.6 price rules DONE. M2.7 extras, M2.8 protection,
 M2.9 delivery zones + fee schedule, M2.10 taxes, M2.11 quote engine - next.
 
 
@@ -55,3 +55,39 @@ PUT  /api/v1/admin/rate-plans/:id   pricing.manage (full payload)
 No DELETE - set active=false.
 
 Audit: rate_plan.created, rate_plan.updated
+
+
+M2.6 PRICE RULES (pricing_rules) - seasons, holidays, weekends
+---------------------------------------------------------------
+Adjust the rate's day price on matching days. Applied PER CALENDAR DAY of a rental.
+name, type          season | holiday | weekend
+date_from/date_to   season & holiday: required from (to = from for a one-day holiday);
+                    weekend: optional period limit
+recurs_yearly       season/holiday only: match month-day every year (Christmas,
+                    Independence Day); ranges may wrap the year end (20 Dec - 5 Jan);
+                    must be shorter than a year. Moving holidays (Easter) = one-off rules.
+weekdays            weekend only: ISO 1 (Mon) - 7 (Sun), e.g. [5,6,7]
+adjustment_type     percent (value in basis points: 2500 = +25%, -1000 = -10%;
+                    -100% .. +500%) | fixed (pesewas per day, signed). Never 0.
+applies_to          all | categories (category_ids) | cars (car_ids)
+min_rental_days     the quote warns when the rental is shorter (e.g. 3 days at Christmas)
+priority            0-100; among matching non-stackable rules the highest wins
+                    (ties: holiday > season > weekend, then newest)
+stackable           added on top of the winner instead of competing
+block_online_booking  public site can't book those dates (staff still can) - Phase 7
+active, notes
+
+PricingRuleService (pure functions; the quote engine loads activeRules() once):
+  coversDay(rule, day), appliesTo(rule, {categoryId, carId}),
+  adjustDay(base, day, rules, target) -> { amount, applied[{id,name,change,...}] }
+  Every change is worked out on the BASE day price (no compounding); day >= 0.
+
+Endpoints
+GET    /api/v1/admin/pricing-rules       pricing.view  filters: search, type, active
+GET    /api/v1/admin/pricing-rules/:id   pricing.view
+POST   /api/v1/admin/pricing-rules       pricing.manage
+PUT    /api/v1/admin/pricing-rules/:id   pricing.manage (full payload)
+DELETE /api/v1/admin/pricing-rules/:id   pricing.manage (bookings copy the rule name, so
+                                         deleting a rule never changes past prices)
+Responses include `categories` / `cars` [{id, label}] for display.
+Audit: pricing_rule.created / updated / deleted

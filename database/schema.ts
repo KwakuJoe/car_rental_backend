@@ -434,6 +434,53 @@ export class PermissionSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class PricingRuleSchema extends BaseModel {
+  static $columns = ['active', 'adjustmentType', 'adjustmentValue', 'appliesTo', 'blockOnlineBooking', 'carIds', 'categoryIds', 'createdAt', 'createdBy', 'dateFrom', 'dateTo', 'id', 'minRentalDays', 'name', 'notes', 'priority', 'recursYearly', 'stackable', 'type', 'updatedAt', 'weekdays'] as const
+  $columns = PricingRuleSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare adjustmentType: string
+  @column()
+  declare adjustmentValue: number
+  @column()
+  declare appliesTo: string
+  @column()
+  declare blockOnlineBooking: boolean
+  @column()
+  declare carIds: any | null
+  @column()
+  declare categoryIds: any | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.date()
+  declare dateFrom: DateTime | null
+  @column.date()
+  declare dateTo: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare minRentalDays: number | null
+  @column()
+  declare name: string
+  @column()
+  declare notes: string | null
+  @column()
+  declare priority: number
+  @column()
+  declare recursYearly: boolean
+  @column()
+  declare stackable: boolean
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare weekdays: any | null
+}
+
 export class RateLimitSchema extends BaseModel {
   static $columns = ['expire', 'key', 'points'] as const
   $columns = RateLimitSchema.$columns

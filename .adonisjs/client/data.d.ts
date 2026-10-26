@@ -17,6 +17,7 @@ import type NotificationTransformer from '#transformers/notification_transformer
 import type OdometerLogTransformer from '#transformers/odometer_log_transformer'
 import type OpeningHourTransformer from '#transformers/opening_hour_transformer'
 import type PermissionTransformer from '#transformers/permission_transformer'
+import type PricingRuleTransformer from '#transformers/pricing_rule_transformer'
 import type RatePlanTransformer from '#transformers/rate_plan_transformer'
 import type RoleTransformer from '#transformers/role_transformer'
 import type UserTransformer from '#transformers/user_transformer'
@@ -70,6 +71,10 @@ export namespace Data {
   export type Permission = InferData<PermissionTransformer>
   export namespace Permission {
     export type Variants = InferVariants<PermissionTransformer>
+  }
+  export type PricingRule = InferData<PricingRuleTransformer>
+  export namespace PricingRule {
+    export type Variants = InferVariants<PricingRuleTransformer>
   }
   export type RatePlan = InferData<RatePlanTransformer>
   export namespace RatePlan {

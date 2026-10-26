@@ -1,4 +1,4 @@
-# Pricing: rates (M2.5). See prompt-reference/pricing_module.txt
+# Pricing: rates (M2.5) and price rules (M2.6). See prompt-reference/pricing_module.txt
 # Money is integer pesewas (GHS 450.00 = 45000).
 @baseUrl = {{$dotenv HTTP_BASE_URL}}
 
@@ -88,3 +88,62 @@ Content-Type: application/json
   "excessKmAmount": 150,
   "effectiveFrom": "2027-01-01"
 }
+
+
+### ── Price rules (M2.6) ──────────────────────────────────────────
+
+### 6. List rules (filters: search, type=season|holiday|weekend, active)
+GET {{baseUrl}}/admin/pricing-rules
+Authorization: Bearer {{token}}
+
+### 7. Christmas season every year: +25%, at least 3 days, all cars
+# @name christmas
+POST {{baseUrl}}/admin/pricing-rules
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Christmas season",
+  "type": "season",
+  "dateFrom": "2026-12-20",
+  "dateTo": "2027-01-05",
+  "recursYearly": true,
+  "adjustmentType": "percent",
+  "adjustmentValue": 2500,
+  "minRentalDays": 3,
+  "priority": 10
+}
+
+### 8. Weekends (Fri-Sun): +GHS 50/day for one category
+POST {{baseUrl}}/admin/pricing-rules
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Weekend SUV surcharge",
+  "type": "weekend",
+  "weekdays": [5, 6, 7],
+  "adjustmentType": "fixed",
+  "adjustmentValue": 5000,
+  "appliesTo": "categories",
+  "categoryIds": ["{{categoryId}}"]
+}
+
+### 9. Independence Day promo: -10%, one day every year
+POST {{baseUrl}}/admin/pricing-rules
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Independence Day promo",
+  "type": "holiday",
+  "dateFrom": "2027-03-06",
+  "recursYearly": true,
+  "adjustmentType": "percent",
+  "adjustmentValue": -1000,
+  "priority": 20
+}
+
+### 10. Delete a rule
+DELETE {{baseUrl}}/admin/pricing-rules/{{christmas.response.body.$.data.id}}
+Authorization: Bearer {{token}}
