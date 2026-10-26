@@ -118,6 +118,23 @@ export interface ApiDefinition {
       verify: typeof routes['admin.customer_identities.verify']
       reject: typeof routes['admin.customer_identities.reject']
     }
+    availability: {
+      index: typeof routes['admin.availability.index']
+    }
+    bookings: {
+      index: typeof routes['admin.bookings.index']
+      show: typeof routes['admin.bookings.show']
+      history: typeof routes['admin.bookings.history']
+      cancellationPreview: typeof routes['admin.bookings.cancellation_preview']
+      store: typeof routes['admin.bookings.store']
+      update: typeof routes['admin.bookings.update']
+      confirm: typeof routes['admin.bookings.confirm']
+      cancel: typeof routes['admin.bookings.cancel']
+      noShow: typeof routes['admin.bookings.no_show']
+    }
+    quotes: {
+      store: typeof routes['admin.quotes.store']
+    }
     ratePlans: {
       index: typeof routes['admin.rate_plans.index']
       show: typeof routes['admin.rate_plans.show']
@@ -155,9 +172,6 @@ export interface ApiDefinition {
       index: typeof routes['admin.taxes.index']
       store: typeof routes['admin.taxes.store']
       update: typeof routes['admin.taxes.update']
-    }
-    quotes: {
-      store: typeof routes['admin.quotes.store']
     }
     settings: {
       index: typeof routes['admin.settings.index']

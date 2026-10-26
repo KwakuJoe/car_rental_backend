@@ -156,7 +156,8 @@ export default class AvailabilityService {
   static async isCarAvailable(
     carId: string,
     startsAt: string | DateTime,
-    endsAt: string | DateTime
+    endsAt: string | DateTime,
+    excludeBookingId?: string
   ): Promise<boolean> {
     const from = typeof startsAt === 'string' ? DateTime.fromISO(startsAt) : startsAt
     const to = typeof endsAt === 'string' ? DateTime.fromISO(endsAt) : endsAt
@@ -164,6 +165,9 @@ export default class AvailabilityService {
     const overlap = await CarAllocation.query()
       .where('car_id', carId)
       .where('active', true)
+      .if(excludeBookingId, (query) =>
+        query.where((q) => q.whereNull('booking_id').orWhereNot('booking_id', excludeBookingId!))
+      )
       .whereRaw('tstzrange(starts_at, ends_at_with_buffer) && tstzrange(?, ?)', [
         from.toSQL({ includeOffset: true })!,
         to.toSQL({ includeOffset: true })!,

@@ -19,6 +19,7 @@ export type SettingDefinition =
 
 export const settingGroups = {
   bookings: 'Bookings',
+  cancellation: 'Cancellation & no-show',
   rental: 'Rental policy',
   payments: 'Payments & deposits',
   pricing: 'Pricing',
@@ -126,6 +127,73 @@ export const settingDefinitions = {
     default: 0,
     min: 0,
     max: 10_000_00,
+  },
+
+  'booking.staff_hold_hours': {
+    group: 'bookings',
+    type: 'integer',
+    label: 'Unconfirmed booking hold',
+    description:
+      'A phone or WhatsApp booking not yet confirmed keeps its car this long, then expires and frees the car.',
+    default: 24,
+    min: 1,
+    max: 168,
+    unit: 'hours',
+  },
+  'booking.staff_discount_limit_percent': {
+    group: 'bookings',
+    type: 'integer',
+    label: 'Staff discount limit',
+    description:
+      'Biggest discount on the rental that front-desk staff can give. More needs a manager (with a reason).',
+    default: 10,
+    min: 0,
+    max: 100,
+    unit: '%',
+  },
+
+  // ── Cancellation & no-show (M3.6) ───────────────────────────
+  'cancellation.full_refund_hours': {
+    group: 'cancellation',
+    type: 'integer',
+    label: 'Free cancellation until',
+    description: 'Cancelling at least this long before pickup costs nothing.',
+    default: 72,
+    min: 0,
+    max: 720,
+    unit: 'hours before pickup',
+  },
+  'cancellation.fee_only_hours': {
+    group: 'cancellation',
+    type: 'integer',
+    label: 'Reservation fee kept from',
+    description:
+      'Cancelling later than the free window but at least this long before pickup keeps the reservation fee. Later than this also keeps the late charge below.',
+    default: 24,
+    min: 0,
+    max: 720,
+    unit: 'hours before pickup',
+  },
+  'cancellation.late_charge_days': {
+    group: 'cancellation',
+    type: 'integer',
+    label: 'Late cancellation charge',
+    description:
+      'Days of rental kept (on top of the reservation fee) for a late cancellation or a no-show.',
+    default: 1,
+    min: 0,
+    max: 30,
+    unit: 'days',
+  },
+  'cancellation.no_show_after_hours': {
+    group: 'cancellation',
+    type: 'integer',
+    label: 'No-show after',
+    description: 'A booking can be marked as a no-show this long after the pickup time.',
+    default: 2,
+    min: 0,
+    max: 72,
+    unit: 'hours',
   },
 
   // ── Rental policy ───────────────────────────────────────────

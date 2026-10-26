@@ -192,6 +192,42 @@ router
           })
           .use(middleware.permission({ permissions: ['customers.blacklist'] }))
 
+        // Bookings (M3.4 / M3.5)
+        router
+          .group(() => {
+            router.get('availability', [controllers.admin.Availability, 'index'])
+            router.get('bookings', [controllers.admin.Bookings, 'index'])
+            router.get('bookings/:id', [controllers.admin.Bookings, 'show'])
+            router.get('bookings/:id/history', [controllers.admin.Bookings, 'history'])
+            router.get('bookings/:id/cancellation-preview', [
+              controllers.admin.Bookings,
+              'cancellationPreview',
+            ])
+          })
+          .use(middleware.permission({ permissions: ['bookings.view'] }))
+
+        router
+          .group(() => {
+            // Staff quote (preview) - the same calculation the booking uses
+            router.post('quotes', [controllers.admin.Quotes, 'store'])
+            router.post('bookings', [controllers.admin.Bookings, 'store'])
+          })
+          .use(middleware.permission({ permissions: ['bookings.create'] }))
+
+        router
+          .group(() => {
+            router.put('bookings/:id', [controllers.admin.Bookings, 'update'])
+            router.post('bookings/:id/confirm', [controllers.admin.Bookings, 'confirm'])
+          })
+          .use(middleware.permission({ permissions: ['bookings.update'] }))
+
+        router
+          .group(() => {
+            router.post('bookings/:id/cancel', [controllers.admin.Bookings, 'cancel'])
+            router.post('bookings/:id/no-show', [controllers.admin.Bookings, 'noShow'])
+          })
+          .use(middleware.permission({ permissions: ['bookings.cancel'] }))
+
         // Pricing (M2.5+)
         router
           .group(() => {
@@ -204,8 +240,6 @@ router
             router.get('delivery-zones', [controllers.admin.DeliveryZones, 'index'])
             router.get('fees', [controllers.admin.Fees, 'index'])
             router.get('taxes', [controllers.admin.Taxes, 'index'])
-            // Staff quote (preview). Phase 3: bookings.create.
-            router.post('quotes', [controllers.admin.Quotes, 'store'])
           })
           .use(middleware.permission({ permissions: ['pricing.view'] }))
 

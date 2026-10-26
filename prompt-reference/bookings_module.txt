@@ -1,0 +1,86 @@
+CAR RENTAL BACKEND — BOOKINGS MODULE REFERENCE (M1.7 numbering, M3.4 availability,
+M3.5 bookings, M3.6 cancellation policy) - Phase 3 slice 2
+==================================================================================
+Runnable examples: http/bookings.http.
+Permissions: bookings.view (list, detail, history, availability, cancellation preview),
+bookings.create (POST /quotes and POST /bookings), bookings.update (confirm, notes),
+bookings.cancel (cancel, no-show), bookings.override (blacklisted customer, under-age
+driver, discount above the staff limit - always with overrideReason).
+Roles: manager all five; front desk view/create/update/cancel; fleet + accountant view.
+NOTE: POST /admin/quotes moved from pricing.view to bookings.create.
+
+NUMBERING (M1.7) - NumberingService.next('booking', trx)
+WYK-2026-00123: businesses.document_prefix (default WYK) + year (business time zone) +
+5-digit number restarting each year. document_sequences (type, year, next_value) row,
+locked FOR UPDATE inside the booking's transaction: no duplicates, no gaps on rollback.
+
+AVAILABILITY (M3.4)
+GET /admin/availability?from=&to=&categoryId=&driveType=&search=
+  from/to ISO in the business time zone (default: now, for one day). Cars free for the
+  whole period PLUS the turnaround buffer (booking.turnaround_buffer_minutes), active and
+  not archived; driveType=self_drive leaves out chauffeur-only categories. Returns id,
+  name, registrationNo, transmission, seats, colour, coverUrl, category. Only a hint -
+  the booking itself is protected by the car_allocations exclusion constraint.
+
+BOOKINGS (bookings, booking_extras)
+Columns: reference, branch/customer/car/category, source (walk_in | phone | whatsapp |
+website | corporate - staff can't pick website), drive_type, status, pickup_at, return_at,
+delivery/collection zone + address, out_of_town, driver_nights_away, destination,
+protection_plan_id, hold_expires_at, price_snapshot (the full Quote), subtotal (before
+discount), discount_amount + reason, tax, total, deposit, reservation_fee, paid, balance
+(payments keep these in sync - Phase 5), override_reason/by, confirmed/cancelled/no_show
+fields, cancellation_fee_amount, notes. booking_extras snapshot name + price as booked.
+
+Status machine (BookingService.assertTransition):
+  pending -> confirmed | cancelled | expired | no_show
+  confirmed -> on_rent (Phase 4) | cancelled | no_show
+  on_rent -> returned -> closed (Phase 4/5); cancelled / no_show / expired are final.
+  draft exists for later (online checkout); staff bookings start pending or confirmed.
+
+POST /admin/bookings  { customerId, carId, pickupAt, returnAt, driveType, source,
+  outOfTown?, driverNightsAway?, extras?[{extraId, quantity}], protectionPlanId? (omit =
+  default, null = none), deliveryZoneId?, deliveryAddress?, collectionZoneId?,
+  collectionAddress?, destination?, notes?, discountAmount? (pesewas off the rental),
+  discountReason?, overrideReason?, confirm? }
+  - Prices ONLY through PricingService.quote() (discount = a negative "discount" line,
+    taxed as rental); the quote is frozen in price_snapshot.
+  - confirm=true -> confirmed (allocation source 'booking'); otherwise pending, held for
+    booking.staff_hold_hours (allocation source 'hold'), then bookings:expire-holds
+    expires it and frees the car.
+  - Refused (422, field named): pickup more than 1h in the past; archived customer;
+    blacklist block; self-drive driver under the minimum age (category override or
+    booking.min_driver_age); discount without a reason or above
+    booking.staff_discount_limit_percent of the rental; min/max rental days; pickup or
+    return on a closure day or after hours when after-hours handovers aren't offered;
+    any QuoteError. The three manager cases pass with bookings.override + overrideReason
+    (audited in metadata.overrides).
+  - 409 E_CAR_UNAVAILABLE when the car is taken (checked up front, and the exclusion
+    constraint catches races - tests/functional/bookings.spec.ts runs five at once).
+  - Warnings (201, data.warnings): blacklist warn, no date of birth, no licence on file,
+    licence expiring before the return or held less than booking.min_licence_years, car
+    roadworthy/insurance expiring before the return, other quote warnings. Lead time is
+    ignored for staff.
+GET  /admin/bookings  ?search (reference, customer name or phone) &status &customerId
+  &carId &source &driveType &dateFrom &dateTo (pickup date) &sortBy=pickupAt|createdAt
+GET  /admin/bookings/:id   booking + quote (the snapshot)
+PUT  /admin/bookings/:id   { destination?, notes? } - dates, car and extras change via
+  modifications (M3.8, slice 4)
+POST /admin/bookings/:id/confirm
+GET  /admin/bookings/:id/cancellation-preview  -> CancellationService.evaluate
+POST /admin/bookings/:id/cancel  { reason }  - frees the car, stores the policy fee
+POST /admin/bookings/:id/no-show - only cancellation.no_show_after_hours after pickup;
+  frees the car, late charge applies
+GET  /admin/bookings/:id/history - the booking's audit entries, oldest first
+Audit actions: booking.created, booking.confirmed, booking.updated, booking.cancelled,
+booking.no_show, booking.expired (system).
+
+CANCELLATION POLICY (M3.6) - CancellationService.evaluate(booking, { noShow? })
+Settings (group "Cancellation & no-show"): cancellation.full_refund_hours (72),
+cancellation.fee_only_hours (24), cancellation.late_charge_days (1),
+cancellation.no_show_after_hours (2).
+  >= full_refund_hours before pickup  free
+  >= fee_only_hours                   reservation fee kept
+  later, or a no-show                 reservation fee + late_charge_days x average day
+Fee capped at the total; refundable = paid - fee (never negative). Refunds: Phase 5.
+
+SCHEDULED: node ace bookings:expire-holds every 5 minutes (setup_command.txt).

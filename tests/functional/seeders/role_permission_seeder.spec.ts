@@ -27,6 +27,11 @@ test.group('role_permission_seeder', (group) => {
       permissions.map((permission) => permission.slug),
       [
         'audit.view',
+        'bookings.cancel',
+        'bookings.create',
+        'bookings.override',
+        'bookings.update',
+        'bookings.view',
         'customers.blacklist',
         'customers.manage',
         'customers.verify',
@@ -62,6 +67,11 @@ test.group('role_permission_seeder', (group) => {
         'customers.verify',
         'customers.view_documents',
         'customers.blacklist',
+        'bookings.view',
+        'bookings.create',
+        'bookings.update',
+        'bookings.cancel',
+        'bookings.override',
       ]
     )
   })
@@ -85,6 +95,10 @@ test.group('role_permission_seeder', (group) => {
         'customers.manage',
         'customers.verify',
         'customers.view_documents',
+        'bookings.view',
+        'bookings.create',
+        'bookings.update',
+        'bookings.cancel',
         'roles.manage',
       ]
     )

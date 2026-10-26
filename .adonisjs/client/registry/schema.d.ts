@@ -956,6 +956,149 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['lift']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.availability.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/availability'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/booking').availabilityValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/availability_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/availability_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/availability_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.bookings.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/bookings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/booking').bookingFilterValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.bookings.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/bookings/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['show']>>>
+    }
+  }
+  'admin.bookings.history': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/bookings/:id/history'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['history']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['history']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['history']>>>
+    }
+  }
+  'admin.bookings.cancellation_preview': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/bookings/:id/cancellation-preview'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['cancellationPreview']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['cancellationPreview']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['cancellationPreview']>>>
+    }
+  }
+  'admin.quotes.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/quotes'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/quote').quoteValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/quote').quoteValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/quotes_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/quotes_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/quotes_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.bookings.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/bookings'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/booking').createBookingValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/booking').createBookingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.bookings.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/bookings/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/booking').updateBookingValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/booking').updateBookingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.bookings.confirm': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/bookings/:id/confirm'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['confirm']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['confirm']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['confirm']>>>
+    }
+  }
+  'admin.bookings.cancel': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/bookings/:id/cancel'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/booking').cancelBookingValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/booking').cancelBookingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['cancel']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.bookings.no_show': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/bookings/:id/no-show'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['noShow']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['noShow']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['noShow']>>>
+    }
+  }
   'admin.rate_plans.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/rate-plans'
@@ -1071,19 +1214,6 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['index']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
-  'admin.quotes.store': {
-    methods: ["POST"]
-    pattern: '/api/v1/admin/quotes'
-    types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/quote').quoteValidator)>>
-      paramsTuple: []
-      params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/quote').quoteValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/quotes_controller').default['store']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/quotes_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/quotes_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.rate_plans.store': {

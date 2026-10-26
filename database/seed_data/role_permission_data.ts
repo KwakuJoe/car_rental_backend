@@ -155,6 +155,39 @@ export const permissionData = [
     group: 'customers',
     description: 'Add and lift blacklist entries',
   },
+
+  // bookings
+  {
+    name: 'View bookings',
+    slug: 'bookings.view',
+    group: 'bookings',
+    description: 'See bookings, availability and booking history',
+  },
+  {
+    name: 'Create bookings',
+    slug: 'bookings.create',
+    group: 'bookings',
+    description: 'Get quotes and make bookings',
+  },
+  {
+    name: 'Update bookings',
+    slug: 'bookings.update',
+    group: 'bookings',
+    description: 'Confirm bookings and change notes (later: extend, swap, driver)',
+  },
+  {
+    name: 'Cancel bookings',
+    slug: 'bookings.cancel',
+    group: 'bookings',
+    description: 'Cancel bookings and mark no-shows',
+  },
+  {
+    name: 'Override booking rules',
+    slug: 'bookings.override',
+    group: 'bookings',
+    description:
+      'Book a blacklisted customer or an under-age driver, or give discounts above the staff limit (with a reason)',
+  },
 ]
 
 // ── Role → Permission mapping ──────────────────────────────────
@@ -178,6 +211,11 @@ export const rolePermissionMap: Record<string, string[]> = {
     'customers.verify',
     'customers.view_documents',
     'customers.blacklist',
+    'bookings.view',
+    'bookings.create',
+    'bookings.update',
+    'bookings.cancel',
+    'bookings.override',
   ],
   'front-desk': [
     'fleet.view',
@@ -186,8 +224,12 @@ export const rolePermissionMap: Record<string, string[]> = {
     'customers.manage',
     'customers.verify',
     'customers.view_documents',
+    'bookings.view',
+    'bookings.create',
+    'bookings.update',
+    'bookings.cancel',
   ],
-  'fleet': ['fleet.view', 'fleet.manage', 'pricing.view'],
+  'fleet': ['fleet.view', 'fleet.manage', 'pricing.view', 'bookings.view'],
   'driver': [],
-  'accountant': ['audit.view', 'customers.view'],
+  'accountant': ['audit.view', 'customers.view', 'bookings.view'],
 }

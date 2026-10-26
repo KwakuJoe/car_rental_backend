@@ -495,9 +495,9 @@ test.group('POST /admin/quotes', (group) => {
   }) => {
     const { car } = await setup()
     const view = await Permission.create({
-      name: 'View pricing',
-      slug: 'pricing.view',
-      group: 'pricing',
+      name: 'Create bookings',
+      slug: 'bookings.create',
+      group: 'bookings',
     })
     const deskRole = await Role.create({ name: 'Front Desk', slug: 'front-desk' })
     await deskRole.related('permissions').attach([view.id])

@@ -94,7 +94,15 @@ Update this list as modules land.
   [~] M1.6  scheduling via system cron calling ace commands (see
             setup_command.txt "SCHEDULED JOBS") - a queue for slow work
             (PDFs, SMS) still to come with Phase 4/6
-  [ ] M1.7  document numbering - with bookings/invoices
+  [x] M1.7  document numbering: WYK-2026-00123 (businesses.document_prefix),
+            document_sequences row-locked, NumberingService
+  [x] M3.4  availability search GET /admin/availability (turnaround included)
+  [x] M3.5  staff bookings: pending (held) / confirmed, quote snapshot, extras,
+            discounts (10% staff limit), blacklist / age checks with manager
+            override, confirm / cancel / no-show, hold expiry cron, history,
+            concurrency test (prompt-reference/bookings_module.txt)
+  [~] M3.6  cancellation policy settings + CancellationService (fee shown and
+            stored); refunds come with payments (Phase 5)
   [ ] M8.6  vehicle usage chart on the Odometer tab (after M8.1, or a simple
             version after Phase 4) - see M8.6
 

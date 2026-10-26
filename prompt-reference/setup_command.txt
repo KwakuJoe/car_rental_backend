@@ -201,6 +201,9 @@ app (`crontab -e`), adjusting the path:
   # Delete ID / vehicle-document uploads never saved onto a record (> 24h) - nightly at 02:00
   0 2 * * * cd /srv/car_rental_backend/build && node ace files:cleanup >> storage/logs/cron.log 2>&1
 
+  # Expire unconfirmed bookings past their hold and free the car - every 5 minutes
+  */5 * * * * cd /srv/car_rental_backend/build && node ace bookings:expire-holds >> storage/logs/cron.log 2>&1
+
 Each job is safe to re-run: alerts are de-duplicated per document and
 milestone (30/14/7/1 days and the expiry day), so a missed or doubled run
 never spams staff. New scheduled jobs (overdue rentals, hold expiry) get a

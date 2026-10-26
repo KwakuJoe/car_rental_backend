@@ -100,6 +100,120 @@ export class BlacklistEntrySchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class BookingExtraSchema extends BaseModel {
+  static $columns = ['bookingId', 'createdAt', 'extraId', 'id', 'name', 'quantity', 'totalAmount', 'unitAmount', 'updatedAt'] as const
+  $columns = BookingExtraSchema.$columns
+  @column()
+  declare bookingId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare extraId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column()
+  declare quantity: number
+  @column()
+  declare totalAmount: number
+  @column()
+  declare unitAmount: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class BookingSchema extends BaseModel {
+  static $columns = ['balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
+  $columns = BookingSchema.$columns
+  @column()
+  declare balanceAmount: number
+  @column()
+  declare branchId: string
+  @column()
+  declare cancelReason: string | null
+  @column()
+  declare cancellationFeeAmount: number | null
+  @column.dateTime()
+  declare cancelledAt: DateTime | null
+  @column()
+  declare cancelledBy: string | null
+  @column()
+  declare carId: string
+  @column()
+  declare categoryId: string
+  @column()
+  declare collectionAddress: string | null
+  @column()
+  declare collectionZoneId: string | null
+  @column.dateTime()
+  declare confirmedAt: DateTime | null
+  @column()
+  declare confirmedBy: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare customerId: string
+  @column()
+  declare deliveryAddress: string | null
+  @column()
+  declare deliveryZoneId: string | null
+  @column()
+  declare depositAmount: number
+  @column()
+  declare destination: string | null
+  @column()
+  declare discountAmount: number
+  @column()
+  declare discountReason: string | null
+  @column()
+  declare driveType: string
+  @column()
+  declare driverNightsAway: number
+  @column.dateTime()
+  declare holdExpiresAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column.dateTime()
+  declare noShowAt: DateTime | null
+  @column()
+  declare notes: string | null
+  @column()
+  declare outOfTown: boolean
+  @column()
+  declare overrideBy: string | null
+  @column()
+  declare overrideReason: string | null
+  @column()
+  declare paidAmount: number
+  @column.dateTime()
+  declare pickupAt: DateTime
+  @column()
+  declare priceSnapshot: any
+  @column()
+  declare protectionPlanId: string | null
+  @column()
+  declare reference: string
+  @column()
+  declare reservationFeeAmount: number | null
+  @column.dateTime()
+  declare returnAt: DateTime
+  @column()
+  declare source: string
+  @column()
+  declare status: string
+  @column()
+  declare subtotalAmount: number
+  @column()
+  declare taxAmount: number
+  @column()
+  declare totalAmount: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class BranchUserSchema extends BaseModel {
   static $columns = ['branchId', 'createdAt', 'updatedAt', 'userId'] as const
   $columns = BranchUserSchema.$columns
@@ -151,7 +265,7 @@ export class BranchSchema extends BaseModel {
 }
 
 export class BusinessSchema extends BaseModel {
-  static $columns = ['address', 'city', 'createdAt', 'currency', 'digitalAddress', 'email', 'id', 'name', 'phone', 'region', 'timezone', 'tin', 'tradingName', 'updatedAt', 'vatNumber', 'vatRegistered', 'whatsappPhone'] as const
+  static $columns = ['address', 'city', 'createdAt', 'currency', 'digitalAddress', 'documentPrefix', 'email', 'id', 'name', 'phone', 'region', 'timezone', 'tin', 'tradingName', 'updatedAt', 'vatNumber', 'vatRegistered', 'whatsappPhone'] as const
   $columns = BusinessSchema.$columns
   @column()
   declare address: string | null
@@ -163,6 +277,8 @@ export class BusinessSchema extends BaseModel {
   declare currency: string
   @column()
   declare digitalAddress: string | null
+  @column()
+  declare documentPrefix: string
   @column()
   declare email: string
   @column({ isPrimary: true })
@@ -469,6 +585,23 @@ export class DeliveryZoneSchema extends BaseModel {
   declare sortOrder: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+}
+
+export class DocumentSequenceSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'nextValue', 'type', 'updatedAt', 'year'] as const
+  $columns = DocumentSequenceSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare nextValue: number
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare year: number
 }
 
 export class ExtraSchema extends BaseModel {

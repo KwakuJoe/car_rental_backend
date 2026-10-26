@@ -29,6 +29,10 @@ export type QuoteInput = {
   protectionPlanId?: string | null
   deliveryZoneId?: string | null
   collectionZoneId?: string | null
+  /** Off the rental (pesewas), taxed like rental. Limits are the booking's job. */
+  discountAmount?: number
+  /** Re-pricing an existing booking: its own hold isn't a clash */
+  excludeBookingId?: string
 }
 
 export type QuoteDay = {
@@ -47,6 +51,7 @@ export type QuoteLine = {
     | 'delivery'
     | 'collection'
     | 'after_hours'
+    | 'discount'
   label: string
   quantity: number
   unitAmount: number
@@ -157,7 +162,14 @@ export class PricingService {
             : `Pickups need at least ${leadHours} hours' notice.`,
       })
     }
-    if (!(await AvailabilityService.isCarAvailable(car.id, pickupAt, returnAt))) {
+    if (
+      !(await AvailabilityService.isCarAvailable(
+        car.id,
+        pickupAt,
+        returnAt,
+        input.excludeBookingId
+      ))
+    ) {
       warnings.push({
         code: 'unavailable',
         message: 'This car is already booked or blocked for some of these dates.',
@@ -246,6 +258,20 @@ export class PricingService {
       amount: rentalTotal,
       taxable: true,
     })
+
+    if (input.discountAmount) {
+      if (input.discountAmount < 0 || input.discountAmount > rentalTotal) {
+        throw new QuoteError('discountAmount', 'The discount can’t be more than the rental.')
+      }
+      lines.push({
+        type: 'discount',
+        label: 'Discount',
+        quantity: 1,
+        unitAmount: -input.discountAmount,
+        amount: -input.discountAmount,
+        taxable: true,
+      })
+    }
 
     if (input.driveType === 'chauffeur' && (input.driverNightsAway ?? 0) > 0) {
       const nights = input.driverNightsAway!
@@ -389,6 +415,7 @@ export class PricingService {
       delivery: 'delivery',
       collection: 'delivery',
       after_hours: 'fees',
+      discount: 'rental',
     }
     // Rental is taxed per day (each day is a line on the invoice), the rest per line
     const taxableLines = [

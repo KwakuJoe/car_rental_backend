@@ -77,6 +77,17 @@ export type ScannedRoutes = {
     'admin.blacklist.index': { paramsTuple?: []; params?: {} }
     'admin.blacklist.store': { paramsTuple?: []; params?: {} }
     'admin.blacklist.lift': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.availability.index': { paramsTuple?: []; params?: {} }
+    'admin.bookings.index': { paramsTuple?: []; params?: {} }
+    'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.quotes.store': { paramsTuple?: []; params?: {} }
+    'admin.bookings.store': { paramsTuple?: []; params?: {} }
+    'admin.bookings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.confirm': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.no_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
@@ -86,7 +97,6 @@ export type ScannedRoutes = {
     'admin.delivery_zones.index': { paramsTuple?: []; params?: {} }
     'admin.fees.index': { paramsTuple?: []; params?: {} }
     'admin.taxes.index': { paramsTuple?: []; params?: {} }
-    'admin.quotes.store': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
@@ -149,6 +159,11 @@ export type ScannedRoutes = {
     'admin.customers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.blacklist.check': { paramsTuple?: []; params?: {} }
     'admin.blacklist.index': { paramsTuple?: []; params?: {} }
+    'admin.availability.index': { paramsTuple?: []; params?: {} }
+    'admin.bookings.index': { paramsTuple?: []; params?: {} }
+    'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
@@ -197,6 +212,11 @@ export type ScannedRoutes = {
     'admin.customers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.blacklist.check': { paramsTuple?: []; params?: {} }
     'admin.blacklist.index': { paramsTuple?: []; params?: {} }
+    'admin.availability.index': { paramsTuple?: []; params?: {} }
+    'admin.bookings.index': { paramsTuple?: []; params?: {} }
+    'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
@@ -236,6 +256,10 @@ export type ScannedRoutes = {
     'admin.blacklist.store': { paramsTuple?: []; params?: {} }
     'admin.blacklist.lift': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.quotes.store': { paramsTuple?: []; params?: {} }
+    'admin.bookings.store': { paramsTuple?: []; params?: {} }
+    'admin.bookings.confirm': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.no_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
     'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
     'admin.protection_plans.store': { paramsTuple?: []; params?: {} }
@@ -258,6 +282,7 @@ export type ScannedRoutes = {
     'admin.vehicle_documents.update': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.customers.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.customer_identities.update': { paramsTuple: [ParamValue,ParamValue]; params: {'customerId': ParamValue,'id': ParamValue} }
+    'admin.bookings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.protection_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

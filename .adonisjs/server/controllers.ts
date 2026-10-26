@@ -7,7 +7,9 @@ export const controllers = {
   AccessTokens: () => import('#controllers/access_tokens_controller'),
   admin: {
     AuditLogs: () => import('#controllers/admin/audit_logs_controller'),
+    Availability: () => import('#controllers/admin/availability_controller'),
     Blacklist: () => import('#controllers/admin/blacklist_controller'),
+    Bookings: () => import('#controllers/admin/bookings_controller'),
     Branches: () => import('#controllers/admin/branches_controller'),
     Business: () => import('#controllers/admin/business_controller'),
     CarBlocks: () => import('#controllers/admin/car_blocks_controller'),
