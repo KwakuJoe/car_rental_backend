@@ -21,4 +21,6 @@ export const quoteValidator = vine.create({
   protectionPlanId: vine.string().nullable().optional(),
   deliveryZoneId: vine.string().nullable().optional(),
   collectionZoneId: vine.string().nullable().optional(),
+  // Preview a booking's discount (pesewas off the rental); limits are checked on booking
+  discountAmount: vine.number().withoutDecimals().min(0).optional(),
 })

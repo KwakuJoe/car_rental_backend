@@ -123,8 +123,13 @@ proper pass before go-live (Milestone A). Tick them off as they're covered.
       nationality field has e2e
   [ ] Signed URL expiry: an ID link really stops working after 5 minutes
       (Cloudinary side)
-  [ ] Bookings (Phase 3 slice 2): concurrency test is MANDATORY, not optional;
-      add holds expiring, status machine transitions, override limits
+  [x] Bookings concurrency test (five simultaneous bookings, one wins) - done
+  [ ] Bookings UI not covered by e2e yet: Hold (instead of Confirm) then
+      Confirm, no-show button, discount + manager override on the review step,
+      blacklisted customer refused at step 1, booking errors jumping back to
+      their step, chauffeur options (out of town, nights away)
+  [ ] Booking warnings (no licence, licence/roadworthy expiring) - backend
+      returns them, UI shows them as toasts only; check they read well
 
 
 PHASE OVERVIEW

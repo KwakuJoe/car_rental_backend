@@ -131,59 +131,37 @@ See `customers_module.txt`.
     `meta.expected4xx`.
 
 ### Tests (last green run)
-- Backend: **146** Japa tests.
-- Frontend: **35** Playwright tests (setup, smoke and workflows: fleet, pricing,
-  pricing-catalog, quote, customers), plus the visual tour.
+- Backend: **151** Japa tests (incl. the bookings concurrency test).
+- Frontend: **37** Playwright tests (setup, smoke and workflows: fleet, pricing,
+  pricing-catalog, quote, customers, bookings), plus the visual tour. The last full run was
+  before bookings; bookings, quote and smoke were run after it.
 - The last full e2e run had 3 tests time out because the machine was overloaded (load average
   ~200, from VS Code extension hosts and Rider). Re-run serially with `--workers=1`, all 9
   tests in those files passed.
 
-## NEXT TASK: Phase 3 slice 2 - bookings (see modules.txt M3.4, M3.5, M1.7)
-The owner agreed the slice plan:
+## NEXT TASK: Phase 3 slice 3 - cancel flow polish, calendar, Today board
+**Slice 2 (bookings) is DONE** - see `prompt-reference/bookings_module.txt`:
+- Backend: M1.7 numbering (`WYK-2026-00001`), `GET /admin/availability`, bookings (pending
+  hold / confirmed, quote snapshot, discounts with a 10% staff limit, blacklist / age checks
+  with `bookings.override`, confirm / cancel / no-show, history), cancellation settings and
+  `CancellationService`, the `bookings:expire-holds` cron, and the concurrency test.
+- Frontend: Bookings list (Filter dialog), New booking page (4 steps: customer & dates →
+  car from availability → extras & delivery → price & confirm), booking detail page
+  (Overview / Price / History, Confirm / Cancel with the policy fee / No-show), and the
+  customer's Bookings tab. "Get a quote" now needs `bookings.create`.
 
-**Slice 2: bookings.** Do this next.
-- **M1.7 document numbering:** references like `WYK-2026-00123` (business prefix, year, and a
-  5-digit number that restarts each year). Use a counter table updated with a row lock, not
-  `max()+1`.
-- **M3.4 availability:** `GET /admin/availability?from=&to=&categoryId=&driveType=`.
-  `AvailabilityService` already exists from car blocks; extend it with `search` and
-  `nextAvailableAt`. Overlaps are refused by the `car_allocations` exclusion constraint, and the
-  409 is already handled.
-- **M3.5 bookings:**
-  - Tables `bookings` and `booking_extras`, using the status machine in modules.txt
-    (draft → pending → confirmed → on_rent → returned → closed, plus cancelled, no_show and
-    expired).
-  - Holds use `hold_expires_at` and need a cron command that expires them.
-  - The car allocation is written in the same transaction as the booking.
-  - **Price through `PricingService.quote()` only, never a second calculation.** Store the full
-    quote as `price_snapshot` jsonb, together with the totals.
-  - **Move `POST /admin/quotes` to the `bookings.create` permission** once that permission
-    exists.
-- **Checks:**
-  - The driver meets the minimum age (category override).
-  - The licence is valid.
-  - The blacklist: block refuses the booking unless overridden with `bookings.override` and a
-    reason; warn only shows a warning.
-  - Opening hours and closures: after hours adds the fee, and closure dates are refused.
-  - Car documents must be valid through the return date; this is a warning only.
-- **Discounts:** staff can give up to **10%** (a setting). Anything more needs
-  `bookings.override` and a reason, and is audited.
-- **Concurrency test:** two simultaneous bookings for the same car must leave exactly one
-  winner and one 409. This proves "impossible to double-book".
-- **Frontend:**
-  - A New booking **page**, not a drawer: customer → dates and car (availability) → extras and
-    protection → quote summary → confirm.
-  - A bookings list with a Filter dialog and a booking detail page.
-  - Fill in the customer **Bookings tab**.
-- **Cancellation settings (M3.6),** configurable tiers with these defaults: 72h or more gives a
-  full refund; 24-72h keeps the reservation fee; under 24h or a no-show keeps the fee plus one
-  day. `CancellationService.evaluate`. These can land in slice 2 as settings even if the
-  cancel flow comes in slice 3.
+**Slice 3** (next):
+- **Booking calendar (M3.7):** `GET /admin/calendar` with per-car rows of allocations; a
+  timeline view.
+- **Today board (M3.10):** pickups and returns today, overdue rentals, holds about to expire,
+  unverified customers picking up today, cars with expired documents.
+- **The "current / next booking" card** at the top of the customer Profile tab (like the
+  hostel's "Current stay").
+- **Editable business `document_prefix`** (the `WYK` part of references) on the business
+  profile.
 
-**Slice 3:** the cancel and no-show flows (M3.6), the booking calendar (M3.7) and the Today
-board (M3.10).
-**Slice 4:** modifications (M3.8; extensions use **today's** rates, and early return gives no
-refund by default) and drivers (M3.9, using driver_allocations with the same constraint).
+**Slice 4:** modifications (M3.8: extend at today's rates, swap, change dates, early return
+with no refund by default) and drivers (M3.9, driver_allocations with the same constraint).
 
 ### Owner decisions already made (don't re-ask)
 - Customers book a **specific car**; staff can swap it (M3.8).
@@ -197,7 +175,8 @@ refund by default) and drivers (M3.9, using driver_allocations with the same con
 ### Small items waiting
 - The owner asked for lean testing while building: lightly tested areas are listed in the
   **TESTING BACKLOG** in `modules.txt` (under PROGRESS). Add to it, and cover it before go-live.
-- Cron on the server: `files:cleanup` nightly (added 2026-10-26, see `setup_command.txt`).
+- Cron on the server: `files:cleanup` nightly and `bookings:expire-holds` every 5 minutes
+  (see `setup_command.txt`).
 - The owner has to review the inactive example extras, plans, zones and fees, and add real
   taxes.
 - Optional, offered to the owner: the backend could also normalise user, branch and business
@@ -353,8 +332,7 @@ Full-page screenshots show sticky elements mid-page; that's the capture method, 
 
 ## Git
 Both repos are on `main`, tracking `origin/main`, and were clean at hand-off:
-- backend `8d32fa9` (Phase 3 slice 1)
-- frontend `b23986a` (PhoneInput)
+- backend and frontend: Phase 3 slice 2 (bookings)
 
 The backend tracks the generated `.adonisjs/` route registry; commit it when routes change.
 Write commit messages that say what and why. Never commit `.env`, `http/.env`,
