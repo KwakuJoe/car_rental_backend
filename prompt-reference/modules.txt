@@ -99,6 +99,26 @@ Update this list as modules land.
             version after Phase 4) - see M8.6
 
 
+TESTING BACKLOG (owner asked to keep testing lean while building - 2026-10-26)
+------------------------------------------------------------------------------
+Areas that got a minimal test (or only typecheck + one e2e run) and deserve a
+proper pass before go-live (Milestone A). Tick them off as they're covered.
+  [ ] Full e2e suite on a quiet machine (last full runs hit load-average
+      timeouts; everything passed serially)
+  [ ] ID document dialog: closing without saving deletes the uploads; replacing
+      an image twice keeps only the saved one (frontend, no e2e yet)
+  [ ] files:cleanup against real Cloudinary (tests mock deletion)
+  [ ] PhoneInput: non-Ghana numbers end to end (customer, user, branch,
+      business profile); legacy local numbers ("0244...") load and re-save as
+      E.164
+  [ ] CountrySelect on the document form (issuing country) - only the
+      nationality field has e2e
+  [ ] Signed URL expiry: an ID link really stops working after 5 minutes
+      (Cloudinary side)
+  [ ] Bookings (Phase 3 slice 2): concurrency test is MANDATORY, not optional;
+      add holds expiring, status machine transitions, override limits
+
+
 PHASE OVERVIEW
 -----------------
 Phase  Name                         Outcome

@@ -9,6 +9,8 @@ import Customer from '#models/customer'
 import File from '#models/file'
 import AuditLog from '#models/audit_log'
 import { normalizeDocumentNumber, normalizePhone } from '#helpers/phone'
+import FileService from '#services/file_service'
+import { DateTime } from 'luxon'
 
 const json = (response: { body(): unknown }) => response.body() as Record<string, any>
 
@@ -246,6 +248,74 @@ test.group('customers', (group) => {
       .json({ type: 'ghana_card', number: 'GHA-123456789-0', frontFileId: publicFile.id })
       .loginAs(owner)
     response.assertStatus(422)
+  })
+
+  test("ID scans: no moving another document's file, 5-minute links, orphans cleaned up", async ({
+    client,
+    assert,
+  }) => {
+    const { owner } = await setup()
+    // Deleting files would otherwise call Cloudinary
+    FileService.setMockUploader(async () => ({}) as any)
+    try {
+      const created = await client.post('/api/v1/admin/customers').json(ama).loginAs(owner)
+      const url = `/api/v1/admin/customers/${json(created).data.id}/identities`
+      const front = await privateFile('id_front')
+      const doc = await client
+        .post(url)
+        .json({ type: 'ghana_card', number: 'GHA-123456789-0', frontFileId: front.id })
+        .loginAs(owner)
+      doc.assertStatus(201)
+
+      // Another document can't take this one's image...
+      const stolen = await client
+        .post(url)
+        .json({
+          type: 'passport',
+          number: 'G1234567',
+          expiresOn: '2031-01-01',
+          frontFileId: front.id,
+        })
+        .loginAs(owner)
+      stolen.assertStatus(422)
+      // ...but saving the same document again with its own image is fine
+      const resaved = await client
+        .put(`${url}/${json(doc).data.id}`)
+        .json({ type: 'ghana_card', number: 'GHA-123456789-0', frontFileId: front.id })
+        .loginAs(owner)
+      resaved.assertStatus(200)
+
+      // Replacing the image deletes the old scan
+      const replacement = await privateFile('id_front')
+      await client
+        .put(`${url}/${json(doc).data.id}`)
+        .json({ type: 'ghana_card', number: 'GHA-123456789-0', frontFileId: replacement.id })
+        .loginAs(owner)
+      assert.isNull(await File.find(front.id))
+
+      // Links to ID scans live 5 minutes, even when asked for longer
+      const link = await client
+        .get(`/api/v1/admin/files/${replacement.id}/url`)
+        .qs({ expiresInSeconds: 86400 })
+        .loginAs(owner)
+      assert.equal(json(link).data.expiresInSeconds, 300)
+
+      // Cleanup: only private uploads never attached, older than 24h
+      const fresh = await privateFile('id_back')
+      const old = await privateFile('id_back')
+      old.createdAt = DateTime.now().minus({ hours: 25 })
+      await old.save()
+      const oldPhoto = await privateFile('car_photo')
+      oldPhoto.createdAt = DateTime.now().minus({ hours: 25 })
+      await oldPhoto.save()
+      assert.equal(await FileService.deleteUnattached({ olderThanHours: 24 }), 1)
+      assert.isNull(await File.find(old.id))
+      assert.isNotNull(await File.find(fresh.id))
+      assert.isNotNull(await File.find(oldPhoto.id))
+      assert.isNotNull(await File.find(replacement.id))
+    } finally {
+      FileService.setMockUploader(null)
+    }
   })
 
   test('duplicate check: same phone, same name and birth date, same document', async ({

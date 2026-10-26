@@ -25,6 +25,10 @@ async function loadRole(user: User) {
   )
 }
 
+const ID_PURPOSES: string[] = ['id_front', 'id_back', 'licence']
+/** Signed links to ID scans live 5 minutes at most */
+const ID_URL_TTL = 300
+
 async function canAccessPrivateFile(user: User, file: File): Promise<boolean> {
   await loadRole(user)
   const role = user.role
@@ -183,7 +187,7 @@ export default class FilesController {
       }
 
       // Sensitive identity documents access is audited under Act 843 compliance
-      if (['id_front', 'id_back', 'licence'].includes(file.purpose)) {
+      if (ID_PURPOSES.includes(file.purpose)) {
         await AuditService.record(ctx, {
           action: 'file.viewed_signed_url',
           subject: { type: 'file', id: file.id, label: file.originalName },
@@ -192,7 +196,11 @@ export default class FilesController {
       }
     }
 
-    const url = FileService.getUrl(file, { expiresInSeconds })
+    // ID scans: a forwarded link must die quickly. The UI asks for a fresh one per view.
+    const ttl = ID_PURPOSES.includes(file.purpose)
+      ? Math.min(expiresInSeconds ?? ID_URL_TTL, ID_URL_TTL)
+      : (expiresInSeconds ?? 3600)
+    const url = FileService.getUrl(file, { expiresInSeconds: ttl })
 
     return response.ok({
       message: 'File URL generated',
@@ -200,7 +208,7 @@ export default class FilesController {
         id: file.id,
         url,
         isPrivate: file.isPrivate,
-        expiresInSeconds: file.isPrivate ? (expiresInSeconds ?? 3600) : null,
+        expiresInSeconds: file.isPrivate ? ttl : null,
       },
     })
   }

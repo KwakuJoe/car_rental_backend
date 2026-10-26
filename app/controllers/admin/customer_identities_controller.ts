@@ -29,8 +29,11 @@ const FILE_PURPOSES_BY_SIDE: Record<string, string[]> = {
   back: ['id_back', 'licence'],
 }
 
-/** Rules, plus the private-file check: ID images must never be public. */
-async function values(payload: IdentityPayload) {
+/**
+ * Rules, plus the file checks: ID images must be private, and a file already
+ * on another document can't be moved here (only this document's own files).
+ */
+async function values(payload: IdentityPayload, identityId?: string) {
   const number = normalizeDocumentNumber(payload.type, payload.number)
   if (payload.type === 'ghana_card' && !GHANA_CARD_PATTERN.test(number)) {
     throw new FieldError('number', 'A Ghana Card number looks like GHA-123456789-0.')
@@ -49,6 +52,10 @@ async function values(payload: IdentityPayload) {
     if (!fileId) continue
     const file = await File.find(fileId)
     if (!file || !file.isPrivate || !FILE_PURPOSES_BY_SIDE[side].includes(file.purpose)) {
+      throw new FieldError(`${side}FileId`, 'Upload the document image again.')
+    }
+    const ownFile = file.attachableType === 'customer_identity' && file.attachableId === identityId
+    if (file.attachableId && !ownFile) {
       throw new FieldError(`${side}FileId`, 'Upload the document image again.')
     }
   }
@@ -131,7 +138,8 @@ export default class CustomerIdentitiesController {
       .firstOrFail()
     const payload = await request.validateUsing(identityValidator)
     try {
-      const data = await values(payload)
+      const data = await values(payload, identity.id)
+      const previousFileIds = [identity.frontFileId, identity.backFileId]
       await db.transaction(async (trx) => {
         identity.useTransaction(trx)
         identity.merge(data)
@@ -158,6 +166,13 @@ export default class CustomerIdentitiesController {
           trx
         )
       })
+      // A replaced image is no longer needed - don't keep ID scans without a reason (Act 843)
+      const kept = [identity.frontFileId, identity.backFileId]
+      for (const fileId of previousFileIds) {
+        if (!fileId || kept.includes(fileId)) continue
+        const file = await File.find(fileId)
+        if (file) await FileService.delete(file)
+      }
       const canView = await userCan(auth.getUserOrFail(), 'customers.view_documents')
       return response.ok({ message: 'Document updated', data: identityToJson(identity, canView) })
     } catch (error) {

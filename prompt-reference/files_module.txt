@@ -35,6 +35,13 @@ Under the Ghana Data Protection Act 2012 (Act 843):
 - Accessing signed URLs for identity documents requires `customers.view_documents`
   (or superAdmin) and writes an audit log entry (`file.viewed_signed_url`).
 - Vehicle documents require `fleet.view` (or superAdmin) to generate signed URLs.
+- Signed URLs for ID scans (id_front, id_back, licence) live 5 minutes at most,
+  whatever expiresInSeconds asks for; other private files default to 1 hour.
+- A document can only use a file that is unattached or already its own - a file
+  on another document can't be moved (422). Replacing an ID image deletes the old one.
+- Uploads never saved onto a document: the ID dialog deletes them when closed, and
+  `node ace files:cleanup` (nightly cron) deletes private document uploads still
+  unattached after 24 hours (`FileService.deleteUnattached`).
 - Signed URLs have a configurable expiry (default 1 hour / 3600 seconds).
 - Private purposes (vehicle_document, id_front, id_back, licence, ...) are ALWAYS stored
   private; `isPrivate` in a request can only make other purposes private, never the reverse.

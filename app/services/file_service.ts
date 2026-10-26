@@ -1,5 +1,6 @@
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary'
 import env from '#start/env'
+import { DateTime } from 'luxon'
 import logger from '@adonisjs/core/services/logger'
 import File, { type FilePurpose, PRIVATE_PURPOSES } from '#models/file'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
@@ -308,6 +309,21 @@ export class FileService {
     }
     await file.save()
     return file
+  }
+
+  /**
+   * Delete private document uploads (ID scans, licences, vehicle documents)
+   * that were never attached to a record and are older than the cut-off.
+   * Returns how many were deleted. Used by `node ace files:cleanup`.
+   */
+  static async deleteUnattached(options: { olderThanHours: number }): Promise<number> {
+    const cutoff = DateTime.now().minus({ hours: options.olderThanHours })
+    const orphans = await File.query()
+      .whereNull('attachable_id')
+      .whereIn('purpose', ['id_front', 'id_back', 'licence', 'vehicle_document'])
+      .where('created_at', '<', cutoff.toSQL()!)
+    for (const file of orphans) await this.delete(file)
+    return orphans.length
   }
 
   /**
