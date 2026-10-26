@@ -1302,10 +1302,11 @@ Per-user overrides (permissionsOverride) cover exceptions without new roles.
 DECISIONS TO CONFIRM BEFORE / DURING THE BUILD
 ==========================================================================
 1. Frontend: DECIDED - one Next.js app (public site + dashboard).
-2. Customers book a SPECIFIC car (assumed - matches "calendar per car" and
-   car detail pages) vs a category ("Toyota Corolla or similar") with the
-   car assigned at pickup. The data model supports both (bookings keep
-   category_id), but the public site UX differs.
+2. DECIDED with the owner (2026-10-26): customers book a SPECIFIC car (own
+   page, photos, per-car availability), like Ghanaian sites such as
+   wopecar.com. Staff can swap the car (M3.8) if it breaks down, with the
+   customer notified and the change audited. Bookings still keep
+   category_id for reporting.
 3. VAT registration status, current tax lines and whether GRA E-VAT is
    mandatory for this business (accountant).
 4. Paystack: confirm MoMo channels, fees, settlement timing, refund rules
