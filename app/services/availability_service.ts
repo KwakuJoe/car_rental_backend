@@ -180,7 +180,8 @@ export default class AvailabilityService {
   /**
    * Search for available cars across categories and branches.
    */
-  static async getAvailableCars(
+  /** A query (not yet run) so callers can add filters and paginate. */
+  static getAvailableCars(
     startsAt: string | DateTime,
     endsAt: string | DateTime,
     filters?: { categoryId?: string; branchId?: string }

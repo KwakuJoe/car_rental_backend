@@ -30,7 +30,11 @@ const detail = (id: string) =>
   Booking.query()
     .where('id', id)
     .preload('customer')
-    .preload('car', (q) => q.preload('category'))
+    .preload('car', (q) =>
+      q
+        .preload('category')
+        .preload('photos', (photos) => photos.preload('file').orderBy('sort_order', 'asc'))
+    )
     .preload('extras', (q) => q.orderBy('created_at', 'asc'))
     .firstOrFail()
 
@@ -41,7 +45,11 @@ export default class BookingsController {
     const zone = business?.timezone || 'Africa/Accra'
     const query = Booking.query()
       .preload('customer')
-      .preload('car', (q) => q.preload('category'))
+      .preload('car', (q) =>
+        q
+          .preload('category')
+          .preload('photos', (photos) => photos.preload('file').orderBy('sort_order', 'asc'))
+      )
 
     if (payload.search) {
       const term = payload.search

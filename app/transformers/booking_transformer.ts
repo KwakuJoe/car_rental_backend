@@ -1,6 +1,12 @@
 import { DateTime } from 'luxon'
 import type Booking from '#models/booking'
 
+function coverUrl(booking: Booking) {
+  const photos = booking.car.$preloaded.photos ? booking.car.photos : []
+  const cover = photos.find((photo) => photo.isCover) ?? photos[0]
+  return cover?.file?.url ?? null
+}
+
 /**
  * A booking for the dashboard. Expects customer, car (+ category) and extras
  * preloaded for the detail view; lists preload customer and car only.
@@ -35,6 +41,7 @@ export function bookingToJson(booking: Booking, options: { graceMinutes?: number
       name: `${car.make} ${car.model} ${car.year}`,
       registrationNo: car.registrationNo,
       categoryName: car.$preloaded.category ? car.category.name : null,
+      coverUrl: coverUrl(booking),
     },
     categoryId: booking.categoryId,
     deliveryZoneId: booking.deliveryZoneId,

@@ -266,6 +266,23 @@ test.group('bookings', (group) => {
       .qs({ customerId: customer.id })
       .loginAs(desk)
     assert.equal(json(list).data.length, 1)
+
+    // The car is free again: availability finds it by plate, paginated, with filters
+    const free = await client
+      .get('/api/v1/admin/availability')
+      .qs({
+        from: '2030-03-04T09:00',
+        to: '2030-03-07T09:00',
+        search: 'GR1234',
+        transmission: 'auto',
+        limit: 12,
+      })
+      .loginAs(desk)
+    assert.deepEqual(
+      json(free).data.map((found: any) => found.id),
+      [car.id]
+    )
+    assert.equal(json(free).meta.total, 1)
   })
 })
 

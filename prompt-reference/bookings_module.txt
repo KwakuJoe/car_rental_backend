@@ -15,11 +15,13 @@ WYK-2026-00123: businesses.document_prefix (default WYK) + year (business time z
 locked FOR UPDATE inside the booking's transaction: no duplicates, no gaps on rollback.
 
 AVAILABILITY (M3.4)
-GET /admin/availability?from=&to=&categoryId=&driveType=&search=
+GET /admin/availability?from=&to=&categoryId=&driveType=&transmission=&fuelType=&search=
+  &page=&limit= (paginated, default 12, { data, meta })
   from/to ISO in the business time zone (default: now, for one day). Cars free for the
   whole period PLUS the turnaround buffer (booking.turnaround_buffer_minutes), active and
-  not archived; driveType=self_drive leaves out chauffeur-only categories. Returns id,
-  name, registrationNo, transmission, seats, colour, coverUrl, category. Only a hint -
+  not archived; driveType=self_drive leaves out chauffeur-only categories; search matches
+  make, model or plate (spaces ignored). Returns id, name, registrationNo, transmission,
+  fuelType, seats, colour, coverUrl, category. Only a hint -
   the booking itself is protected by the car_allocations exclusion constraint.
 
 BOOKINGS (bookings, booking_extras)
@@ -62,7 +64,7 @@ POST /admin/bookings  { customerId, carId, pickupAt, returnAt, driveType, source
     ignored for staff.
 GET  /admin/bookings  ?search (reference, customer name or phone) &status &customerId
   &carId &source &driveType &dateFrom &dateTo (pickup date) &sortBy=pickupAt|createdAt
-GET  /admin/bookings/:id   booking + quote (the snapshot)
+GET  /admin/bookings/:id   booking + quote (the snapshot); car includes coverUrl
 PUT  /admin/bookings/:id   { destination?, notes? } - dates, car and extras change via
   modifications (M3.8, slice 4)
 POST /admin/bookings/:id/confirm

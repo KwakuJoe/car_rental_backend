@@ -26,39 +26,51 @@ export default class AvailabilityController {
     if (!to.isValid || to <= from) return fail(response, 'to', 'Return must be after pickup.')
 
     const buffer = await SettingsService.get('booking.turnaround_buffer_minutes')
-    const cars = await AvailabilityService.getAvailableCars(from, to.plus({ minutes: buffer }), {
+    const query = AvailabilityService.getAvailableCars(from, to.plus({ minutes: buffer }), {
       categoryId: payload.categoryId,
     })
-    const term = payload.search?.toLowerCase()
-
-    const data = cars
-      .filter((car) => payload.driveType !== 'self_drive' || car.category.selfDriveAllowed)
-      .filter(
-        (car) =>
-          !term || `${car.make} ${car.model} ${car.registrationNo}`.toLowerCase().includes(term)
+    if (payload.driveType === 'self_drive') {
+      query.whereHas('category', (category) => category.where('self_drive_allowed', true))
+    }
+    if (payload.transmission) query.where('transmission', payload.transmission)
+    if (payload.fuelType) query.where('fuel_type', payload.fuelType)
+    const search = payload.search
+    if (search) {
+      const term = `%${search}%`
+      query.where((q) =>
+        q
+          .whereILike('make', term)
+          .orWhereILike('model', term)
+          .orWhereRaw("replace(registration_no, ' ', '') ilike ?", [
+            `%${search.replace(/\s+/g, '')}%`,
+          ])
       )
-      .map((car) => {
-        const photos = car.photos ?? []
-        const cover = photos.find((photo) => photo.isCover) ?? photos[0]
-        return {
-          id: car.id,
-          name: `${car.make} ${car.model} ${car.year}`,
-          registrationNo: car.registrationNo,
-          transmission: car.transmission,
-          seats: car.seats,
-          colour: car.colour,
-          coverUrl: cover?.file?.url ?? null,
-          category: {
-            id: car.category.id,
-            name: car.category.name,
-            selfDriveAllowed: Boolean(car.category.selfDriveAllowed),
-          },
-        }
-      })
-      .sort(
-        (a, b) => a.category.name.localeCompare(b.category.name) || a.name.localeCompare(b.name)
-      )
+    }
+    const cars = await query
+      .orderBy('make', 'asc')
+      .orderBy('model', 'asc')
+      .paginate(payload.page ?? 1, payload.limit ?? 12)
 
-    return response.ok({ message: 'Available cars', data })
+    const data = cars.all().map((car) => {
+      const photos = car.photos ?? []
+      const cover = photos.find((photo) => photo.isCover) ?? photos[0]
+      return {
+        id: car.id,
+        name: `${car.make} ${car.model} ${car.year}`,
+        registrationNo: car.registrationNo,
+        transmission: car.transmission,
+        fuelType: car.fuelType,
+        seats: car.seats,
+        colour: car.colour,
+        coverUrl: cover?.file?.url ?? null,
+        category: {
+          id: car.category.id,
+          name: car.category.name,
+          selfDriveAllowed: Boolean(car.category.selfDriveAllowed),
+        },
+      }
+    })
+
+    return response.ok({ message: 'Available cars', data, meta: cars.getMeta() })
   }
 }

@@ -1,5 +1,6 @@
 import vine from '@vinejs/vine'
 import { BOOKING_SOURCES, BOOKING_STATUSES } from '#models/booking'
+import { FUEL_TYPES, TRANSMISSIONS } from '#models/car'
 import { DRIVE_TYPES } from '#models/rate_plan'
 import { paginationFields } from '#validators/shared'
 
@@ -70,5 +71,10 @@ export const availabilityValidator = vine.create({
   to: vine.string().trim().optional(),
   categoryId: vine.string().optional(),
   driveType: vine.enum(DRIVE_TYPES).optional(),
+  transmission: vine.enum(TRANSMISSIONS).optional(),
+  fuelType: vine.enum(FUEL_TYPES).optional(),
+  // make, model or plate
   search: vine.string().trim().optional(),
+  page: vine.number().min(1).optional(),
+  limit: vine.number().min(1).max(100).optional(),
 })
