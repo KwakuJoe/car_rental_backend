@@ -195,7 +195,9 @@ refund by default) and drivers (M3.9, using driver_allocations with the same con
 - A blacklist "block" can be overridden only by a manager, with a reason.
 
 ### Small items waiting
-- Periodically clean up uploaded files that were never attached.
+- The owner asked for lean testing while building: lightly tested areas are listed in the
+  **TESTING BACKLOG** in `modules.txt` (under PROGRESS). Add to it, and cover it before go-live.
+- Cron on the server: `files:cleanup` nightly (added 2026-10-26, see `setup_command.txt`).
 - The owner has to review the inactive example extras, plans, zones and fees, and add real
   taxes.
 - Optional, offered to the owner: the backend could also normalise user, branch and business
