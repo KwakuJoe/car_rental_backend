@@ -25,7 +25,7 @@ Backend `prompt-reference/`:
 - `modules.txt` — the full roadmap (Phases 1–10), conventions, permission catalog, role
   matrix, and a **PROGRESS** checklist near the top. Update PROGRESS as you finish modules.
 - `auth_module.txt`, `settings_module.txt`, `audit_module.txt`, `files_module.txt`,
-  `fleet_module.txt` — API references for what's built.
+  `fleet_module.txt`, `pricing_module.txt` — API references for what's built.
 - `setup_command.txt` — install/run instructions.
 
 Backend `http/` — one `.http` file per module (VS Code REST Client), runnable endpoint docs.
@@ -35,7 +35,7 @@ Frontend `AGENTS.md` — this Next.js version has breaking changes vs. older doc
 relevant guide in `node_modules/next/dist/docs/` before using a Next API you're unsure of.
 
 ## What's done
-Phase 1 (except M1.7 numbering) and Phase 2 slice 1. PROGRESS in `modules.txt` is the source
+Phase 1 (except M1.7 numbering) and all of Phase 2 (fleet + pricing). PROGRESS in `modules.txt` is the source
 of truth - check it first.
 - Business + branch model (single main branch, every record will carry `branch_id`),
   opening hours, closure dates, `node ace business:create` bootstrap.
@@ -62,7 +62,8 @@ of truth - check it first.
   permissions, Settings, Audit log, Categories, Vehicles (table/grid toggle, add-vehicle
   page, vehicle detail page with tabs; photos by upload, link, paste or drag-and-drop;
   full-screen `ImageViewer`).
-- Tests: backend 89 Japa tests; frontend Playwright smoke + fleet workflow (15 passing) and
+- Pricing (Phase 2): see `pricing_module.txt` - all eight parts plus the Get a quote page.
+- Tests: backend 135 Japa tests; frontend Playwright smoke + workflows (31 passing) and
   the visual tour.
 
 ## Lessons from the last hand-off (read before writing UI)
@@ -80,20 +81,22 @@ A previous agent built Phase 2 slice 1 and several things had to be redone:
 - Scheduled work must actually be scheduled (cron) and must not repeat itself daily -
   use `notifications.dedupe_key`.
 
-## NEXT TASK: Phase 2, slice 2 - pricing (M2.5–M2.11, see modules.txt)
-Rates (daily / weekly / monthly per category, car overrides, chauffeur pricing), seasonal /
-weekend / holiday pricing, extras, protection plans, delivery zones, taxes, and the single
-`PricingService.quote()` that bookings will use. Money is integer pesewas everywhere.
+## NEXT TASK: Phase 3 - customers and bookings (see modules.txt)
+Phase 2 is DONE: rates, price rules, extras, protection plans, delivery zones, fees, taxes and
+the quote engine `PricingService.quote()` (`pricing_module.txt`) with a staff "Get a quote"
+page. Bookings MUST price through `PricingService.quote()` - never a second calculation -
+and store a snapshot of the quote (lines, days, taxes) on the booking.
 
-**Ask the owner first** (pricing policy is theirs to decide): rates per category and the
-weekly/monthly thresholds; chauffeur in-town vs out-of-town pricing and driver overnight
-allowance; mileage policy (unlimited vs km/day allowance + excess km charge); which taxes
-apply and how they show on receipts (confirm with their accountant). Record the answers as
-settings or rate data - never hardcode them.
+Decided with the owner: customers book a SPECIFIC car (staff can swap it, M3.8); taxes per
+type of charge; VAT registration lives on the business profile only (no separate switch).
 
-Small items waiting: category image upload in the category form (backend field exists);
-a periodic cleanup of uploaded files that were never attached; M8.6 usage chart is
-planned, not now.
+Start with M3.1 customers (Ghana Card / licence uploads are private files - see the files
+module rules) and M3.4/M3.5 bookings on `car_allocations` (exclusion constraint already
+there). Move POST /admin/quotes to bookings.create when that permission exists.
+
+Small items waiting: Add rate form -> stepped dialog (to match the others); periodic cleanup
+of uploaded files never attached; the owner still has to review the (inactive) example
+extras / plans / zones / fees and add real taxes.
 
 For each module: migration → model → validator (factories!) → controller (+ audit) → routes
 → permissions in `database/seed_data/role_permission_data.ts` (+ role matrix) → Japa tests →
@@ -182,5 +185,5 @@ Both repos on `main`, tracking `origin/main`, clean at handoff. The backend trac
 
 ## First steps
 Read `prompt-reference/modules.txt` (PROGRESS + Phase 2) and the frontend `CLAUDE.md`, run
-both test suites to confirm a green baseline, then ask the owner the pricing questions above
-and propose your plan for Phase 2 slice 2 before writing code.
+both test suites to confirm a green baseline, then propose your plan for Phase 3 to the owner
+before writing code.
