@@ -286,6 +286,58 @@ test.group('bookings', (group) => {
   })
 })
 
+test.group('today board', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('pickups, holds to confirm, late pickups, fleet and the week', async ({
+    client,
+    assert,
+  }) => {
+    const { car, customer, desk } = await setup()
+    const pickup = DateTime.now().setZone('Africa/Accra').plus({ hours: 2 })
+    // Later today, held; the customer has no checked ID yet
+    const created = await client
+      .post('/api/v1/admin/bookings')
+      .json(
+        booking(customer.id, car.id, {
+          pickupAt: pickup.toFormat("yyyy-MM-dd'T'HH:mm"),
+          returnAt: pickup.plus({ days: 2 }).toFormat("yyyy-MM-dd'T'HH:mm"),
+        })
+      )
+      .loginAs(desk)
+    created.assertStatus(201)
+    const held = await Booking.findOrFail(json(created).data.id)
+    held.holdExpiresAt = DateTime.now().plus({ hours: 1 })
+    await held.save()
+
+    let board = json(await client.get('/api/v1/admin/today').loginAs(desk)).data
+    // The pickup may cross midnight when the suite runs late at night
+    if (pickup.hasSame(DateTime.now().setZone('Africa/Accra'), 'day')) {
+      assert.equal(board.counts.pickups, 1)
+      assert.equal(board.pickups[0].reference, held.reference)
+      assert.isFalse(board.pickups[0].readiness.ready)
+      assert.include(board.pickups[0].readiness.issues, 'ID and driving licence not verified')
+      assert.equal(board.week[0].pickups, 1)
+    }
+    assert.equal(board.counts.holds, 1)
+    // No roadworthy or insurance on file: the car can't legally go out
+    assert.equal(board.cars[0].id, car.id)
+    assert.equal(board.cars[0].level, 'critical')
+    assert.equal(board.fleet.total, 1)
+    assert.equal(board.fleet.available, 1) // held from later today, free right now
+
+    // Pickup time came and went yesterday: a possible no-show
+    held.pickupAt = DateTime.now().minus({ days: 1 })
+    await held.save()
+    const allocation = await CarAllocation.findByOrFail('booking_id', held.id)
+    allocation.startsAt = held.pickupAt
+    await allocation.save()
+    board = json(await client.get('/api/v1/admin/today').loginAs(desk)).data
+    assert.equal(board.counts.latePickups, 1)
+    assert.equal(board.fleet.booked, 1) // its hold now covers this moment
+  })
+})
+
 // No global transaction here: the requests must really race on separate connections
 test.group('bookings concurrency', (group) => {
   group.each.setup(() => testUtils.db().truncate())

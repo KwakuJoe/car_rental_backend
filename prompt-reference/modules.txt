@@ -101,6 +101,9 @@ Update this list as modules land.
             discounts (10% staff limit), blacklist / age checks with manager
             override, confirm / cancel / no-show, hold expiry cron, history,
             concurrency test (prompt-reference/bookings_module.txt)
+  [x] M3.10 Today board GET /admin/today + dashboard home (pickups / returns /
+            running late / holds to confirm / cars needing attention / fleet now /
+            7-day outlook), refreshed every minute
   [~] M3.6  cancellation policy settings + CancellationService (fee shown and
             stored); refunds come with payments (Phase 5)
   [ ] M8.6  vehicle usage chart on the Odometer tab (after M8.1, or a simple
@@ -128,6 +131,9 @@ proper pass before go-live (Milestone A). Tick them off as they're covered.
       Confirm, no-show button, discount + manager override on the review step,
       blacklisted customer refused at step 1, booking errors jumping back to
       their step, chauffeur options (out of town, nights away)
+  [ ] Today board in the browser: Confirm from "Confirm or lose the car",
+      row menus, readiness chips (only smoke + screenshots so far; backend test
+      covers the data)
   [ ] Booking warnings (no licence, licence/roadworthy expiring) - backend
       returns them, UI shows them as toasts only; check they read well
 

@@ -85,4 +85,14 @@ cancellation.no_show_after_hours (2).
   later, or a no-show                 reservation fee + late_charge_days x average day
 Fee capped at the total; refundable = paid - fee (never negative). Refunds: Phase 5.
 
+TODAY BOARD (M3.10) - GET /admin/today (bookings.view), TodayService.board()
+One request for the desk's day (business time zone): counts; pickups today (pending /
+confirmed) and returns today (on_rent) with readiness (ID / licence verified for the drive
+type when booking.require_verified_customer_for_checkout, blacklist, car documents
+expired or missing); overdue (on_rent past return + grace); latePickups (pickup before
+today, never collected - chase or no-show); holds running out within 6 hours; cars needing
+attention (documents expired / missing = critical, expiring within 14 days = warning, or
+off the road); fleet right now (available / onRent / booked / blocked / offRoad, from
+allocations covering this moment); week (pickups and returns per day for 7 days).
+
 SCHEDULED: node ace bookings:expire-holds every 5 minutes (setup_command.txt).

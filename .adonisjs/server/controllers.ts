@@ -33,6 +33,7 @@ export const controllers = {
     Roles: () => import('#controllers/admin/roles_controller'),
     Settings: () => import('#controllers/admin/settings_controller'),
     Taxes: () => import('#controllers/admin/taxes_controller'),
+    Today: () => import('#controllers/admin/today_controller'),
     Users: () => import('#controllers/admin/users_controller'),
     VehicleDocuments: () => import('#controllers/admin/vehicle_documents_controller'),
   },

@@ -969,6 +969,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/availability_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.today.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/today'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/today_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/today_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/today_controller').default['show']>>>
+    }
+  }
   'admin.bookings.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/bookings'

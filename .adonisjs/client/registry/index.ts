@@ -450,6 +450,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"availability"]],
     types: placeholder as Registry['admin.availability.index']['types'],
   },
+  'admin.today.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/today',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"today"]],
+    types: placeholder as Registry['admin.today.show']['types'],
+  },
   'admin.bookings.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/bookings',

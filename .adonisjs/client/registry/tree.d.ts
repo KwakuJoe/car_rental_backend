@@ -121,6 +121,9 @@ export interface ApiDefinition {
     availability: {
       index: typeof routes['admin.availability.index']
     }
+    today: {
+      show: typeof routes['admin.today.show']
+    }
     bookings: {
       index: typeof routes['admin.bookings.index']
       show: typeof routes['admin.bookings.show']
