@@ -150,6 +150,16 @@ test.group('bookings', (group) => {
     await allocation.refresh()
     assert.equal(allocation.source, 'booking')
 
+    // The calendar shows it on the car's row, with the turnaround time after the return
+    const calendar = await client
+      .get('/api/v1/admin/calendar')
+      .qs({ from: '2030-03-01', to: '2030-03-10' })
+      .loginAs(desk)
+    const [item] = json(calendar).data[0].items
+    assert.equal(item.booking.reference, data.reference)
+    assert.equal(item.booking.status, 'confirmed')
+    assert.isAbove(Date.parse(item.endsAtWithBuffer), Date.parse(item.endsAt))
+
     const preview = await client.get(`${url}/${data.id}/cancellation-preview`).loginAs(desk)
     assert.equal(json(preview).data.tier, 'free')
     assert.equal(json(preview).data.feeAmount, 0)
@@ -266,6 +276,15 @@ test.group('bookings', (group) => {
       .qs({ customerId: customer.id })
       .loginAs(desk)
     assert.equal(json(list).data.length, 1)
+
+    // Calendar: the car's row shows the (expired) booking only while its hold was active -
+    // now released, so the row is empty but the car is still listed
+    const calendar = await client
+      .get('/api/v1/admin/calendar')
+      .qs({ from: '2030-03-01', to: '2030-03-10' })
+      .loginAs(desk)
+    assert.equal(json(calendar).data[0].car.id, car.id)
+    assert.lengthOf(json(calendar).data[0].items, 0)
 
     // The car is free again: availability finds it by plate, paginated, with filters
     const free = await client

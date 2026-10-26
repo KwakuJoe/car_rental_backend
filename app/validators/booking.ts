@@ -78,3 +78,15 @@ export const availabilityValidator = vine.create({
   page: vine.number().min(1).optional(),
   limit: vine.number().min(1).max(100).optional(),
 })
+
+export const calendarValidator = vine.create({
+  // Days (YYYY-MM-DD) in the business time zone; `to` is the last day shown.
+  // Default: today and the next 13 days.
+  from: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
+  to: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
+  categoryId: vine.string().optional(),
+  // make, model or plate
+  search: vine.string().trim().optional(),
+  page: vine.number().min(1).optional(),
+  limit: vine.number().min(1).max(100).optional(),
+})

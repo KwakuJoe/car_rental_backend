@@ -456,6 +456,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"today"]],
     types: placeholder as Registry['admin.today.show']['types'],
   },
+  'admin.calendar.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/calendar',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"calendar"]],
+    types: placeholder as Registry['admin.calendar.index']['types'],
+  },
   'admin.bookings.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/bookings',

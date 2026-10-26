@@ -197,6 +197,7 @@ router
           .group(() => {
             router.get('availability', [controllers.admin.Availability, 'index'])
             router.get('today', [controllers.admin.Today, 'show'])
+            router.get('calendar', [controllers.admin.Calendar, 'index'])
             router.get('bookings', [controllers.admin.Bookings, 'index'])
             router.get('bookings/:id', [controllers.admin.Bookings, 'show'])
             router.get('bookings/:id/history', [controllers.admin.Bookings, 'history'])

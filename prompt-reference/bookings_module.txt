@@ -85,6 +85,13 @@ cancellation.no_show_after_hours (2).
   later, or a no-show                 reservation fee + late_charge_days x average day
 Fee capped at the total; refundable = paid - fee (never negative). Refunds: Phase 5.
 
+CALENDAR (M3.7) - GET /admin/calendar?from=&to=&categoryId=&search=&page=&limit=
+(bookings.view). Days YYYY-MM-DD in the business time zone (default today + 13 days, at
+most ~2 months). One row per car (paginated, default 20; archived and retired cars left
+out, cars with nothing booked still listed) with items = active allocations overlapping
+the period: { source, startsAt, endsAt, endsAtWithBuffer (cleaning time), reason,
+booking: { id, reference, status, driveType, customerName } | null (a block) }.
+
 TODAY BOARD (M3.10) - GET /admin/today (bookings.view), TodayService.board()
 One request for the desk's day (business time zone): counts; pickups today (pending /
 confirmed) and returns today (on_rent) with readiness (ID / licence verified for the drive

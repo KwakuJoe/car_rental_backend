@@ -982,6 +982,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/today_controller').default['show']>>>
     }
   }
+  'admin.calendar.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/calendar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/booking').calendarValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/calendar_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/calendar_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/calendar_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.bookings.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/bookings'

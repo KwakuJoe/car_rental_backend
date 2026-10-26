@@ -150,9 +150,7 @@ See `customers_module.txt`.
   (Overview / Price / History, Confirm / Cancel with the policy fee / No-show), and the
   customer's Bookings tab. "Get a quote" now needs `bookings.create`.
 
-**Slice 3** - Today board DONE (dashboard home, `GET /admin/today`). Still to do:
-- **Booking calendar (M3.7):** `GET /admin/calendar` with per-car rows of allocations; a
-  timeline view.
+**Slice 3** - Today board and calendar DONE (`GET /admin/today`, `GET /admin/calendar`). Still to do:
 - **The "current / next booking" card** at the top of the customer Profile tab (like the
   hostel's "Current stay").
 - **Editable business `document_prefix`** (the `WYK` part of references) on the business

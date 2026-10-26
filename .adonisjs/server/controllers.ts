@@ -12,6 +12,7 @@ export const controllers = {
     Bookings: () => import('#controllers/admin/bookings_controller'),
     Branches: () => import('#controllers/admin/branches_controller'),
     Business: () => import('#controllers/admin/business_controller'),
+    Calendar: () => import('#controllers/admin/calendar_controller'),
     CarBlocks: () => import('#controllers/admin/car_blocks_controller'),
     Cars: () => import('#controllers/admin/cars_controller'),
     Categories: () => import('#controllers/admin/categories_controller'),

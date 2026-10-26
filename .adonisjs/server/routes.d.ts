@@ -79,6 +79,7 @@ export type ScannedRoutes = {
     'admin.blacklist.lift': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.availability.index': { paramsTuple?: []; params?: {} }
     'admin.today.show': { paramsTuple?: []; params?: {} }
+    'admin.calendar.index': { paramsTuple?: []; params?: {} }
     'admin.bookings.index': { paramsTuple?: []; params?: {} }
     'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -162,6 +163,7 @@ export type ScannedRoutes = {
     'admin.blacklist.index': { paramsTuple?: []; params?: {} }
     'admin.availability.index': { paramsTuple?: []; params?: {} }
     'admin.today.show': { paramsTuple?: []; params?: {} }
+    'admin.calendar.index': { paramsTuple?: []; params?: {} }
     'admin.bookings.index': { paramsTuple?: []; params?: {} }
     'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -216,6 +218,7 @@ export type ScannedRoutes = {
     'admin.blacklist.index': { paramsTuple?: []; params?: {} }
     'admin.availability.index': { paramsTuple?: []; params?: {} }
     'admin.today.show': { paramsTuple?: []; params?: {} }
+    'admin.calendar.index': { paramsTuple?: []; params?: {} }
     'admin.bookings.index': { paramsTuple?: []; params?: {} }
     'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
