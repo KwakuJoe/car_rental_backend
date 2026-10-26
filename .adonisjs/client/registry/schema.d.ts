@@ -774,6 +774,188 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/vehicle_documents_controller').default['destroy']>>>
     }
   }
+  'admin.customers.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/customers'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['index']>>>
+    }
+  }
+  'admin.customers.duplicates': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/customers/duplicates'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['duplicates']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['duplicates']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['duplicates']>>>
+    }
+  }
+  'admin.customers.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/customers/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['show']>>>
+    }
+  }
+  'admin.blacklist.check': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/blacklist/check'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/customer').blacklistCheckValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['check']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['check']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['check']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.customers.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/customers'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['store']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['store']>>>
+    }
+  }
+  'admin.customers.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/customers/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['update']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['update']>>>
+    }
+  }
+  'admin.customers.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/customers/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/customers_controller').default['destroy']>>>
+    }
+  }
+  'admin.customer_identities.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/customers/:customerId/identities'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { customerId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['store']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['store']>>>
+    }
+  }
+  'admin.customer_identities.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/customers/:customerId/identities/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { customerId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['update']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['update']>>>
+    }
+  }
+  'admin.customer_identities.verify': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/customers/:customerId/identities/:id/verify'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { customerId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['verify']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['verify']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['verify']>>>
+    }
+  }
+  'admin.customer_identities.reject': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/customers/:customerId/identities/:id/reject'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { customerId: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['reject']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['reject']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/customer_identities_controller').default['reject']>>>
+    }
+  }
+  'admin.blacklist.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/blacklist'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/customer').blacklistFilterValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.blacklist.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/blacklist'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/customer').createBlacklistValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/customer').createBlacklistValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.blacklist.lift': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/blacklist/:id/lift'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/customer').liftBlacklistValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/customer').liftBlacklistValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['lift']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['lift']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/blacklist_controller').default['lift']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.rate_plans.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/rate-plans'

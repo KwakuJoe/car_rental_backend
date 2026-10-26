@@ -1,0 +1,81 @@
+# Customers (M3.1) and blacklist (M3.3). See prompt-reference/customers_module.txt
+# ID numbers are masked unless you have customers.view_documents.
+@baseUrl = {{$dotenv HTTP_BASE_URL}}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{$dotenv HTTP_EMAIL}}", "password": "{{$dotenv HTTP_PASSWORD}}" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### 1. List / search customers (name, phone in any format, document number)
+GET {{baseUrl}}/admin/customers?search=024&verificationStatus=verified
+Authorization: Bearer {{token}}
+
+### 2. Possible duplicates while entering a customer
+GET {{baseUrl}}/admin/customers/duplicates?phone=0241234567&fullName=Ama%20Owusu&dateOfBirth=1990-05-14
+Authorization: Bearer {{token}}
+
+### 3. Add a customer (phone normalised to +233...)
+# @name customer
+POST {{baseUrl}}/admin/customers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fullName": "Ama Owusu",
+  "phone": "024 123 4567",
+  "email": "ama@example.com",
+  "dateOfBirth": "1990-05-14",
+  "digitalAddress": "GA-123-4567",
+  "source": "walk_in"
+}
+
+###
+@customerId = {{customer.response.body.$.data.id}}
+
+### 4. Profile with documents and blacklist matches
+GET {{baseUrl}}/admin/customers/{{customerId}}
+Authorization: Bearer {{token}}
+
+### 5. Add a Ghana Card (upload the image first: POST /admin/files/upload purpose=id_front)
+# @name card
+POST {{baseUrl}}/admin/customers/{{customerId}}/identities
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "type": "ghana_card", "number": "GHA-123456789-0" }
+
+### 6. Verify it (customers.verify)
+POST {{baseUrl}}/admin/customers/{{customerId}}/identities/{{card.response.body.$.data.id}}/verify
+Authorization: Bearer {{token}}
+
+### 7. Add a driving licence (expiry required)
+POST {{baseUrl}}/admin/customers/{{customerId}}/identities
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "type": "drivers_licence", "number": "DL-0012345", "licenceClass": "B", "expiresOn": "2029-06-30" }
+
+### 8. Blacklist check (any staff with customers.view)
+GET {{baseUrl}}/admin/blacklist/check?phone=0241234567
+Authorization: Bearer {{token}}
+
+### 9. Blacklist a customer (copies their phone and ID numbers) - customers.blacklist
+# @name entry
+POST {{baseUrl}}/admin/blacklist
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "customerId": "{{customerId}}", "reason": "unpaid_balance", "severity": "warn", "details": "GHS 450 outstanding" }
+
+### 10. Lift it
+POST {{baseUrl}}/admin/blacklist/{{entry.response.body.$.data.id}}/lift
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "reason": "Balance paid" }

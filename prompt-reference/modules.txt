@@ -86,6 +86,11 @@ Update this list as modules land.
   [x] M2.11 quote engine PricingService.quote + POST /admin/quotes (grace, tiers,
             rules per day, extras, protection, delivery/after hours, taxes,
             deposit, reservation fee, warnings) - Phase 2 pricing done
+  [x] M3.1  customers + documents (Ghana Card format, expiry, verify/reject,
+            masked numbers without customers.view_documents, private images),
+            duplicate check, archive (prompt-reference/customers_module.txt)
+  [x] M3.3  blacklist (match on phone / Ghana Card / licence / passport,
+            warn | block, lift with reason), denormalised on customers
   [~] M1.6  scheduling via system cron calling ace commands (see
             setup_command.txt "SCHEDULED JOBS") - a queue for slow work
             (PDFs, SMS) still to come with Phase 4/6

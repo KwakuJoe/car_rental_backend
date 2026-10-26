@@ -145,6 +145,53 @@ router
           })
           .use(middleware.permission({ permissions: ['fleet.manage'] }))
 
+        // Customers (M3.1) and blacklist (M3.3)
+        router
+          .group(() => {
+            router.get('customers', [controllers.admin.Customers, 'index'])
+            router.get('customers/duplicates', [controllers.admin.Customers, 'duplicates'])
+            router.get('customers/:id', [controllers.admin.Customers, 'show'])
+            router.get('blacklist/check', [controllers.admin.Blacklist, 'check'])
+          })
+          .use(middleware.permission({ permissions: ['customers.view'] }))
+
+        router
+          .group(() => {
+            router.post('customers', [controllers.admin.Customers, 'store'])
+            router.put('customers/:id', [controllers.admin.Customers, 'update'])
+            router.delete('customers/:id', [controllers.admin.Customers, 'destroy'])
+            router.post('customers/:customerId/identities', [
+              controllers.admin.CustomerIdentities,
+              'store',
+            ])
+            router.put('customers/:customerId/identities/:id', [
+              controllers.admin.CustomerIdentities,
+              'update',
+            ])
+          })
+          .use(middleware.permission({ permissions: ['customers.manage'] }))
+
+        router
+          .group(() => {
+            router.post('customers/:customerId/identities/:id/verify', [
+              controllers.admin.CustomerIdentities,
+              'verify',
+            ])
+            router.post('customers/:customerId/identities/:id/reject', [
+              controllers.admin.CustomerIdentities,
+              'reject',
+            ])
+          })
+          .use(middleware.permission({ permissions: ['customers.verify'] }))
+
+        router
+          .group(() => {
+            router.get('blacklist', [controllers.admin.Blacklist, 'index'])
+            router.post('blacklist', [controllers.admin.Blacklist, 'store'])
+            router.post('blacklist/:id/lift', [controllers.admin.Blacklist, 'lift'])
+          })
+          .use(middleware.permission({ permissions: ['customers.blacklist'] }))
+
         // Pricing (M2.5+)
         router
           .group(() => {

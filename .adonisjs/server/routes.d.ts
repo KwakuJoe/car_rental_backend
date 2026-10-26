@@ -63,6 +63,20 @@ export type ScannedRoutes = {
     'admin.vehicle_documents.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
     'admin.vehicle_documents.update': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.vehicle_documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
+    'admin.customers.index': { paramsTuple?: []; params?: {} }
+    'admin.customers.duplicates': { paramsTuple?: []; params?: {} }
+    'admin.customers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.blacklist.check': { paramsTuple?: []; params?: {} }
+    'admin.customers.store': { paramsTuple?: []; params?: {} }
+    'admin.customers.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.customers.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.customer_identities.store': { paramsTuple: [ParamValue]; params: {'customerId': ParamValue} }
+    'admin.customer_identities.update': { paramsTuple: [ParamValue,ParamValue]; params: {'customerId': ParamValue,'id': ParamValue} }
+    'admin.customer_identities.verify': { paramsTuple: [ParamValue,ParamValue]; params: {'customerId': ParamValue,'id': ParamValue} }
+    'admin.customer_identities.reject': { paramsTuple: [ParamValue,ParamValue]; params: {'customerId': ParamValue,'id': ParamValue} }
+    'admin.blacklist.index': { paramsTuple?: []; params?: {} }
+    'admin.blacklist.store': { paramsTuple?: []; params?: {} }
+    'admin.blacklist.lift': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
@@ -130,6 +144,11 @@ export type ScannedRoutes = {
     'admin.vehicle_documents.index': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
     'admin.vehicle_documents.show': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.vehicle_documents.expiring': { paramsTuple?: []; params?: {} }
+    'admin.customers.index': { paramsTuple?: []; params?: {} }
+    'admin.customers.duplicates': { paramsTuple?: []; params?: {} }
+    'admin.customers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.blacklist.check': { paramsTuple?: []; params?: {} }
+    'admin.blacklist.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
@@ -173,6 +192,11 @@ export type ScannedRoutes = {
     'admin.vehicle_documents.index': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
     'admin.vehicle_documents.show': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.vehicle_documents.expiring': { paramsTuple?: []; params?: {} }
+    'admin.customers.index': { paramsTuple?: []; params?: {} }
+    'admin.customers.duplicates': { paramsTuple?: []; params?: {} }
+    'admin.customers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.blacklist.check': { paramsTuple?: []; params?: {} }
+    'admin.blacklist.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
@@ -205,6 +229,12 @@ export type ScannedRoutes = {
     'admin.cars.add_photo': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.car_blocks.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
     'admin.vehicle_documents.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
+    'admin.customers.store': { paramsTuple?: []; params?: {} }
+    'admin.customer_identities.store': { paramsTuple: [ParamValue]; params: {'customerId': ParamValue} }
+    'admin.customer_identities.verify': { paramsTuple: [ParamValue,ParamValue]; params: {'customerId': ParamValue,'id': ParamValue} }
+    'admin.customer_identities.reject': { paramsTuple: [ParamValue,ParamValue]; params: {'customerId': ParamValue,'id': ParamValue} }
+    'admin.blacklist.store': { paramsTuple?: []; params?: {} }
+    'admin.blacklist.lift': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.quotes.store': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
     'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
@@ -226,6 +256,8 @@ export type ScannedRoutes = {
     'admin.cars.reorder_photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.cars.set_cover_photo': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'photoId': ParamValue} }
     'admin.vehicle_documents.update': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
+    'admin.customers.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.customer_identities.update': { paramsTuple: [ParamValue,ParamValue]; params: {'customerId': ParamValue,'id': ParamValue} }
     'admin.rate_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.protection_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -247,6 +279,7 @@ export type ScannedRoutes = {
     'admin.cars.delete_photo': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'photoId': ParamValue} }
     'admin.car_blocks.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.vehicle_documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
+    'admin.customers.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.branches.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.closure_dates.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'branchId': ParamValue,'id': ParamValue} }

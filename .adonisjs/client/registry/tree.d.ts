@@ -98,6 +98,26 @@ export interface ApiDefinition {
       update: typeof routes['admin.vehicle_documents.update']
       destroy: typeof routes['admin.vehicle_documents.destroy']
     }
+    customers: {
+      index: typeof routes['admin.customers.index']
+      duplicates: typeof routes['admin.customers.duplicates']
+      show: typeof routes['admin.customers.show']
+      store: typeof routes['admin.customers.store']
+      update: typeof routes['admin.customers.update']
+      destroy: typeof routes['admin.customers.destroy']
+    }
+    blacklist: {
+      check: typeof routes['admin.blacklist.check']
+      index: typeof routes['admin.blacklist.index']
+      store: typeof routes['admin.blacklist.store']
+      lift: typeof routes['admin.blacklist.lift']
+    }
+    customerIdentities: {
+      store: typeof routes['admin.customer_identities.store']
+      update: typeof routes['admin.customer_identities.update']
+      verify: typeof routes['admin.customer_identities.verify']
+      reject: typeof routes['admin.customer_identities.reject']
+    }
     ratePlans: {
       index: typeof routes['admin.rate_plans.index']
       show: typeof routes['admin.rate_plans.show']

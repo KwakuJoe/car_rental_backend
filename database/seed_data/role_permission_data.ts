@@ -123,6 +123,38 @@ export const permissionData = [
     group: 'pricing',
     description: 'Add and change rental extras (child seats, extra driver, GPS, ...)',
   },
+
+  // customers
+  {
+    name: 'View customers',
+    slug: 'customers.view',
+    group: 'customers',
+    description: 'See the customer list and profiles (ID numbers stay masked)',
+  },
+  {
+    name: 'Manage customers',
+    slug: 'customers.manage',
+    group: 'customers',
+    description: 'Add and update customers and their ID and licence documents',
+  },
+  {
+    name: 'Verify customers',
+    slug: 'customers.verify',
+    group: 'customers',
+    description: 'Approve or reject ID and licence documents',
+  },
+  {
+    name: 'View ID documents',
+    slug: 'customers.view_documents',
+    group: 'customers',
+    description: 'See full ID numbers and document images (every view is logged)',
+  },
+  {
+    name: 'Manage blacklist',
+    slug: 'customers.blacklist',
+    group: 'customers',
+    description: 'Add and lift blacklist entries',
+  },
 ]
 
 // ── Role → Permission mapping ──────────────────────────────────
@@ -141,9 +173,21 @@ export const rolePermissionMap: Record<string, string[]> = {
     'pricing.view',
     'pricing.manage',
     'extras.manage',
+    'customers.view',
+    'customers.manage',
+    'customers.verify',
+    'customers.view_documents',
+    'customers.blacklist',
   ],
-  'front-desk': ['fleet.view', 'pricing.view'],
+  'front-desk': [
+    'fleet.view',
+    'pricing.view',
+    'customers.view',
+    'customers.manage',
+    'customers.verify',
+    'customers.view_documents',
+  ],
   'fleet': ['fleet.view', 'fleet.manage', 'pricing.view'],
   'driver': [],
-  'accountant': ['audit.view'],
+  'accountant': ['audit.view', 'customers.view'],
 }

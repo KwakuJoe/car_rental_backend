@@ -65,6 +65,41 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class BlacklistEntrySchema extends BaseModel {
+  static $columns = ['addedBy', 'createdAt', 'customerId', 'details', 'ghanaCardNo', 'id', 'licenceNo', 'liftReason', 'liftedAt', 'liftedBy', 'passportNo', 'phone', 'reason', 'severity', 'updatedAt'] as const
+  $columns = BlacklistEntrySchema.$columns
+  @column()
+  declare addedBy: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare customerId: string | null
+  @column()
+  declare details: string | null
+  @column()
+  declare ghanaCardNo: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare licenceNo: string | null
+  @column()
+  declare liftReason: string | null
+  @column.dateTime()
+  declare liftedAt: DateTime | null
+  @column()
+  declare liftedBy: string | null
+  @column()
+  declare passportNo: string | null
+  @column()
+  declare phone: string | null
+  @column()
+  declare reason: string
+  @column()
+  declare severity: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class BranchUserSchema extends BaseModel {
   static $columns = ['branchId', 'createdAt', 'updatedAt', 'userId'] as const
   $columns = BranchUserSchema.$columns
@@ -311,6 +346,100 @@ export class ClosureDateSchema extends BaseModel {
   declare reason: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class CustomerIdentitySchema extends BaseModel {
+  static $columns = ['backFileId', 'createdAt', 'createdBy', 'customerId', 'expiresOn', 'frontFileId', 'id', 'issuedOn', 'issuingCountry', 'licenceClass', 'number', 'rejectionReason', 'status', 'type', 'updatedAt', 'verifiedAt', 'verifiedBy'] as const
+  $columns = CustomerIdentitySchema.$columns
+  @column()
+  declare backFileId: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare customerId: string
+  @column.date()
+  declare expiresOn: DateTime | null
+  @column()
+  declare frontFileId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column.date()
+  declare issuedOn: DateTime | null
+  @column()
+  declare issuingCountry: string | null
+  @column()
+  declare licenceClass: string | null
+  @column()
+  declare number: string
+  @column()
+  declare rejectionReason: string | null
+  @column()
+  declare status: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column.dateTime()
+  declare verifiedAt: DateTime | null
+  @column()
+  declare verifiedBy: string | null
+}
+
+export class CustomerSchema extends BaseModel {
+  static $columns = ['archivedAt', 'blacklistSeverity', 'branchId', 'createdAt', 'createdBy', 'dateOfBirth', 'digitalAddress', 'email', 'emergencyContactName', 'emergencyContactPhone', 'employer', 'fullName', 'gender', 'id', 'marketingOptIn', 'nationality', 'notes', 'occupation', 'phone', 'residentialAddress', 'source', 'type', 'updatedAt', 'verificationStatus', 'whatsappPhone'] as const
+  $columns = CustomerSchema.$columns
+  @column.dateTime()
+  declare archivedAt: DateTime | null
+  @column()
+  declare blacklistSeverity: string | null
+  @column()
+  declare branchId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.date()
+  declare dateOfBirth: DateTime | null
+  @column()
+  declare digitalAddress: string | null
+  @column()
+  declare email: string | null
+  @column()
+  declare emergencyContactName: string | null
+  @column()
+  declare emergencyContactPhone: string | null
+  @column()
+  declare employer: string | null
+  @column()
+  declare fullName: string
+  @column()
+  declare gender: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare marketingOptIn: boolean
+  @column()
+  declare nationality: string | null
+  @column()
+  declare notes: string | null
+  @column()
+  declare occupation: string | null
+  @column()
+  declare phone: string
+  @column()
+  declare residentialAddress: string | null
+  @column()
+  declare source: string | null
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare verificationStatus: string
+  @column()
+  declare whatsappPhone: string | null
 }
 
 export class DeliveryZoneSchema extends BaseModel {

@@ -27,6 +27,11 @@ test.group('role_permission_seeder', (group) => {
       permissions.map((permission) => permission.slug),
       [
         'audit.view',
+        'customers.blacklist',
+        'customers.manage',
+        'customers.verify',
+        'customers.view',
+        'customers.view_documents',
         'extras.manage',
         'fleet.manage',
         'fleet.view',
@@ -52,6 +57,11 @@ test.group('role_permission_seeder', (group) => {
         'pricing.view',
         'pricing.manage',
         'extras.manage',
+        'customers.view',
+        'customers.manage',
+        'customers.verify',
+        'customers.view_documents',
+        'customers.blacklist',
       ]
     )
   })
@@ -68,7 +78,15 @@ test.group('role_permission_seeder', (group) => {
     await frontDesk.load('permissions')
     assert.sameMembers(
       frontDesk.permissions.map((permission) => permission.slug),
-      ['fleet.view', 'pricing.view', 'roles.manage']
+      [
+        'fleet.view',
+        'pricing.view',
+        'customers.view',
+        'customers.manage',
+        'customers.verify',
+        'customers.view_documents',
+        'roles.manage',
+      ]
     )
   })
 })

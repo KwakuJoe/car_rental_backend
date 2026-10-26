@@ -1,0 +1,74 @@
+CAR RENTAL BACKEND — CUSTOMERS MODULE REFERENCE (M3.1 customers, M3.3 blacklist)
+==================================================================================
+Runnable examples: http/customers.http.
+Permissions: customers.view (list/profile/duplicates/blacklist check), customers.manage
+(create/update/archive, documents), customers.verify (verify/reject documents),
+customers.view_documents (full ID numbers + images), customers.blacklist (add/lift/list).
+Roles: manager all; front desk view/manage/verify/view_documents; accountant view.
+
+PRIVACY (Data Protection Act 2012, Act 843)
+- ID numbers are masked ("GHA-•••••••89-0") and document file ids withheld unless the
+  user has customers.view_documents. Images are only served via GET /files/:id/url,
+  which re-checks the permission and audits the view (file.viewed_signed_url).
+- Document images are private files (purpose id_front / id_back / licence); a public file
+  is refused.
+- Audit metadata stores masked numbers only.
+- Retention purge of archived customers' images (default 24 months) - not built yet.
+
+CUSTOMERS (customers)
+branch_id (main branch), type individual | corporate_driver, full_name, phone (E.164,
+unique among non-archived), whatsapp_phone, email, date_of_birth, gender, nationality
+(ISO-2), residential_address, digital_address (Ghana Post GPS), occupation, employer,
+emergency contact, source, notes, marketing_opt_in, archived_at.
+Phones are normalised by #helpers/phone normalizePhone: 0241234567 / 024 123 4567 /
+233... -> +233241234567; international numbers keep their +code.
+Denormalised, kept right by CustomerStatusService.refresh() on every change:
+  verification_status  unverified | id_verified (verified, unexpired Ghana Card /
+                       passport / voter ID - enough for chauffeur rentals) | verified
+                       (ID + verified, unexpired driving licence or IDP)
+  blacklist_severity   null | warn | block (worst active matching entry)
+Archive instead of delete (DELETE archives; history stays; the phone becomes free).
+
+DOCUMENTS (customer_identities)
+type ghana_card | passport | voter_id | drivers_licence | international_driving_permit,
+number (normalised: Ghana Card -> GHA-123456789-0, others upper case without spaces),
+issuing_country, issued_on, expires_on (required for passport, licence, IDP),
+licence_class, front_file_id, back_file_id, status pending | verified | rejected,
+verified_by/at, rejection_reason.
+Rules: Ghana Card must match GHA-\d{9}-\d; expired documents can't be verified; any
+change to a verified document sends it back to pending.
+Note: an expiry AFTER verification isn't re-evaluated until the customer changes -
+booking checks (Phase 3 slice 2) must check document expiry at the rental dates.
+
+BLACKLIST (blacklist_entries)
+customer_id?, phone, ghana_card_no, licence_no, passport_no - ANY match counts, so a new
+profile with the same ID or phone is still caught. Linking a customer copies their
+phone and document numbers into the entry. reason unpaid_balance | damage | fraud |
+violence | late_returns | other, details, severity warn | block, added_by, lifted_at /
+lifted_by / lift_reason (lifting keeps the record).
+An entry with nothing to match on is refused (422).
+warn: booking allowed with a visible warning; block: refused unless a manager overrides
+(bookings.override - slice 2).
+
+ENDPOINTS
+GET    /api/v1/admin/customers              search (name, email, phone in any format,
+                                            document number), verificationStatus,
+                                            blacklisted any|warn|block, archived, sortBy
+GET    /api/v1/admin/customers/duplicates   phone, fullName + dateOfBirth, documentNumber,
+                                            excludeId -> { customers[{reasons}], blacklist }
+GET    /api/v1/admin/customers/:id          with identities (masked per permission) and
+                                            matching blacklist entries
+POST   /api/v1/admin/customers              422 field errors (phone taken names the owner)
+PUT    /api/v1/admin/customers/:id
+DELETE /api/v1/admin/customers/:id          archive
+POST   /api/v1/admin/customers/:customerId/identities
+PUT    /api/v1/admin/customers/:customerId/identities/:id
+POST   /api/v1/admin/customers/:customerId/identities/:id/verify   customers.verify
+POST   /api/v1/admin/customers/:customerId/identities/:id/reject   { reason }
+GET    /api/v1/admin/blacklist              customers.blacklist; search, severity, status
+POST   /api/v1/admin/blacklist              customers.blacklist
+POST   /api/v1/admin/blacklist/:id/lift     { reason }
+GET    /api/v1/admin/blacklist/check        customers.view; phone, documentNumber
+
+AUDIT: customer.created/updated/archived, customer.document_added/updated/verified/
+rejected, blacklist.added/lifted.
