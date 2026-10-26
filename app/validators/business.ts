@@ -19,4 +19,12 @@ export const updateBusinessValidator = vine.create({
   tin: vine.string().trim().maxLength(20).nullable().optional(),
   vatRegistered: vine.boolean().optional(),
   vatNumber: vine.string().trim().maxLength(30).nullable().optional(),
+  // The WYK in booking references (WYK-2026-00123): 2-6 letters or digits.
+  // Changing it affects new references only.
+  documentPrefix: vine
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{2,6}$/)
+    .optional(),
 })

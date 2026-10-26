@@ -63,6 +63,8 @@ export const bookingFilterValidator = vine.create({
   dateFrom: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
   dateTo: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
   sortBy: vine.enum(['pickupAt', 'createdAt'] as const).optional(),
+  // Held, confirmed or on rent, and not yet due back
+  upcoming: vine.boolean().optional(),
 })
 
 export const availabilityValidator = vine.create({

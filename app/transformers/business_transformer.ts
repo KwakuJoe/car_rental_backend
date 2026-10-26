@@ -17,6 +17,7 @@ export default class BusinessTransformer extends BaseTransformer<Business> {
       'tin',
       'vatRegistered',
       'vatNumber',
+      'documentPrefix',
       'currency',
       'timezone',
       'createdAt',

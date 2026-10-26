@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import AuditLog from '#models/audit_log'
+import { DateTime } from 'luxon'
 import Booking from '#models/booking'
 import Business from '#models/business'
 import Customer from '#models/customer'
@@ -65,6 +66,11 @@ export default class BookingsController {
       })
     }
     if (payload.status) query.where('status', payload.status)
+    if (payload.upcoming) {
+      query
+        .whereIn('status', ['pending', 'confirmed', 'on_rent'])
+        .where('return_at', '>', DateTime.now().toSQL()!)
+    }
     if (payload.customerId) query.where('customer_id', payload.customerId)
     if (payload.carId) query.where('car_id', payload.carId)
     if (payload.source) query.where('source', payload.source)

@@ -150,11 +150,9 @@ See `customers_module.txt`.
   (Overview / Price / History, Confirm / Cancel with the policy fee / No-show), and the
   customer's Bookings tab. "Get a quote" now needs `bookings.create`.
 
-**Slice 3** - Today board and calendar DONE (`GET /admin/today`, `GET /admin/calendar`). Still to do:
-- **The "current / next booking" card** at the top of the customer Profile tab (like the
-  hostel's "Current stay").
-- **Editable business `document_prefix`** (the `WYK` part of references) on the business
-  profile.
+**Slice 3 is DONE:** Today board, calendar, the customer's current / next booking card, and
+the editable reference prefix (Settings → Business profile).
+
 
 **Slice 4:** modifications (M3.8: extend at today's rates, swap, change dates, early return
 with no refund by default) and drivers (M3.9, driver_allocations with the same constraint).
@@ -275,6 +273,17 @@ Use **Playwright** (installed in the frontend), always on a **throwaway** databa
 8. The e2e setup uses the real Cloudinary account from `.env`. Routine tests mock uploads (see
    `fleet.spec.ts`). If you upload for real, delete the files afterwards through
    `DELETE /admin/files/:id`.
+
+**Also check UI changes on a dev server.** Production builds hide React and Base UI
+development warnings, which the owner sees on their own dev server (port 3000, never
+touch it). Run an isolated copy instead:
+`rsync -a --exclude node_modules --exclude .next <frontend>/ <scratch>/fe-dev/`, then
+`cp -Rc <frontend>/node_modules <scratch>/fe-dev/` (an APFS clone, instant; a symlink
+breaks Turbopack), then
+`cd <scratch>/fe-dev && API_URL=http://127.0.0.1:3334 npx next dev -p 3002`. Point the
+tests at **http://localhost:3002** (not 127.0.0.1, or the dev server refuses to serve its
+scripts and nothing hydrates), and give the first run time, because pages compile on
+first visit.
 
 Full-page screenshots show sticky elements mid-page; that's the capture method, not a bug.
 

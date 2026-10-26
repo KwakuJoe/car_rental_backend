@@ -10,7 +10,8 @@ Roles: manager all five; front desk view/create/update/cancel; fleet + accountan
 NOTE: POST /admin/quotes moved from pricing.view to bookings.create.
 
 NUMBERING (M1.7) - NumberingService.next('booking', trx)
-WYK-2026-00123: businesses.document_prefix (default WYK) + year (business time zone) +
+WYK-2026-00123: businesses.document_prefix (default WYK; editable on PUT /admin/business as
+documentPrefix, 2-6 letters or digits - new references only) + year (business time zone) +
 5-digit number restarting each year. document_sequences (type, year, next_value) row,
 locked FOR UPDATE inside the booking's transaction: no duplicates, no gaps on rollback.
 
@@ -62,7 +63,8 @@ POST /admin/bookings  { customerId, carId, pickupAt, returnAt, driveType, source
     licence expiring before the return or held less than booking.min_licence_years, car
     roadworthy/insurance expiring before the return, other quote warnings. Lead time is
     ignored for staff.
-GET  /admin/bookings  ?search (reference, customer name or phone) &status &customerId
+GET  /admin/bookings  ?search (reference, customer name or phone) &status &upcoming=true
+  (held / confirmed / on rent, not yet due back) &customerId
   &carId &source &driveType &dateFrom &dateTo (pickup date) &sortBy=pickupAt|createdAt
 GET  /admin/bookings/:id   booking + quote (the snapshot); car includes coverUrl
 PUT  /admin/bookings/:id   { destination?, notes? } - dates, car and extras change via

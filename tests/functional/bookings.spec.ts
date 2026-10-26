@@ -178,6 +178,24 @@ test.group('bookings', (group) => {
     again.assertStatus(201)
     assert.match(json(again).data.reference, /-00002$/)
 
+    // The prefix comes from the business profile (new references only)
+    const owner = await User.findByOrFail('email', 'owner@wynk.test')
+    await expectStatus(
+      client.put('/api/v1/admin/business').json({ documentPrefix: 'acr' }).loginAs(owner),
+      200
+    )
+    const renamed = await client
+      .post(url)
+      .json(
+        booking(customer.id, car.id, { pickupAt: '2030-05-06T09:00', returnAt: '2030-05-07T09:00' })
+      )
+      .loginAs(desk)
+    assert.match(json(renamed).data.reference, /^ACR-\d{4}-00003$/)
+    await expectStatus(
+      client.put('/api/v1/admin/business').json({ documentPrefix: 'W-1' }).loginAs(owner),
+      422
+    )
+
     // A cancelled booking can't be confirmed; a future one can't be a no-show yet
     await expectStatus(client.post(`${url}/${data.id}/confirm`).loginAs(desk), 422)
     await expectStatus(client.post(`${url}/${json(again).data.id}/no-show`).loginAs(desk), 422)
@@ -276,6 +294,12 @@ test.group('bookings', (group) => {
       .qs({ customerId: customer.id })
       .loginAs(desk)
     assert.equal(json(list).data.length, 1)
+    // Expired: not upcoming any more
+    const upcoming = await client
+      .get('/api/v1/admin/bookings')
+      .qs({ customerId: customer.id, upcoming: true })
+      .loginAs(desk)
+    assert.lengthOf(json(upcoming).data, 0)
 
     // Calendar: the car's row shows the (expired) booking only while its hold was active -
     // now released, so the row is empty but the car is still listed

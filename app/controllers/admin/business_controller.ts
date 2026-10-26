@@ -17,6 +17,7 @@ const AUDITED_FIELDS = [
   'tin',
   'vatRegistered',
   'vatNumber',
+  'documentPrefix',
 ] as const
 
 export default class BusinessController {
