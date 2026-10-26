@@ -1,4 +1,4 @@
-# Pricing: rates (M2.5) and price rules (M2.6). See prompt-reference/pricing_module.txt
+# Pricing: rates (M2.5), price rules (M2.6), extras / protection / delivery / fees (M2.7-2.9). See prompt-reference/pricing_module.txt
 # Money is integer pesewas (GHS 450.00 = 45000).
 @baseUrl = {{$dotenv HTTP_BASE_URL}}
 
@@ -147,3 +147,50 @@ Content-Type: application/json
 ### 10. Delete a rule
 DELETE {{baseUrl}}/admin/pricing-rules/{{christmas.response.body.$.data.id}}
 Authorization: Bearer {{token}}
+
+
+### ── Extras, protection plans, delivery zones, fees (M2.7 - M2.9) ──
+
+### 11. Extras (filters: search, active)
+GET {{baseUrl}}/admin/extras
+Authorization: Bearer {{token}}
+
+### 12. Add an extra: child seat, GHS 30/day, 4 in stock, max 2 per booking (extras.manage)
+POST {{baseUrl}}/admin/extras
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Child seat", "chargeType": "per_day", "amount": 3000, "maxQuantity": 2, "stock": 4 }
+
+### 13. Protection plans
+GET {{baseUrl}}/admin/protection-plans
+Authorization: Bearer {{token}}
+
+### 14. Add the default plan (making it default clears any other default)
+POST {{baseUrl}}/admin/protection-plans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Basic cover", "perDayAmount": 0, "excessAmount": 500000, "isDefault": true }
+
+### 15. Delivery zones
+GET {{baseUrl}}/admin/delivery-zones
+Authorization: Bearer {{token}}
+
+### 16. Add a zone: airport delivery/collection GHS 150, after hours +GHS 100
+POST {{baseUrl}}/admin/delivery-zones
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Kotoka International Airport (KIA)", "deliveryAmount": 15000, "collectionAmount": 15000, "afterHoursAmount": 10000 }
+
+### 17. Fees (standard ones come from the seeder)
+GET {{baseUrl}}/admin/fees
+Authorization: Bearer {{token}}
+
+### 18. Add a custom fee (code is fixed after creation)
+POST {{baseUrl}}/admin/fees
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "code": "towing", "name": "Towing", "unit": "flat", "amount": 80000 }

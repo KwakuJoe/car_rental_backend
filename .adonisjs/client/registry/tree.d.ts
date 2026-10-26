@@ -111,6 +111,26 @@ export interface ApiDefinition {
       update: typeof routes['admin.pricing_rules.update']
       destroy: typeof routes['admin.pricing_rules.destroy']
     }
+    extras: {
+      index: typeof routes['admin.extras.index']
+      store: typeof routes['admin.extras.store']
+      update: typeof routes['admin.extras.update']
+    }
+    protectionPlans: {
+      index: typeof routes['admin.protection_plans.index']
+      store: typeof routes['admin.protection_plans.store']
+      update: typeof routes['admin.protection_plans.update']
+    }
+    deliveryZones: {
+      index: typeof routes['admin.delivery_zones.index']
+      store: typeof routes['admin.delivery_zones.store']
+      update: typeof routes['admin.delivery_zones.update']
+    }
+    fees: {
+      index: typeof routes['admin.fees.index']
+      store: typeof routes['admin.fees.store']
+      update: typeof routes['admin.fees.update']
+    }
     settings: {
       index: typeof routes['admin.settings.index']
       update: typeof routes['admin.settings.update']

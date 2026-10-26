@@ -826,6 +826,58 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['show']>>>
     }
   }
+  'admin.extras.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/extras'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/pricing_catalog').catalogFilterValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.protection_plans.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/protection-plans'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/pricing_catalog').catalogFilterValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/protection_plans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/protection_plans_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/protection_plans_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.delivery_zones.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/delivery-zones'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/pricing_catalog').catalogFilterValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/delivery_zones_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/delivery_zones_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/delivery_zones_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.fees.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/fees'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/pricing_catalog').catalogFilterValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/fees_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/fees_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/fees_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.rate_plans.store': {
     methods: ["POST"]
     pattern: '/api/v1/admin/rate-plans'
@@ -889,6 +941,110 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['destroy']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['destroy']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/pricing_rules_controller').default['destroy']>>>
+    }
+  }
+  'admin.protection_plans.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/protection-plans'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/pricing_catalog').protectionPlanValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/pricing_catalog').protectionPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/protection_plans_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/protection_plans_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/protection_plans_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.protection_plans.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/protection-plans/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/pricing_catalog').protectionPlanValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/pricing_catalog').protectionPlanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/protection_plans_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/protection_plans_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/protection_plans_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.delivery_zones.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/delivery-zones'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/pricing_catalog').deliveryZoneValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/pricing_catalog').deliveryZoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/delivery_zones_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/delivery_zones_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/delivery_zones_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.delivery_zones.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/delivery-zones/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/pricing_catalog').deliveryZoneValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/pricing_catalog').deliveryZoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/delivery_zones_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/delivery_zones_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/delivery_zones_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.fees.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/fees'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/pricing_catalog').createFeeValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/pricing_catalog').createFeeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/fees_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/fees_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/fees_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.fees.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/fees/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/pricing_catalog').updateFeeValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/pricing_catalog').updateFeeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/fees_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/fees_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/fees_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.extras.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/extras'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/pricing_catalog').extraValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/pricing_catalog').extraValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.extras.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/extras/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/pricing_catalog').extraValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/pricing_catalog').extraValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.settings.index': {

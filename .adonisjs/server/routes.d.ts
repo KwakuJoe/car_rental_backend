@@ -67,11 +67,23 @@ export type ScannedRoutes = {
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
     'admin.pricing_rules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.extras.index': { paramsTuple?: []; params?: {} }
+    'admin.protection_plans.index': { paramsTuple?: []; params?: {} }
+    'admin.delivery_zones.index': { paramsTuple?: []; params?: {} }
+    'admin.fees.index': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
     'admin.pricing_rules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.protection_plans.store': { paramsTuple?: []; params?: {} }
+    'admin.protection_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.delivery_zones.store': { paramsTuple?: []; params?: {} }
+    'admin.delivery_zones.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.fees.store': { paramsTuple?: []; params?: {} }
+    'admin.fees.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.extras.store': { paramsTuple?: []; params?: {} }
+    'admin.extras.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.settings.update': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
@@ -118,6 +130,10 @@ export type ScannedRoutes = {
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
     'admin.pricing_rules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.extras.index': { paramsTuple?: []; params?: {} }
+    'admin.protection_plans.index': { paramsTuple?: []; params?: {} }
+    'admin.delivery_zones.index': { paramsTuple?: []; params?: {} }
+    'admin.fees.index': { paramsTuple?: []; params?: {} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
@@ -156,6 +172,10 @@ export type ScannedRoutes = {
     'admin.rate_plans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.index': { paramsTuple?: []; params?: {} }
     'admin.pricing_rules.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.extras.index': { paramsTuple?: []; params?: {} }
+    'admin.protection_plans.index': { paramsTuple?: []; params?: {} }
+    'admin.delivery_zones.index': { paramsTuple?: []; params?: {} }
+    'admin.fees.index': { paramsTuple?: []; params?: {} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.business.show': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
@@ -181,6 +201,10 @@ export type ScannedRoutes = {
     'admin.vehicle_documents.store': { paramsTuple: [ParamValue]; params: {'carId': ParamValue} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
     'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
+    'admin.protection_plans.store': { paramsTuple?: []; params?: {} }
+    'admin.delivery_zones.store': { paramsTuple?: []; params?: {} }
+    'admin.fees.store': { paramsTuple?: []; params?: {} }
+    'admin.extras.store': { paramsTuple?: []; params?: {} }
     'admin.branches.store': { paramsTuple?: []; params?: {} }
     'admin.closure_dates.store': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
   }
@@ -196,6 +220,10 @@ export type ScannedRoutes = {
     'admin.vehicle_documents.update': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.rate_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.protection_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.delivery_zones.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.fees.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.extras.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.update': { paramsTuple?: []; params?: {} }
     'admin.business.update': { paramsTuple?: []; params?: {} }
     'admin.branches.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

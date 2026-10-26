@@ -5,8 +5,8 @@ hardcode prices, thresholds or taxes. Money is integer pesewas.
 Runnable examples: http/pricing.http. Permissions: pricing.view (read),
 pricing.manage (write), extras.manage (extras).
 
-Status: M2.5 rates, M2.6 price rules DONE. M2.7 extras, M2.8 protection,
-M2.9 delivery zones + fee schedule, M2.10 taxes, M2.11 quote engine - next.
+Status: M2.5 rates, M2.6 price rules, M2.7 extras, M2.8 protection plans,
+M2.9 delivery zones + fees DONE. M2.10 taxes, M2.11 quote engine - next.
 
 
 M2.5 RATES (rate_plans)
@@ -91,3 +91,37 @@ DELETE /api/v1/admin/pricing-rules/:id   pricing.manage (bookings copy the rule 
                                          deleting a rule never changes past prices)
 Responses include `categories` / `cars` [{id, label}] for display.
 Audit: pricing_rule.created / updated / deleted
+
+
+M2.7 - M2.9 CATALOG: extras, protection plans, delivery zones, fees
+--------------------------------------------------------------------
+All four: name, description, sort_order, active (deactivate - never delete;
+bookings will reference them), created_by, audited as <subject>.created/updated.
+List endpoints filter by search (name) and active; ordered active first, sort order, name.
+
+extras            charge_type per_day | per_rental, amount, max_quantity (per booking,
+                  1-20), stock (null = unlimited; checked against bookings in Phase 3),
+                  taxable (exempt items untick it - M2.10), available_online
+protection_plans  per_day_amount, excess_amount (most the customer pays for damage -
+                  printed on the agreement, caps damage charges at check-in),
+                  deposit_amount_override (null = category deposit), is_default (ONE
+                  default: partial unique index; setting it clears the others; an
+                  inactive plan is never the default), taxable, available_online
+delivery_zones    delivery_amount, collection_amount, after_hours_amount,
+                  available_online. Office pickup = no zone = free.
+fees              code (unique slug, fixed after creation), unit flat | per_hour |
+                  per_day | per_litre | per_km | percent (basis points, max 100%),
+                  amount, taxable, is_system. Standard codes used by check-in (Phase 4):
+                  late_return_hour, late_return_day, fuel_per_litre, refuel_service,
+                  cleaning_standard, cleaning_heavy, smoking, lost_key, lost_document,
+                  excess_km, admin_fee_fines.
+
+Seeder database/seeders/pricing_catalog_seeder.ts (run by node ace db:seed): adds
+missing standard fees by code, and example extras / plans / zones only into EMPTY
+tables - all INACTIVE for the owner to review. Never changes existing rows.
+
+Endpoints (GET pricing.view; writes pricing.manage, extras: extras.manage)
+GET/POST /api/v1/admin/extras            PUT /api/v1/admin/extras/:id
+GET/POST /api/v1/admin/protection-plans  PUT /api/v1/admin/protection-plans/:id
+GET/POST /api/v1/admin/delivery-zones    PUT /api/v1/admin/delivery-zones/:id
+GET/POST /api/v1/admin/fees              PUT /api/v1/admin/fees/:id (code ignored)

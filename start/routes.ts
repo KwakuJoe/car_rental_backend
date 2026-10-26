@@ -152,6 +152,10 @@ router
             router.get('rate-plans/:id', [controllers.admin.RatePlans, 'show'])
             router.get('pricing-rules', [controllers.admin.PricingRules, 'index'])
             router.get('pricing-rules/:id', [controllers.admin.PricingRules, 'show'])
+            router.get('extras', [controllers.admin.Extras, 'index'])
+            router.get('protection-plans', [controllers.admin.ProtectionPlans, 'index'])
+            router.get('delivery-zones', [controllers.admin.DeliveryZones, 'index'])
+            router.get('fees', [controllers.admin.Fees, 'index'])
           })
           .use(middleware.permission({ permissions: ['pricing.view'] }))
 
@@ -162,8 +166,21 @@ router
             router.post('pricing-rules', [controllers.admin.PricingRules, 'store'])
             router.put('pricing-rules/:id', [controllers.admin.PricingRules, 'update'])
             router.delete('pricing-rules/:id', [controllers.admin.PricingRules, 'destroy'])
+            router.post('protection-plans', [controllers.admin.ProtectionPlans, 'store'])
+            router.put('protection-plans/:id', [controllers.admin.ProtectionPlans, 'update'])
+            router.post('delivery-zones', [controllers.admin.DeliveryZones, 'store'])
+            router.put('delivery-zones/:id', [controllers.admin.DeliveryZones, 'update'])
+            router.post('fees', [controllers.admin.Fees, 'store'])
+            router.put('fees/:id', [controllers.admin.Fees, 'update'])
           })
           .use(middleware.permission({ permissions: ['pricing.manage'] }))
+
+        router
+          .group(() => {
+            router.post('extras', [controllers.admin.Extras, 'store'])
+            router.put('extras/:id', [controllers.admin.Extras, 'update'])
+          })
+          .use(middleware.permission({ permissions: ['extras.manage'] }))
 
         router
           .group(() => {

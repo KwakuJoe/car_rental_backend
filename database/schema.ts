@@ -313,6 +313,99 @@ export class ClosureDateSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class DeliveryZoneSchema extends BaseModel {
+  static $columns = ['active', 'afterHoursAmount', 'availableOnline', 'collectionAmount', 'createdAt', 'createdBy', 'deliveryAmount', 'description', 'id', 'name', 'sortOrder', 'updatedAt'] as const
+  $columns = DeliveryZoneSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare afterHoursAmount: number
+  @column()
+  declare availableOnline: boolean
+  @column()
+  declare collectionAmount: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare deliveryAmount: number
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column()
+  declare sortOrder: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class ExtraSchema extends BaseModel {
+  static $columns = ['active', 'amount', 'availableOnline', 'chargeType', 'createdAt', 'createdBy', 'description', 'id', 'maxQuantity', 'name', 'sortOrder', 'stock', 'taxable', 'updatedAt'] as const
+  $columns = ExtraSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare amount: number
+  @column()
+  declare availableOnline: boolean
+  @column()
+  declare chargeType: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare maxQuantity: number
+  @column()
+  declare name: string
+  @column()
+  declare sortOrder: number
+  @column()
+  declare stock: number | null
+  @column()
+  declare taxable: boolean
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class FeeSchema extends BaseModel {
+  static $columns = ['active', 'amount', 'code', 'createdAt', 'createdBy', 'description', 'id', 'isSystem', 'name', 'sortOrder', 'taxable', 'unit', 'updatedAt'] as const
+  $columns = FeeSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare amount: number
+  @column()
+  declare code: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isSystem: boolean
+  @column()
+  declare name: string
+  @column()
+  declare sortOrder: number
+  @column()
+  declare taxable: boolean
+  @column()
+  declare unit: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class FileSchema extends BaseModel {
   static $columns = ['attachableId', 'attachableType', 'createdAt', 'disk', 'id', 'isPrivate', 'metadata', 'mime', 'originalName', 'path', 'purpose', 'size', 'updatedAt', 'uploadedBy', 'url'] as const
   $columns = FileSchema.$columns
@@ -479,6 +572,39 @@ export class PricingRuleSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare weekdays: any | null
+}
+
+export class ProtectionPlanSchema extends BaseModel {
+  static $columns = ['active', 'availableOnline', 'createdAt', 'createdBy', 'depositAmountOverride', 'description', 'excessAmount', 'id', 'isDefault', 'name', 'perDayAmount', 'sortOrder', 'taxable', 'updatedAt'] as const
+  $columns = ProtectionPlanSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare availableOnline: boolean
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare depositAmountOverride: number | null
+  @column()
+  declare description: string | null
+  @column()
+  declare excessAmount: number
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isDefault: boolean
+  @column()
+  declare name: string
+  @column()
+  declare perDayAmount: number
+  @column()
+  declare sortOrder: number
+  @column()
+  declare taxable: boolean
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
 }
 
 export class RateLimitSchema extends BaseModel {
