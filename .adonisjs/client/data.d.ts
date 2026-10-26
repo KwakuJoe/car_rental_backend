@@ -21,6 +21,7 @@ import type PricingCatalogTransformersTransformer from '#transformers/pricing_ca
 import type PricingRuleTransformer from '#transformers/pricing_rule_transformer'
 import type RatePlanTransformer from '#transformers/rate_plan_transformer'
 import type RoleTransformer from '#transformers/role_transformer'
+import type TaxTransformer from '#transformers/tax_transformer'
 import type UserTransformer from '#transformers/user_transformer'
 import type VehicleDocumentTransformer from '#transformers/vehicle_document_transformer'
 
@@ -88,6 +89,10 @@ export namespace Data {
   export type Role = InferData<RoleTransformer>
   export namespace Role {
     export type Variants = InferVariants<RoleTransformer>
+  }
+  export type Tax = InferData<TaxTransformer>
+  export namespace Tax {
+    export type Variants = InferVariants<TaxTransformer>
   }
   export type User = InferData<UserTransformer>
   export namespace User {

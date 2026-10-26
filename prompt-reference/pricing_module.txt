@@ -5,8 +5,8 @@ hardcode prices, thresholds or taxes. Money is integer pesewas.
 Runnable examples: http/pricing.http. Permissions: pricing.view (read),
 pricing.manage (write), extras.manage (extras).
 
-Status: M2.5 rates, M2.6 price rules, M2.7 extras, M2.8 protection plans,
-M2.9 delivery zones + fees DONE. M2.10 taxes, M2.11 quote engine - next.
+Status: M2.5 - M2.10 DONE (rates, price rules, extras, protection plans,
+delivery zones, fees, taxes). M2.11 quote engine - next.
 
 
 M2.5 RATES (rate_plans)
@@ -125,3 +125,38 @@ GET/POST /api/v1/admin/extras            PUT /api/v1/admin/extras/:id
 GET/POST /api/v1/admin/protection-plans  PUT /api/v1/admin/protection-plans/:id
 GET/POST /api/v1/admin/delivery-zones    PUT /api/v1/admin/delivery-zones/:id
 GET/POST /api/v1/admin/fees              PUT /api/v1/admin/fees/:id (code ignored)
+
+
+M2.10 TAXES (taxes) + setting pricing.vat_registered
+-----------------------------------------------------
+Decided with the owner: taxes attach to the TYPE OF CHARGE, never to cars.
+pricing.vat_registered (Settings, default OFF) - while off, no tax is added anywhere.
+No taxes are seeded: Ghana's structure changed in 2025-26; the accountant supplies them.
+
+name, description     e.g. VAT, NHIL, GETFund levy
+rate_bp               basis points, 1 .. 10000 (1500 = 15%)
+calculation           on_net (on the charge) | on_net_plus_levies (on the charge plus
+                      the on_net taxes of that line - for a tax charged on levies)
+applies_to            rental | extras | protection | delivery | fees (>= 1, stored in
+                      that order)
+effective_from/to     optional; rate changes = end the old row, add a new one, so past
+                      invoices stay reproducible
+sort_order            order on receipts; active (deactivate, never delete)
+
+TaxService
+  calculate(lines, taxes) - pure. Per line: skip taxable=false and 0; on_net taxes on
+    the amount, then compound taxes on amount + that line's levies. Rounded to the
+    pesewa PER LINE, then summed. Discounts are negative lines (lower the base).
+    Taxes with nothing to tax are omitted. Returns { lines[{taxId,name,rateBp,
+    calculation,base,amount}], total }.
+  activeOn(day) - active taxes covering the day, in receipt order.
+  forLines(lines, day) - checks the VAT switch, loads activeOn(day), calculates.
+  Deposits are never passed in - never taxed, never revenue.
+
+Endpoints
+GET  /api/v1/admin/taxes       pricing.view (search, active); response `context`:
+                               { vatRegistered }
+POST /api/v1/admin/taxes       settings.manage
+PUT  /api/v1/admin/taxes/:id   settings.manage
+The switch itself: PUT /api/v1/admin/settings { values: { "pricing.vat_registered": true } }
+Audit: tax.created / tax.updated (+ settings.updated for the switch)

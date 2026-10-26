@@ -720,6 +720,37 @@ export class SettingSchema extends BaseModel {
   declare value: any
 }
 
+export class TaxSchema extends BaseModel {
+  static $columns = ['active', 'appliesTo', 'calculation', 'createdAt', 'createdBy', 'description', 'effectiveFrom', 'effectiveTo', 'id', 'name', 'rateBp', 'sortOrder', 'updatedAt'] as const
+  $columns = TaxSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare appliesTo: any
+  @column()
+  declare calculation: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare description: string | null
+  @column.date()
+  declare effectiveFrom: DateTime | null
+  @column.date()
+  declare effectiveTo: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column()
+  declare rateBp: number
+  @column()
+  declare sortOrder: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class UserSchema extends BaseModel {
   static $columns = ['createdAt', 'email', 'fullName', 'id', 'isActive', 'lastLoginAt', 'mustResetPassword', 'password', 'permissionsOverride', 'phone', 'roleId', 'updatedAt'] as const
   $columns = UserSchema.$columns

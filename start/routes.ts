@@ -156,6 +156,7 @@ router
             router.get('protection-plans', [controllers.admin.ProtectionPlans, 'index'])
             router.get('delivery-zones', [controllers.admin.DeliveryZones, 'index'])
             router.get('fees', [controllers.admin.Fees, 'index'])
+            router.get('taxes', [controllers.admin.Taxes, 'index'])
           })
           .use(middleware.permission({ permissions: ['pricing.view'] }))
 
@@ -181,6 +182,14 @@ router
             router.put('extras/:id', [controllers.admin.Extras, 'update'])
           })
           .use(middleware.permission({ permissions: ['extras.manage'] }))
+
+        // Taxes: read with pricing.view (above), change with settings.manage
+        router
+          .group(() => {
+            router.post('taxes', [controllers.admin.Taxes, 'store'])
+            router.put('taxes/:id', [controllers.admin.Taxes, 'update'])
+          })
+          .use(middleware.permission({ permissions: ['settings.manage'] }))
 
         router
           .group(() => {

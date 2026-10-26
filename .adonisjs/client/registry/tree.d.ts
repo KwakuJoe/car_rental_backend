@@ -131,6 +131,11 @@ export interface ApiDefinition {
       store: typeof routes['admin.fees.store']
       update: typeof routes['admin.fees.update']
     }
+    taxes: {
+      index: typeof routes['admin.taxes.index']
+      store: typeof routes['admin.taxes.store']
+      update: typeof routes['admin.taxes.update']
+    }
     settings: {
       index: typeof routes['admin.settings.index']
       update: typeof routes['admin.settings.update']

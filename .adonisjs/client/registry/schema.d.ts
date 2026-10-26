@@ -878,6 +878,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/fees_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.taxes.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/taxes'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/pricing_catalog').catalogFilterValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.rate_plans.store': {
     methods: ["POST"]
     pattern: '/api/v1/admin/rate-plans'
@@ -1045,6 +1058,32 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['update']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/extras_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.taxes.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/taxes'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/tax').taxValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/tax').taxValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.taxes.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/taxes/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/tax').taxValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/tax').taxValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/taxes_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.settings.index': {

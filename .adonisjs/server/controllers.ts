@@ -26,6 +26,7 @@ export const controllers = {
     RatePlans: () => import('#controllers/admin/rate_plans_controller'),
     Roles: () => import('#controllers/admin/roles_controller'),
     Settings: () => import('#controllers/admin/settings_controller'),
+    Taxes: () => import('#controllers/admin/taxes_controller'),
     Users: () => import('#controllers/admin/users_controller'),
     VehicleDocuments: () => import('#controllers/admin/vehicle_documents_controller'),
   },

@@ -194,3 +194,24 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "code": "towing", "name": "Towing", "unit": "flat", "amount": 80000 }
+
+
+### ── Taxes (M2.10) ─────────────────────────────────────────────────
+
+### 19. Taxes + the VAT switch (context.vatRegistered)
+GET {{baseUrl}}/admin/taxes
+Authorization: Bearer {{token}}
+
+### 20. Add a tax - ILLUSTRATIVE ONLY, use the rates from your accountant (settings.manage)
+POST {{baseUrl}}/admin/taxes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Example levy", "rateBp": 250, "calculation": "on_net", "appliesTo": ["rental", "extras", "protection", "delivery", "fees"] }
+
+### 21. Turn taxes on once VAT registered
+PUT {{baseUrl}}/admin/settings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "values": { "pricing.vat_registered": true } }

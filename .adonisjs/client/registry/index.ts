@@ -408,6 +408,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"fees"]],
     types: placeholder as Registry['admin.fees.index']['types'],
   },
+  'admin.taxes.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/taxes',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"taxes"]],
+    types: placeholder as Registry['admin.taxes.index']['types'],
+  },
   'admin.rate_plans.store': {
     methods: ["POST"],
     pattern: '/api/v1/admin/rate-plans',
@@ -485,6 +491,18 @@ const routes = {
     pattern: '/api/v1/admin/extras/:id',
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"extras"],[1,"id"]],
     types: placeholder as Registry['admin.extras.update']['types'],
+  },
+  'admin.taxes.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/taxes',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"taxes"]],
+    types: placeholder as Registry['admin.taxes.store']['types'],
+  },
+  'admin.taxes.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/taxes/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"taxes"],[1,"id"]],
+    types: placeholder as Registry['admin.taxes.update']['types'],
   },
   'admin.settings.index': {
     methods: ["GET","HEAD"],

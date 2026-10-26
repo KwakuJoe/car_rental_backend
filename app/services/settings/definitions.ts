@@ -235,6 +235,14 @@ export const settingDefinitions = {
     max: 90,
     unit: 'days',
   },
+  'pricing.vat_registered': {
+    group: 'pricing',
+    type: 'boolean',
+    label: 'VAT registered',
+    description:
+      'Turn on only once the business is registered with GRA. While off, no tax is added to any price.',
+    default: false,
+  },
   'pricing.display_tax_inclusive': {
     group: 'pricing',
     type: 'boolean',
