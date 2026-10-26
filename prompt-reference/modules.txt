@@ -141,6 +141,10 @@ proper pass before go-live (Milestone A). Tick them off as they're covered.
   [ ] Today board in the browser: Confirm from "Confirm or lose the car",
       row menus, readiness chips (only smoke + screenshots so far; backend test
       covers the data)
+  [ ] Booking changes in the browser: change dates, swap car (both prices),
+      assign / change / remove driver (backend tests cover the rules; e2e
+      covers extend only). Early return can only be tried once check-out
+      exists (Phase 4)
   [ ] Booking warnings (no licence, licence/roadworthy expiring) - backend
       returns them, UI shows them as toasts only; check they read well
 

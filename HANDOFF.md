@@ -131,7 +131,7 @@ See `customers_module.txt`.
     `meta.expected4xx`.
 
 ### Tests (last green run)
-- Backend: **152** Japa tests (incl. the bookings concurrency test).
+- Backend: **154** Japa tests (incl. the bookings concurrency test).
 - Frontend: **37** Playwright tests (setup, smoke and workflows: fleet, pricing,
   pricing-catalog, quote, customers, bookings), plus the visual tour. The last full run was
   before bookings; bookings, quote and smoke were run after it.
@@ -139,23 +139,27 @@ See `customers_module.txt`.
   ~200, from VS Code extension hosts and Rider). Re-run serially with `--workers=1`, all 9
   tests in those files passed.
 
-## NEXT TASK: Phase 3 slice 3 - cancel flow polish, calendar, Today board
-**Slice 2 (bookings) is DONE** - see `prompt-reference/bookings_module.txt`:
-- Backend: M1.7 numbering (`WYK-2026-00001`), `GET /admin/availability`, bookings (pending
-  hold / confirmed, quote snapshot, discounts with a 10% staff limit, blacklist / age checks
-  with `bookings.override`, confirm / cancel / no-show, history), cancellation settings and
-  `CancellationService`, the `bookings:expire-holds` cron, and the concurrency test.
-- Frontend: Bookings list (Filter dialog), New booking page (4 steps: customer & dates →
-  car from availability → extras & delivery → price & confirm), booking detail page
-  (Overview / Price / History, Confirm / Cancel with the policy fee / No-show), and the
-  customer's Bookings tab. "Get a quote" now needs `bookings.create`.
+## NEXT TASK: Phase 4 - vehicle handover (see modules.txt)
+**Phase 3 is DONE** (`bookings_module.txt`):
+- customers and blacklist
+- numbering (`WYK-2026-00001`, prefix editable)
+- availability, bookings (held / confirmed, quote snapshot, discounts, overrides)
+- cancellation policy, Today board, calendar
+- changes (M3.8): extend at today's rates, change dates, swap car, early return; preview
+  first, recorded in `booking_modifications`
+- drivers (M3.9) with double-booking protection
 
-**Slice 3 is DONE:** Today board, calendar, the customer's current / next booking card, and
-the editable reference prefix (Settings → Business profile).
+Phase 4 (check-out / check-in) is what makes `on_rent` real:
+- inspections (fuel, mileage, damage photos, signatures), the rental agreement PDF
+- moving the booking to `on_rent` / `returned`
+- swap-on-rent (a mini check-in / check-out)
+- early return becomes usable then (the service already supports it)
 
+Remember `booking.require_verified_customer_for_checkout` and drivers on with-driver
+bookings at check-out.
 
-**Slice 4:** modifications (M3.8: extend at today's rates, swap, change dates, early return
-with no refund by default) and drivers (M3.9, driver_allocations with the same constraint).
+Small items waiting: the TESTING BACKLOG in `modules.txt`; the owner reviews the example
+extras / plans / zones / fees and adds real taxes.
 
 ### Owner decisions already made (don't re-ask)
 - Customers book a **specific car**; staff can swap it (M3.8).
