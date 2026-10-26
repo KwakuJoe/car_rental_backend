@@ -155,7 +155,9 @@ Production build:
   npm ci --omit=dev       # install production deps inside build/
   npm start               # runs "node bin/server.js"
 
-Server listens on HOST:PORT from .env (default localhost:3333). All app
+Server listens on HOST:PORT from .env (default 127.0.0.1:3333 - use 127.0.0.1, not
+localhost: "localhost" can bind IPv6 only on macOS and the frontend proxy then fails to
+connect intermittently). All app
 routes are under /api/v1 - see prompt-reference/auth_module.txt for the
 endpoint list.
 
@@ -172,12 +174,12 @@ looks like it comes from one IP.
 
 8. LOG IN
 -------------
-  curl -X POST http://localhost:3333/api/v1/auth/login \
+  curl -X POST http://127.0.0.1:3333/api/v1/auth/login \
     -H "Content-Type: application/json" \
     -d '{"email":"<owner email>","password":"<temporary password>"}'
 
 Then immediately:
-  curl -X POST http://localhost:3333/api/v1/account/change-password \
+  curl -X POST http://127.0.0.1:3333/api/v1/account/change-password \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer <token from login>" \
     -d '{"currentPassword":"<temporary password>","password":"<new password>","passwordConfirmation":"<new password>"}'

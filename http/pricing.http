@@ -209,9 +209,9 @@ Content-Type: application/json
 
 { "name": "Example levy", "rateBp": 250, "calculation": "on_net", "appliesTo": ["rental", "extras", "protection", "delivery", "fees"] }
 
-### 21. Turn taxes on once VAT registered
-PUT {{baseUrl}}/admin/settings
+### 21. Taxes are charged only while the business profile says VAT registered
+PUT {{baseUrl}}/admin/business
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
-{ "values": { "pricing.vat_registered": true } }
+{ "vatRegistered": true, "vatNumber": "C0001234567" }

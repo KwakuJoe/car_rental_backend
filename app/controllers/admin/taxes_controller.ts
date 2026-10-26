@@ -3,7 +3,7 @@ import type { Infer } from '@vinejs/vine/types'
 import Tax from '#models/tax'
 import TaxTransformer from '#transformers/tax_transformer'
 import { CatalogCrud } from '#services/pricing/catalog_crud'
-import SettingsService from '#services/settings/settings_service'
+import TaxService from '#services/pricing/tax_service'
 import { catalogFilterValidator } from '#validators/pricing_catalog'
 import { taxValidator } from '#validators/tax'
 
@@ -31,8 +31,8 @@ export default class TaxesController {
       message: 'Taxes fetched successfully',
       data: rows.all().map((row) => new TaxTransformer(row).toObject()),
       meta: rows.getMeta(),
-      // The master switch - readable by anyone who can see taxes
-      context: { vatRegistered: await SettingsService.get('pricing.vat_registered') },
+      // From the business profile (Settings > Business) - readable by anyone who can see taxes
+      context: { vatRegistered: await TaxService.isVatRegistered() },
     })
   }
 

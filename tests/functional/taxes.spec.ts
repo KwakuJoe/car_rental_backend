@@ -5,6 +5,7 @@ import Role from '#models/role'
 import Permission from '#models/permission'
 import User from '#models/user'
 import Tax from '#models/tax'
+import Business from '#models/business'
 import AuditLog from '#models/audit_log'
 import TaxService, { type TaxableLine } from '#services/pricing/tax_service'
 
@@ -137,8 +138,12 @@ const vatBody = {
 test.group('taxes API and VAT switch', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  test('no tax at all until the business is VAT registered', async ({ client, assert }) => {
+  test('no tax at all until the business profile says VAT registered', async ({
+    client,
+    assert,
+  }) => {
     const { owner } = await setup()
+    await Business.create({ name: 'Wynk Car Rentals', email: 'admin@wynk.test' })
     await Tax.create({ name: 'VAT', rateBp: 1500, calculation: 'on_net', appliesTo: ['rental'] })
     const day = DateTime.fromISO('2026-11-10')
 
@@ -146,10 +151,12 @@ test.group('taxes API and VAT switch', (group) => {
     assert.equal(off.total, 0)
 
     const turnedOn = await client
-      .put('/api/v1/admin/settings')
-      .json({ values: { 'pricing.vat_registered': true } })
+      .put('/api/v1/admin/business')
+      .json({ vatRegistered: true, vatNumber: 'C0001234567' })
       .loginAs(owner)
     turnedOn.assertStatus(200)
+    const list = await client.get('/api/v1/admin/taxes').loginAs(owner)
+    assert.deepEqual(json(list).context, { vatRegistered: true })
 
     const on = await TaxService.forLines([rental(100_000)], day)
     assert.equal(on.total, 15_000)

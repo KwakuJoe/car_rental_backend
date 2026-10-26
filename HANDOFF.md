@@ -128,8 +128,10 @@ Pattern used so far, always on a **throwaway** database:
    (`DB_DATABASE=car_rental_e2e node ace migration:run`), bootstrap with `business:create`
    (it's interactive — the previous agent drove it with an `expect` script), change the
    owner's temp password via `POST /api/backend/account/change-password`.
-2. Backend on port 3334 (`PORT=3334 DB_DATABASE=car_rental_e2e node ace serve`), frontend
-   production build on 3001 (`API_URL=http://localhost:3334 npx next start -p 3001`).
+2. Backend on port 3334 (`HOST=127.0.0.1 PORT=3334 DB_DATABASE=car_rental_e2e node ace serve`),
+   frontend production build on 3001 (`API_URL=http://127.0.0.1:3334 npx next start -p 3001`).
+   Use 127.0.0.1, never localhost: "localhost" binds IPv6 only on macOS and the proxy's fetch
+   then fails to connect now and then - random 500s in tests that look like app bugs.
 3. `E2E_BASE_URL=http://localhost:3001 E2E_EMAIL=... E2E_PASSWORD=... npm run e2e` and
    `npm run e2e:tour`, then LOOK at `test-results/tour/*.png` (light + dark).
 4. Stop both servers and `dropdb -h 127.0.0.1 car_rental_e2e` afterwards.

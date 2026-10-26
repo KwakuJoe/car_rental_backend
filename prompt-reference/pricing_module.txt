@@ -127,10 +127,11 @@ GET/POST /api/v1/admin/delivery-zones    PUT /api/v1/admin/delivery-zones/:id
 GET/POST /api/v1/admin/fees              PUT /api/v1/admin/fees/:id (code ignored)
 
 
-M2.10 TAXES (taxes) + setting pricing.vat_registered
+M2.10 TAXES (taxes) + business.vat_registered
 -----------------------------------------------------
 Decided with the owner: taxes attach to the TYPE OF CHARGE, never to cars.
-pricing.vat_registered (Settings, default OFF) - while off, no tax is added anywhere.
+Whether tax is charged at all = the business profile's vat_registered (Settings > Business,
+with the VAT number) - ONE source of truth. While false, no tax is added anywhere.
 No taxes are seeded: Ghana's structure changed in 2025-26; the accountant supplies them.
 
 name, description     e.g. VAT, NHIL, GETFund levy
@@ -150,13 +151,14 @@ TaxService
     Taxes with nothing to tax are omitted. Returns { lines[{taxId,name,rateBp,
     calculation,base,amount}], total }.
   activeOn(day) - active taxes covering the day, in receipt order.
-  forLines(lines, day) - checks the VAT switch, loads activeOn(day), calculates.
+  isVatRegistered() - business.vat_registered.
+  forLines(lines, day) - checks VAT registration, loads activeOn(day), calculates.
   Deposits are never passed in - never taxed, never revenue.
 
 Endpoints
 GET  /api/v1/admin/taxes       pricing.view (search, active); response `context`:
-                               { vatRegistered }
+                               { vatRegistered } (from the business profile)
 POST /api/v1/admin/taxes       settings.manage
 PUT  /api/v1/admin/taxes/:id   settings.manage
-The switch itself: PUT /api/v1/admin/settings { values: { "pricing.vat_registered": true } }
-Audit: tax.created / tax.updated (+ settings.updated for the switch)
+Registration itself: PUT /api/v1/admin/business { vatRegistered, vatNumber } (settings.manage)
+Audit: tax.created / tax.updated (+ business.updated for registration)

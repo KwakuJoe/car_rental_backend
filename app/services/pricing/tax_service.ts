@@ -1,6 +1,6 @@
 import type { DateTime } from 'luxon'
 import Tax, { type ChargeType } from '#models/tax'
-import SettingsService from '#services/settings/settings_service'
+import Business from '#models/business'
 
 export type TaxableLine = {
   chargeType: ChargeType
@@ -27,7 +27,7 @@ const NO_TAX: TaxResult = { lines: [], total: 0 }
 /**
  * Taxes (M2.10). The quote engine passes every charge line; taxes apply by
  * type of charge, rounded to the pesewa PER LINE (then summed), only while
- * the business is VAT registered. Deposits are never passed in - never taxed.
+ * the business profile says VAT registered. Deposits are never passed in - never taxed.
  */
 export class TaxService {
   /** Active taxes in force on a day, in receipt order. */
@@ -41,9 +41,15 @@ export class TaxService {
       .orderBy('name', 'asc')
   }
 
-  /** Loads the VAT switch and the taxes in force on `day`, then calculates. */
+  /** Whether tax is charged at all: the business profile's "VAT registered" (one source of truth). */
+  static async isVatRegistered(): Promise<boolean> {
+    const business = await Business.query().first()
+    return Boolean(business?.vatRegistered)
+  }
+
+  /** Checks VAT registration and the taxes in force on `day`, then calculates. */
   static async forLines(lines: TaxableLine[], day: DateTime): Promise<TaxResult> {
-    if (!(await SettingsService.get('pricing.vat_registered'))) return NO_TAX
+    if (!(await this.isVatRegistered())) return NO_TAX
     return this.calculate(lines, await this.activeOn(day))
   }
 
