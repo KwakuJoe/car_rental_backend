@@ -150,6 +150,9 @@ proper pass before go-live (Milestone A). Tick them off as they're covered.
       assign / change / remove driver (backend tests cover the rules; e2e
       covers extend only). Early return can only be tried once check-out
       exists (Phase 4)
+  [ ] Check-out on a real tablet: camera capture for photos, finger signature,
+      the damage diagram by touch; with handover.require_photos switched on
+      (e2e covers the desk flow with a mouse, photos skipped)
   [ ] Booking warnings (no licence, licence/roadworthy expiring) - backend
       returns them, UI shows them as toasts only; check they read well
 

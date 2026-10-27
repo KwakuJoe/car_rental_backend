@@ -149,7 +149,15 @@ See `customers_module.txt`.
   first, recorded in `booking_modifications`
 - drivers (M3.9) with double-booking protection
 
-Phase 4 (check-out / check-in) is what makes `on_rent` real:
+**Phase 4 slice 1 (check-out) is DONE** (`handover_module.txt`): inspection draft with
+readings, checklist, photos, damage on the car's register, live requirements, the money
+tick, and the customer's signature against versioned terms. The booking then goes
+**on rent**. The decisions are recorded in the module doc.
+**Next: slice 2 check-in** (comparison, proposed charges, waivers, `returned`). Then
+**slice 3:** the agreement PDF, plus a Settings page for the terms text and the checklist
+(the API exists).
+
+Phase 4 overall:
 - inspections (fuel, mileage, damage photos, signatures), the rental agreement PDF
 - moving the booking to `on_rent` / `returned`
 - swap-on-rent (a mini check-in / check-out)
