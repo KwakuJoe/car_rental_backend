@@ -1,13 +1,17 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
+import Booking from '#models/booking'
 import Business from '#models/business'
 import { BookingError } from '#services/bookings/booking_service'
 import FileService from '#services/file_service'
+import BookingMessages from '#services/messages/booking_messages'
 import PublicBookingService from '#services/public/public_booking_service'
+import { normalizePhone } from '#helpers/phone'
 import {
   publicBookingValidator,
   publicCarValidator,
   publicCarsValidator,
+  publicLookupValidator,
   publicPaymentValidator,
   publicQuoteValidator,
 } from '#validators/public'
@@ -142,6 +146,28 @@ export default class PublicController {
       attachableId: booking.id,
     })
     return response.created({ message: 'Screenshot uploaded', data: { id: file.id } })
+  }
+
+  /**
+   * "Find my booking": the private link goes to the phone (and email) on
+   * record, never back to whoever asks - and the answer is the same either
+   * way, so references can't be fished for.
+   */
+  async lookup({ request, response }: HttpContext) {
+    const { reference, phone } = await request.validateUsing(publicLookupValidator)
+    const normalised = normalizePhone(phone)
+    const booking = normalised
+      ? await Booking.query()
+          .where('reference', reference)
+          .where('source', 'website')
+          .whereHas('customer', (customer) => customer.where('phone', normalised))
+          .first()
+      : null
+    if (booking) await BookingMessages.resendLink(booking)
+    return response.ok({
+      message: 'If those details match a booking, we’ve sent its link to that phone number.',
+      data: null,
+    })
   }
 
   /** "I've paid" - waits for staff to check the statement. */

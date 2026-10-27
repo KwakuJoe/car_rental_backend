@@ -14,6 +14,7 @@ export interface ApiDefinition {
       car: typeof routes['public.public.car']
       quote: typeof routes['public.public.quote']
       book: typeof routes['public.public.book']
+      lookup: typeof routes['public.public.lookup']
       booking: typeof routes['public.public.booking']
       uploadProof: typeof routes['public.public.upload_proof']
       submitPayment: typeof routes['public.public.submit_payment']

@@ -204,6 +204,9 @@ app (`crontab -e`), adjusting the path:
   # Expire unconfirmed bookings past their hold and free the car - every 5 minutes
   */5 * * * * cd /srv/car_rental_backend/build && node ace bookings:expire-holds >> storage/logs/cron.log 2>&1
 
+  # Retry customer SMS / emails that couldn't be sent straight away - every minute
+  * * * * * cd /srv/car_rental_backend/build && node ace messages:send >> storage/logs/cron.log 2>&1
+
 Each job is safe to re-run: alerts are de-duplicated per document and
 milestone (30/14/7/1 days and the expiry day), so a missed or doubled run
 never spams staff. New scheduled jobs (overdue rentals, hold expiry) get a

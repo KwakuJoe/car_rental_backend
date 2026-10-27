@@ -186,7 +186,7 @@ export class BookingModificationSchema extends BaseModel {
 }
 
 export class BookingSchema extends BaseModel {
-  static $columns = ['actualPickupAt', 'actualReturnAt', 'balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'depositHeldAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverId', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'paymentPlan', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'publicTokenHash', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
+  static $columns = ['actualPickupAt', 'actualReturnAt', 'balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'depositHeldAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverId', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'paymentPlan', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'publicTokenEncrypted', 'publicTokenHash', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
   $columns = BookingSchema.$columns
   @column.dateTime()
   declare actualPickupAt: DateTime | null
@@ -266,6 +266,8 @@ export class BookingSchema extends BaseModel {
   declare priceSnapshot: any
   @column()
   declare protectionPlanId: string | null
+  @column()
+  declare publicTokenEncrypted: string | null
   @column()
   declare publicTokenHash: string | null
   @column()
@@ -1040,6 +1042,41 @@ export class OpeningHourSchema extends BaseModel {
   declare updatedAt: DateTime | null
   @column()
   declare weekday: number
+}
+
+export class OutboundMessageSchema extends BaseModel {
+  static $columns = ['attempts', 'body', 'bookingId', 'channel', 'createdAt', 'html', 'id', 'kind', 'lastError', 'nextAttemptAt', 'sentAt', 'status', 'subject', 'to', 'updatedAt'] as const
+  $columns = OutboundMessageSchema.$columns
+  @column()
+  declare attempts: number
+  @column()
+  declare body: string
+  @column()
+  declare bookingId: string | null
+  @column()
+  declare channel: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare html: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare kind: string
+  @column()
+  declare lastError: string | null
+  @column.dateTime()
+  declare nextAttemptAt: DateTime | null
+  @column.dateTime()
+  declare sentAt: DateTime | null
+  @column()
+  declare status: string
+  @column()
+  declare subject: string | null
+  @column()
+  declare to: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
 }
 
 export class PaymentSchema extends BaseModel {

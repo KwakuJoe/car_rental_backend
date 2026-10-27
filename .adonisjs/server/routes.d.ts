@@ -10,6 +10,7 @@ export type ScannedRoutes = {
     'public.public.car': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'public.public.quote': { paramsTuple?: []; params?: {} }
     'public.public.book': { paramsTuple?: []; params?: {} }
+    'public.public.lookup': { paramsTuple?: []; params?: {} }
     'public.public.booking': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'public.public.upload_proof': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'public.public.submit_payment': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
@@ -316,6 +317,7 @@ export type ScannedRoutes = {
     'auth.access_tokens.store': { paramsTuple?: []; params?: {} }
     'public.public.quote': { paramsTuple?: []; params?: {} }
     'public.public.book': { paramsTuple?: []; params?: {} }
+    'public.public.lookup': { paramsTuple?: []; params?: {} }
     'public.public.upload_proof': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'public.public.submit_payment': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'account.access_tokens.destroy': { paramsTuple?: []; params?: {} }

@@ -12,6 +12,7 @@ import router from '@adonisjs/core/services/router'
 import {
   loginThrottle,
   publicBookThrottle,
+  publicLookupThrottle,
   publicPayThrottle,
   publicReadThrottle,
 } from '#start/limiter'
@@ -38,6 +39,7 @@ router
         router.get('cars/:id', [controllers.Public, 'car']).use(publicReadThrottle)
         router.post('quotes', [controllers.Public, 'quote']).use(publicReadThrottle)
         router.post('bookings', [controllers.Public, 'book']).use(publicBookThrottle)
+        router.post('bookings/lookup', [controllers.Public, 'lookup']).use(publicLookupThrottle)
         router.get('bookings/:token', [controllers.Public, 'booking']).use(publicReadThrottle)
         router
           .post('bookings/:token/proof', [controllers.Public, 'uploadProof'])

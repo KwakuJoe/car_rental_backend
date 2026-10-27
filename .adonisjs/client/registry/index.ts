@@ -42,6 +42,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"public"],[0,"bookings"]],
     types: placeholder as Registry['public.public.book']['types'],
   },
+  'public.public.lookup': {
+    methods: ["POST"],
+    pattern: '/api/v1/public/bookings/lookup',
+    tokens: [[0,"api"],[0,"v1"],[0,"public"],[0,"bookings"],[0,"lookup"]],
+    types: placeholder as Registry['public.public.lookup']['types'],
+  },
   'public.public.booking': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/public/bookings/:token',

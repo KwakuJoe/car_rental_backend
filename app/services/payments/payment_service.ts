@@ -12,6 +12,7 @@ import Payment, {
 } from '#models/payment'
 import type User from '#models/user'
 import AuditService from '#services/audit_service'
+import BookingMessages from '#services/messages/booking_messages'
 import BookingService, { BookingError } from '#services/bookings/booking_service'
 import NumberingService from '#services/numbering_service'
 import { formatMoney as money } from '#helpers/money'
@@ -524,7 +525,7 @@ export default class PaymentService {
 
   /** The money is in the MoMo/bank statement: it now counts. */
   static async verify(ctx: HttpContext, paymentId: string, user: User) {
-    return db.transaction(async (trx) => {
+    const verified = await db.transaction(async (trx) => {
       const payment = await Payment.query({ client: trx }).where('id', paymentId).firstOrFail()
       const booking = await this.lock(payment.bookingId, trx)
       if (payment.status !== 'pending_verification') {
@@ -548,13 +549,30 @@ export default class PaymentService {
         trx
       )
       await this.recalculate(ctx, booking, trx, user.id)
-      return payment
+      return { payment, booking }
     })
+    // Website customers are told (after the commit, so a failed send changes nothing)
+    if (verified.booking.source === 'website') {
+      await BookingMessages.paymentVerified(verified.booking, verified.payment.amount)
+    }
+    return verified.payment
   }
 
   /** Not in the statement: never counted. Also frees the transaction ID. */
   static async reject(ctx: HttpContext, paymentId: string, reason: string, user: User) {
-    return this.cancel(ctx, paymentId, reason, user, 'pending_verification', 'rejected')
+    const payment = await this.cancel(
+      ctx,
+      paymentId,
+      reason,
+      user,
+      'pending_verification',
+      'rejected'
+    )
+    const booking = await Booking.findOrFail(payment.bookingId)
+    if (booking.source === 'website') {
+      await BookingMessages.paymentNotFound(booking, payment.transactionRef)
+    }
+    return payment
   }
 
   /** Recorded by mistake: stops counting, kept on record. */

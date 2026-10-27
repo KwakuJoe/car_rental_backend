@@ -40,6 +40,23 @@ export default await Env.create(new URL('../', import.meta.url), {
   LIMITER_STORE: Env.schema.enum(['database', 'memory'] as const),
 
   // Cloudinary (file storage)
+  /*
+  |----------------------------------------------------------
+  | Customer messages (all optional: unset = recorded as skipped, not sent)
+  |----------------------------------------------------------
+  */
+  // The public website, for links in SMS / email (e.g. https://wynk.com.gh)
+  WEBSITE_URL: Env.schema.string.optional({ format: 'url', tld: false }),
+  MNOTIFY_API_KEY: Env.schema.secret.optional(),
+  MNOTIFY_SENDER_ID: Env.schema.string.optional(),
+  MAIL_FROM_NAME: Env.schema.string.optional(),
+  MAIL_FROM_ADDRESS: Env.schema.string.optional(),
+  SMTP_HOST: Env.schema.string.optional(),
+  SMTP_PORT: Env.schema.number.optional(),
+  SMTP_USERNAME: Env.schema.string.optional(),
+  SMTP_PASSWORD: Env.schema.string.optional(),
+  SMTP_SECURE: Env.schema.boolean.optional(),
+
   CLOUDINARY_CLOUD_NAME: Env.schema.string.optional(),
   CLOUDINARY_API_KEY: Env.schema.string.optional(),
   CLOUDINARY_API_SECRET: Env.schema.secret.optional(),

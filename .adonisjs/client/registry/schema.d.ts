@@ -85,6 +85,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/public_controller').default['book']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'public.public.lookup': {
+    methods: ["POST"]
+    pattern: '/api/v1/public/bookings/lookup'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/public').publicLookupValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/public').publicLookupValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/public_controller').default['lookup']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/public_controller').default['lookup']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/public_controller').default['lookup']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'public.public.booking': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/public/bookings/:token'

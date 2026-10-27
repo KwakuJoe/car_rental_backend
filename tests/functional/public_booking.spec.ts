@@ -10,6 +10,7 @@ import Category from '#models/category'
 import Customer from '#models/customer'
 import Extra from '#models/extra'
 import Notification from '#models/notification'
+import OutboundMessage from '#models/outbound_message'
 import Payment from '#models/payment'
 import RatePlan from '#models/rate_plan'
 import Role from '#models/role'
@@ -178,6 +179,37 @@ test.group('public website', (group) => {
 
     const wrong = await client.get('/api/v1/public/bookings/not-a-real-token-at-all-xx')
     wrong.assertStatus(404)
+
+    // Messages: recorded for SMS and email, never sent from tests; the link works
+    const messages = await OutboundMessage.query()
+      .where('booking_id', saved.id)
+      .orderBy('created_at')
+    const kinds = messages.map((message) => `${message.channel}:${message.kind}`)
+    assert.includeMembers(kinds, [
+      'sms:booking_received',
+      'email:booking_received',
+      'sms:booking_confirmed',
+      'email:booking_confirmed',
+    ])
+    const received = messages.find((message) => message.kind === 'booking_received')!
+    assert.include(received.body, reference)
+    assert.include(received.body, `/booking/${token}`)
+    assert.include(received.body, '0241234567') // where to pay, as people dial it
+
+    // "Find my booking": the same answer whether or not it matches; a match texts the link
+    for (const phone of ['0241112233', '0200000000']) {
+      const lookup = await client.post('/api/v1/public/bookings/lookup').json({ reference, phone })
+      lookup.assertStatus(200)
+      assert.include(json(lookup).message, 'If those details match')
+    }
+    const links = await OutboundMessage.query()
+      .where('booking_id', saved.id)
+      .where('kind', 'booking_link')
+    assert.lengthOf(
+      links.filter((message) => message.channel === 'sms'),
+      1
+    )
+    assert.include(links[0].body, `/booking/${token}`)
   })
 
   test('refused: an existing customer is matched (not overwritten); blacklist, short notice, offline extras, bots', async ({

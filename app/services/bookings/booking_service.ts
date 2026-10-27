@@ -15,6 +15,7 @@ import Extra from '#models/extra'
 import type User from '#models/user'
 import VehicleDocument from '#models/vehicle_document'
 import AuditService from '#services/audit_service'
+import BookingMessages from '#services/messages/booking_messages'
 import CancellationService from '#services/bookings/cancellation_service'
 import NumberingService from '#services/numbering_service'
 import PricingService, { type Quote, QuoteError } from '#services/pricing/pricing_service'
@@ -32,6 +33,8 @@ export type CreateOptions = {
   online?: boolean
   /** SHA-256 of the customer's private link secret */
   publicTokenHash?: string
+  /** The secret itself, encrypted with APP_KEY (for links in later messages) */
+  publicTokenEncrypted?: string
   paymentPlan?: 'deposit' | 'full'
 }
 export type BookingWarning = { code: string; message: string }
@@ -301,6 +304,7 @@ export default class BookingService {
             notes: payload.notes ?? null,
             createdBy: user?.id ?? null,
             publicTokenHash: options.publicTokenHash ?? null,
+            publicTokenEncrypted: options.publicTokenEncrypted ?? null,
             paymentPlan: online ? (options.paymentPlan ?? 'deposit') : null,
           },
           { client: trx }
@@ -544,6 +548,7 @@ export default class BookingService {
           trx
         )
       })
+      if (booking.source === 'website') await BookingMessages.expired(booking)
     }
     return due.length
   }

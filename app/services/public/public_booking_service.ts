@@ -16,10 +16,12 @@ import Payment from '#models/payment'
 import ProtectionPlan from '#models/protection_plan'
 import RatePlan from '#models/rate_plan'
 import TermsVersion from '#models/terms_version'
+import encryption from '@adonisjs/core/services/encryption'
 import AuditService from '#services/audit_service'
 import AvailabilityService from '#services/availability_service'
 import BookingService, { BookingError } from '#services/bookings/booking_service'
 import { CustomerStatusService } from '#services/customers/customer_status_service'
+import BookingMessages from '#services/messages/booking_messages'
 import NotificationService from '#services/notification_service'
 import PaymentService, { normaliseRef } from '#services/payments/payment_service'
 import PricingService, { type Quote, QuoteError } from '#services/pricing/pricing_service'
@@ -459,7 +461,12 @@ export default class PublicBookingService {
         collectionAddress: input.collectionZoneId ? (input.collectionAddress ?? null) : null,
       },
       null,
-      { online: true, publicTokenHash: sha256(token), paymentPlan: input.paymentPlan }
+      {
+        online: true,
+        publicTokenHash: sha256(token),
+        publicTokenEncrypted: encryption.encrypt(token),
+        paymentPlan: input.paymentPlan,
+      }
     )
 
     await NotificationService.sendToPermission('bookings.view', {
@@ -468,6 +475,9 @@ export default class PublicBookingService {
       body: `${customer.fullName} - waiting for the ${input.paymentPlan === 'full' ? 'full payment' : 'deposit'}.`,
       link: `/dashboard/bookings/${booking.id}`,
     })
+    const owedNow =
+      input.paymentPlan === 'full' ? booking.totalAmount : (booking.reservationFeeAmount ?? 0)
+    await BookingMessages.received(booking, token, owedNow)
     return { booking, token }
   }
 
