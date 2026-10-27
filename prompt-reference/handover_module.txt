@@ -90,5 +90,11 @@ file fetched with a 60 s signed URL; "(signature on file)" if unreachable), sign
 the agreement fingerprint. ID / licence numbers masked. A4, page numbers.
 The return report: readings out vs back, km driven, checklist issues, new damage with the
 diagram, charges (accepted + waived with reasons), total / paid / balance.
-Shared helpers (header, facts, amount rows, diagram, footer) are reused by invoices and
-receipts in Phase 5.
+House style: app/services/pdf/pdf_document.ts (PdfDocument), which invoices and receipts
+reuse in Phase 5. Manrope (@fontsource/manrope .woff; fontkit crashes subsetting WOFF2),
+brand bar on top, letterhead (logo slot, monogram until a logo is uploaded), summary
+tiles, bordered fact cards, charges table with highlighted total and chips, fuel gauge,
+terms in two balanced columns (paragraphs never split; carries over pages), business
+name watermark at 4.5% drawn last (on top of cards), footer "REF · Page X of Y".
+Agreement: 2 pages typical. Return report: 1 page (charges before the damage card).
+Business logo upload: deferred, owner to decide; pass it as letterhead.logo (Buffer).

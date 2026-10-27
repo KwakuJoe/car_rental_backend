@@ -1,4 +1,3 @@
-import PDFDocument from 'pdfkit'
 import type { DateTime } from 'luxon'
 import Booking from '#models/booking'
 import BookingCharge from '#models/booking_charge'
@@ -11,152 +10,40 @@ import Inspection from '#models/inspection'
 import TermsVersion from '#models/terms_version'
 import { BookingError } from '#services/bookings/booking_service'
 import FileService from '#services/file_service'
+import { PdfDocument, THEME, type Letterhead } from '#services/pdf/pdf_document'
 import { maskNumber } from '#transformers/customer_transformer'
 
-type Doc = PDFKit.PDFDocument
-
-const INK = '#111827'
-const MUTED = '#6b7280'
-const LINE = '#e5e7eb'
-const BRAND = '#fb242f'
-const LEFT = 50
-const WIDTH = 495 // A4 width 595 - margins
-
-const money = (pesewas: number) =>
-  `GHS ${(pesewas / 100).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const money = PdfDocument.money
 
 /** Same top-view zones as the screen's diagram (viewBox 200 x 380). */
-const ZONES: [string, number, number, number, number][] = [
-  ['front_bumper', 34, 8, 132, 18],
-  ['bonnet', 44, 26, 112, 74],
-  ['windscreen', 48, 100, 104, 34],
-  ['roof', 48, 134, 104, 120],
-  ['rear_window', 48, 254, 104, 30],
-  ['boot_lid', 44, 284, 112, 70],
-  ['rear_bumper', 34, 354, 132, 18],
-  ['left_front_wing', 24, 30, 20, 76],
-  ['left_front_door', 24, 106, 24, 84],
-  ['left_rear_door', 24, 190, 24, 84],
-  ['left_rear_wing', 24, 274, 20, 76],
-  ['right_front_wing', 156, 30, 20, 76],
-  ['right_front_door', 152, 106, 24, 84],
-  ['right_rear_door', 152, 190, 24, 84],
-  ['right_rear_wing', 156, 274, 20, 76],
-  ['left_mirror', 6, 108, 18, 14],
-  ['right_mirror', 176, 108, 18, 14],
-  ['wheel_front_left', 10, 48, 14, 42],
-  ['wheel_front_right', 176, 48, 14, 42],
-  ['wheel_rear_left', 10, 286, 14, 42],
-  ['wheel_rear_right', 176, 286, 14, 42],
+const ZONES: [number, number, number, number][] = [
+  [34, 8, 132, 18],
+  [44, 26, 112, 74],
+  [48, 100, 104, 34],
+  [48, 134, 104, 120],
+  [48, 254, 104, 30],
+  [44, 284, 112, 70],
+  [34, 354, 132, 18],
+  [24, 30, 20, 76],
+  [24, 106, 24, 84],
+  [24, 190, 24, 84],
+  [24, 274, 20, 76],
+  [156, 30, 20, 76],
+  [152, 106, 24, 84],
+  [152, 190, 24, 84],
+  [156, 274, 20, 76],
+  [6, 108, 18, 14],
+  [176, 108, 18, 14],
+  [10, 48, 14, 42],
+  [176, 48, 14, 42],
+  [10, 286, 14, 42],
+  [176, 286, 14, 42],
 ]
 
-function toBuffer(doc: Doc): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = []
-    doc.on('data', (chunk: Buffer) => chunks.push(chunk))
-    doc.on('end', () => resolve(Buffer.concat(chunks)))
-    doc.on('error', reject)
-    doc.end()
-  })
-}
-
-/** Keeps a block together: starts a new page when it wouldn't fit. */
-function room(doc: Doc, height: number) {
-  if (doc.y + height > doc.page.height - 70) doc.addPage()
-}
-
-function heading(doc: Doc, text: string) {
-  room(doc, 60)
-  doc.moveDown(0.8)
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(10)
-    .fillColor(BRAND)
-    .text(text.toUpperCase(), LEFT, doc.y, { characterSpacing: 0.6 })
-  doc
-    .moveTo(LEFT, doc.y + 3)
-    .lineTo(LEFT + WIDTH, doc.y + 3)
-    .strokeColor(LINE)
-    .lineWidth(1)
-    .stroke()
-  doc.moveDown(0.6)
-}
-
-/** Label / value pairs in two columns. */
-function facts(doc: Doc, rows: [string, string | null | undefined][]) {
-  const column = WIDTH / 2
-  for (let index = 0; index < rows.length; index += 2) {
-    room(doc, 30)
-    const y = doc.y
-    let bottom = y
-    for (const [offset, row] of [rows[index], rows[index + 1]].entries()) {
-      if (!row) continue
-      const x = LEFT + offset * column
-      doc
-        .font('Helvetica')
-        .fontSize(7.5)
-        .fillColor(MUTED)
-        .text(row[0].toUpperCase(), x, y, { width: column - 12 })
-      doc
-        .font('Helvetica')
-        .fontSize(9.5)
-        .fillColor(INK)
-        .text(row[1] || '-', x, doc.y + 1, { width: column - 12 })
-      bottom = Math.max(bottom, doc.y)
-    }
-    doc.y = bottom + 6
-  }
-}
-
-/** A line with an amount on the right. */
-function amountRow(
-  doc: Doc,
-  label: string,
-  amount: string,
-  options: { bold?: boolean; muted?: boolean } = {}
-) {
-  room(doc, 16)
-  const y = doc.y
-  doc
-    .font(options.bold ? 'Helvetica-Bold' : 'Helvetica')
-    .fontSize(9.5)
-    .fillColor(options.muted ? MUTED : INK)
-    .text(label, LEFT, y, { width: WIDTH - 110 })
-  const bottom = doc.y
-  doc.text(amount, LEFT + WIDTH - 110, y, { width: 110, align: 'right' })
-  doc.y = Math.max(bottom, doc.y) + 3
-}
-
-function diagram(doc: Doc, damages: CarDamage[], x: number, y: number, width: number) {
-  const scale = width / 200
-  doc.save()
-  doc
-    .roundedRect(x + 22 * scale, y + 6 * scale, 156 * scale, 368 * scale, 44 * scale)
-    .fillColor('#f3f4f6')
-    .fill()
-  for (const [, zx, zy, zw, zh] of ZONES) {
-    doc
-      .roundedRect(x + zx * scale, y + zy * scale, zw * scale, zh * scale, 2)
-      .lineWidth(0.6)
-      .fillAndStroke('#ffffff', '#d1d5db')
-  }
-  doc
-    .font('Helvetica')
-    .fontSize(6)
-    .fillColor(MUTED)
-    .text('FRONT', x, y + 14 * scale, { width, align: 'center' })
-  damages.forEach((damage, index) => {
-    const cx = x + (damage.x / 100) * 200 * scale
-    const cy = y + (damage.y / 100) * 380 * scale
-    doc.circle(cx, cy, 6).fillColor(BRAND).fill()
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(7)
-      .fillColor('#ffffff')
-      .text(String(index + 1), cx - 6, cy - 3.5, { width: 12, align: 'center' })
-  })
-  doc.restore()
-}
+const fuel = (eighths: number | null) =>
+  eighths === null ? '-' : eighths === 8 ? 'Full' : `${eighths}/8`
+const label = (value: string) => value.replaceAll('_', ' ')
+const capital = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
 
 async function imageBuffer(file: File | null): Promise<Buffer | null> {
   if (!file) return null
@@ -165,72 +52,186 @@ async function imageBuffer(file: File | null): Promise<Buffer | null> {
     if (!response.ok) return null
     return Buffer.from(await response.arrayBuffer())
   } catch {
-    return null // unreachable in tests / offline - the PDF says the signature is on file
+    return null // unreachable in tests / offline - the box says the signature is on file
   }
 }
 
-function header(doc: Doc, business: Business | null, title: string, reference: string) {
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(16)
-    .fillColor(INK)
-    .text(business?.tradingName || business?.name || 'Car rental', LEFT, 50)
-  doc
-    .font('Helvetica')
-    .fontSize(8.5)
-    .fillColor(MUTED)
-    .text(
-      [
-        [business?.address, business?.city].filter(Boolean).join(', '),
-        [business?.phone, business?.email].filter(Boolean).join(' · '),
-        business?.tin ? `TIN ${business.tin}` : null,
-      ]
-        .filter(Boolean)
-        .join('\n'),
-      LEFT,
-      doc.y + 2
-    )
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(13)
-    .fillColor(INK)
-    .text(title, LEFT, 50, { width: WIDTH, align: 'right' })
-  doc
-    .font('Helvetica')
-    .fontSize(10)
-    .fillColor(BRAND)
-    .text(reference, LEFT, doc.y + 2, { width: WIDTH, align: 'right' })
-  doc.y = Math.max(doc.y, 100) + 6
+function letterhead(business: Business | null): Letterhead {
+  return {
+    name: business?.tradingName || business?.name || 'Car rental',
+    details: [
+      [business?.address, business?.city, business?.region].filter(Boolean).join(', '),
+      [business?.phone, business?.email].filter(Boolean).join('  ·  '),
+      business?.tin
+        ? `TIN ${business.tin}${business.vatNumber ? `  ·  VAT ${business.vatNumber}` : ''}`
+        : '',
+    ].filter(Boolean),
+    // The business logo goes here once the profile can upload one
+    logo: null,
+  }
 }
 
-function footer(doc: Doc, text: string) {
-  const range = doc.bufferedPageRange()
-  for (let page = range.start; page < range.start + range.count; page++) {
-    doc.switchToPage(page)
-    // Writing inside the bottom margin would otherwise start a new (blank) page
-    const bottom = doc.page.margins.bottom
-    doc.page.margins.bottom = 0
+const footerLine = (business: Business | null) =>
+  [business?.tradingName || business?.name, business?.phone, business?.email]
+    .filter(Boolean)
+    .join('  ·  ')
+
+const damageText = (damage: CarDamage) =>
+  `${capital(label(damage.zone))} - ${label(damage.type)}, ${damage.severity}${damage.note ? `. ${damage.note}` : ''}`
+
+/**
+ * Damage diagram + numbered list inside a card. Pins: brand red for damage
+ * found at this handover, grey for damage already on the car.
+ */
+function damageCard(
+  pdf: PdfDocument,
+  title: string,
+  damages: CarDamage[],
+  isNew: (damage: CarDamage) => boolean
+) {
+  const { doc } = pdf
+  const padding = 14
+  const diagramWidth = 70
+  const diagramHeight = diagramWidth * 1.9
+  const listX = pdf.left + padding + diagramWidth + 22
+  const listWidth = pdf.width - padding * 2 - diagramWidth - 22
+  doc.font('medium').fontSize(8.5)
+  const listHeight = damages.reduce(
+    (sum, damage) => sum + doc.heightOfString(damageText(damage), { width: listWidth - 22 }) + 8,
+    0
+  )
+  const height = padding * 2 + 18 + Math.max(diagramHeight, listHeight + 10)
+  pdf.ensure(height + 12)
+  const top = doc.y
+  pdf.cardBox(pdf.left, top, pdf.width, height)
+  doc.y = top + padding
+  pdf.sectionTitle(title, pdf.left + padding, pdf.width - padding * 2)
+  const dy = doc.y
+  const dx = pdf.left + padding
+  const scale = diagramWidth / 200
+  doc
+    .roundedRect(dx + 22 * scale, dy + 6 * scale, 156 * scale, 368 * scale, 44 * scale)
+    .fill(THEME.tile)
+  for (const [zx, zy, zw, zh] of ZONES) {
     doc
-      .font('Helvetica')
-      .fontSize(7.5)
-      .fillColor(MUTED)
-      .text(`${text} · page ${page + 1} of ${range.count}`, LEFT, doc.page.height - 40, {
-        width: WIDTH,
-        align: 'center',
-        lineBreak: false,
-      })
-    doc.page.margins.bottom = bottom
+      .roundedRect(dx + zx * scale, dy + zy * scale, zw * scale, zh * scale, 2)
+      .lineWidth(0.5)
+      .fillAndStroke('#ffffff', '#d1d5db')
   }
+  doc
+    .font('semibold')
+    .fontSize(5.5)
+    .fillColor(THEME.faint)
+    .text('FRONT', dx, dy + 7.5 * scale, { width: diagramWidth, align: 'center' })
+  damages.forEach((damage, index) => {
+    const cx = dx + (damage.x / 100) * 200 * scale
+    const cy = dy + (damage.y / 100) * 380 * scale
+    doc.circle(cx, cy, 5.5).fill(isNew(damage) ? THEME.brand : THEME.muted)
+    doc
+      .font('bold')
+      .fontSize(6.5)
+      .fillColor('#ffffff')
+      .text(String(index + 1), cx - 6, cy - 3.3, { width: 12, align: 'center' })
+  })
+  let y = dy + 2
+  if (damages.length === 0) {
+    doc.font('medium').fontSize(9).fillColor(THEME.muted).text('No damage recorded.', listX, y)
+  }
+  damages.forEach((damage, index) => {
+    doc.circle(listX + 7, y + 6, 7).fill(isNew(damage) ? THEME.brand : THEME.muted)
+    doc
+      .font('bold')
+      .fontSize(7)
+      .fillColor('#ffffff')
+      .text(String(index + 1), listX, y + 2.5, { width: 14, align: 'center' })
+    doc
+      .font('medium')
+      .fontSize(8.5)
+      .fillColor(THEME.ink)
+      .text(damageText(damage), listX + 22, y + 1, { width: listWidth - 22 })
+    y = doc.y + 8
+  })
+  doc.y = top + height + 12
 }
 
-const fuel = (eighths: number | null) =>
-  eighths === null ? '-' : eighths === 8 ? 'Full (8/8)' : `${eighths}/8`
+/**
+ * Readings card: big odometer, fuel gauge, cleanliness, one more figure,
+ * checklist. `before` (the return report) adds the pickup readings.
+ */
+function readingsCard(
+  pdf: PdfDocument,
+  title: string,
+  inspection: Inspection,
+  extra: [string, string],
+  before?: Inspection | null
+) {
+  const { doc } = pdf
+  const padding = 14
+  const issues = inspection.checklist.filter((item) => item.result !== 'ok')
+  const checklistText = issues.length
+    ? `Checklist: ${issues.map((item) => `${item.name} ${item.result}`).join(' · ')}`
+    : `Checklist: all ${inspection.checklist.length} items present`
+  doc.font('medium').fontSize(8.5)
+  const checklistHeight = doc.heightOfString(checklistText, { width: pdf.width - padding * 2 })
+  const height = padding * 2 + 18 + 46 + 12 + checklistHeight
+  pdf.ensure(height + 12)
+  const top = doc.y
+  pdf.cardBox(pdf.left, top, pdf.width, height)
+  doc.y = top + padding
+  pdf.sectionTitle(title, pdf.left + padding, pdf.width - padding * 2)
+  const y = doc.y
+  const column = (pdf.width - padding * 2) / 4
+  const cells: [string, string][] = [
+    [
+      'Odometer',
+      inspection.odometerKm !== null ? `${inspection.odometerKm.toLocaleString()} km` : '-',
+    ],
+    [
+      'Fuel',
+      before
+        ? `${fuel(inspection.fuelLevel)}  ·  was ${fuel(before.fuelLevel)}`
+        : fuel(inspection.fuelLevel),
+    ],
+    [
+      'Outside / inside',
+      `${capital(inspection.exterior ?? '-')} / ${capital(inspection.interior ?? '-')}`,
+    ],
+    extra,
+  ]
+  cells.forEach(([name, value], index) => {
+    const x = pdf.left + padding + index * column
+    doc
+      .font('semibold')
+      .fontSize(6.5)
+      .fillColor(THEME.faint)
+      .text(name.toUpperCase(), x, y, { width: column - 10, characterSpacing: 0.5 })
+    doc
+      .font(index === 0 ? 'heavy' : 'bold')
+      .fontSize(index === 0 ? 15 : 11)
+      .fillColor(THEME.ink)
+      .text(value, x, y + 10, { width: column - 10 })
+    if (name === 'Fuel') pdf.fuelGauge(inspection.fuelLevel, x, y + 29, column - 24)
+    if (index === 0 && before?.odometerKm !== null && before?.odometerKm !== undefined) {
+      doc
+        .font('regular')
+        .fontSize(7.5)
+        .fillColor(THEME.muted)
+        .text(`from ${before.odometerKm.toLocaleString()} km`, x, doc.y + 1, { width: column - 10 })
+    }
+  })
+  doc
+    .font('medium')
+    .fontSize(8.5)
+    .fillColor(issues.length ? THEME.ink : THEME.muted)
+    .text(checklistText, pdf.left + padding, y + 46 + 6, { width: pdf.width - padding * 2 })
+  doc.y = top + height + 12
+}
 
 /**
  * The rental agreement (M4.4) and the return report, built on request from
  * records that don't change after signing: the price as booked, the
  * check-out inspection and signature, and the exact terms version signed.
- * The agreement hash stored at signing proves what was agreed.
+ * The agreement fingerprint stored at signing proves what was agreed.
  */
 export default class HandoverPdfService {
   private static async load(bookingId: string) {
@@ -238,19 +239,25 @@ export default class HandoverPdfService {
       .where('id', bookingId)
       .preload('customer')
       .preload('driver')
-      .preload('extras')
       .preload('modifications', (q) => q.orderBy('created_at', 'asc'))
       .firstOrFail()
     const [business, car, out] = await Promise.all([
       Business.query().first(),
       Car.findOrFail(booking.carId),
-      Inspection.query().where('booking_id', booking.id).where('type', 'check_out').first(),
+      Inspection.query()
+        .where('booking_id', booking.id)
+        .where('type', 'check_out')
+        .preload('inspector')
+        .first(),
     ])
-    return { booking, business, car, out }
+    const zone = business?.timezone || 'Africa/Accra'
+    const when = (value: DateTime | null | undefined, format = 'ccc d LLL yyyy, HH:mm') =>
+      value ? value.setZone(zone).toFormat(format) : '-'
+    return { booking, business, car, out, when }
   }
 
   static async agreement(bookingId: string): Promise<Buffer> {
-    const { booking, business, car, out } = await this.load(bookingId)
+    const { booking, business, car, out, when } = await this.load(bookingId)
     if (!out || out.status !== 'completed') {
       throw new BookingError('status', 'The agreement exists once the car has been checked out.')
     }
@@ -259,7 +266,7 @@ export default class HandoverPdfService {
       CustomerIdentity.query()
         .where('customer_id', booking.customerId)
         .whereNot('status', 'rejected'),
-      // The car's damage as it was at check-out: open, and recorded no later than the signature
+      // The car's damage as it was at check-out
       CarDamage.query()
         .where('car_id', car.id)
         .where('created_at', '<=', out.completedAt!.toSQL()!)
@@ -271,50 +278,85 @@ export default class HandoverPdfService {
     ])
     const snapshot = booking.priceSnapshot
     const customer = booking.customer
-    const zone = business?.timezone || 'Africa/Accra'
-    const when = (value: DateTime | null) =>
-      value ? value.setZone(zone).toFormat('ccc d LLL yyyy, HH:mm') : '-'
     const idOf = (types: string[]) => identities.find((identity) => types.includes(identity.type))
-
-    const doc = new PDFDocument({
-      size: 'A4',
-      margin: 50,
-      bufferPages: true,
-      info: { Title: `Rental agreement ${booking.reference}` },
-    })
-    header(doc, business, 'Rental agreement', booking.reference)
-
-    heading(doc, 'Customer')
-    const ghanaCard = idOf(['ghana_card', 'passport', 'voter_id'])
+    const id = idOf(['ghana_card', 'passport', 'voter_id'])
     const licence = idOf(['drivers_licence', 'international_driving_permit'])
-    facts(doc, [
-      ['Name', customer.fullName],
-      ['Phone', customer.phone],
-      ['Date of birth', customer.dateOfBirth?.toFormat('d LLL yyyy')],
-      ['Email', customer.email],
-      [
-        'ID',
-        ghanaCard ? `${ghanaCard.type.replaceAll('_', ' ')} ${maskNumber(ghanaCard.number)}` : null,
-      ],
-      [
-        'Driving licence',
-        licence
-          ? `${maskNumber(licence.number)}${licence.expiresOn ? ` (to ${licence.expiresOn.toFormat('d LLL yyyy')})` : ''}`
-          : null,
-      ],
-      ...(booking.driver
-        ? ([['Driver (ours)', `${booking.driver.fullName} · ${booking.driver.phone}`]] as [
-            string,
-            string,
-          ][])
-        : []),
+    const head = letterhead(business)
+    const sameDay = when(booking.pickupAt, 'yyyy-LL-dd') === when(booking.returnAt, 'yyyy-LL-dd')
+
+    const pdf = new PdfDocument({
+      title: 'Rental agreement',
+      reference: booking.reference,
+      letterhead: head,
+      footer: footerLine(business),
+    })
+    const { doc } = pdf
+    pdf.header(`Signed ${when(out.signedAt, 'd LLL yyyy')}`)
+
+    pdf.summary([
+      { label: 'Customer', value: customer.fullName, hint: customer.phone },
+      {
+        label: 'Vehicle',
+        value: `${car.make} ${car.model}`,
+        hint: `${car.registrationNo} · ${car.colour}`,
+      },
+      {
+        label: 'Rental period',
+        // Same day: the date and the hours; otherwise from - to
+        value: sameDay
+          ? when(booking.pickupAt, 'd LLL yyyy')
+          : `${when(booking.pickupAt, 'd LLL')} - ${when(booking.returnAt, 'd LLL yyyy')}`,
+        hint: `${sameDay ? `${when(booking.pickupAt, 'HH:mm')} - ${when(booking.returnAt, 'HH:mm')}` : `${snapshot.rentalDays} ${snapshot.rentalDays === 1 ? 'day' : 'days'}`} · ${booking.driveType === 'chauffeur' ? 'with driver' : 'self-drive'}`,
+      },
+      {
+        label: 'Total',
+        value: money(snapshot.total),
+        hint: `+ ${money(snapshot.deposit)} refundable deposit`,
+        strong: true,
+      },
     ])
 
-    heading(doc, 'Car and rental')
-    facts(doc, [
-      ['Car', `${car.make} ${car.model} ${car.year} · ${car.colour}`],
-      ['Registration', car.registrationNo],
-      ['Chassis (VIN)', car.vinChassisNo],
+    pdf.factsCardPair(
+      {
+        title: 'Customer',
+        facts: [
+          ['Full name', customer.fullName],
+          ['Phone', customer.phone],
+          ['Date of birth', customer.dateOfBirth?.toFormat('d LLL yyyy')],
+          ['Email', customer.email],
+          [id ? capital(label(id.type)) : 'ID', id ? maskNumber(id.number) : null],
+          [
+            'Driving licence',
+            licence
+              ? `${maskNumber(licence.number)}${licence.expiresOn ? ` · to ${licence.expiresOn.toFormat('LLL yyyy')}` : ''}`
+              : null,
+          ],
+        ],
+      },
+      {
+        title: 'Vehicle',
+        facts: [
+          ['Make and model', `${car.make} ${car.model} ${car.year}`],
+          ['Registration', car.registrationNo],
+          ['Colour', car.colour],
+          ['Chassis (VIN)', car.vinChassisNo],
+          ['Transmission', car.transmission === 'auto' ? 'Automatic' : 'Manual'],
+          ['Fuel type', capital(car.fuelType)],
+        ],
+      }
+    )
+
+    pdf.factsCard('Rental', [
+      ['Pickup', when(booking.pickupAt)],
+      ['Return', when(booking.returnAt)],
+      [
+        'Pickup at',
+        booking.deliveryAddress ? `Delivered to ${booking.deliveryAddress}` : 'Our office',
+      ],
+      [
+        'Return at',
+        booking.collectionAddress ? `Collected from ${booking.collectionAddress}` : 'Our office',
+      ],
       [
         'Driving',
         booking.driveType === 'chauffeur'
@@ -322,161 +364,151 @@ export default class HandoverPdfService {
           : 'Self-drive',
       ],
       [
-        'Pickup',
-        `${when(booking.pickupAt)}${booking.deliveryAddress ? ` · delivered to ${booking.deliveryAddress}` : ' · at the office'}`,
+        'Our driver',
+        booking.driver
+          ? `${booking.driver.fullName} · ${booking.driver.phone}`
+          : 'None (self-drive)',
       ],
-      [
-        'Return',
-        `${when(booking.returnAt)}${booking.collectionAddress ? ` · collected from ${booking.collectionAddress}` : ' · at the office'}`,
-      ],
+      ...(booking.destination ? ([['Trip', booking.destination]] as [string, string][]) : []),
     ])
 
-    heading(doc, 'Price')
-    for (const line of snapshot.lines) amountRow(doc, line.label, money(line.amount))
-    for (const tax of snapshot.taxes)
-      amountRow(doc, `${tax.name} ${tax.rateBp / 100}%`, money(tax.amount), { muted: true })
-    amountRow(doc, 'Total', money(snapshot.total), { bold: true })
-    amountRow(doc, 'Security deposit (refundable, not in the total)', money(snapshot.deposit), {
-      muted: true,
-    })
-    doc.moveDown(0.3)
-    doc
-      .font('Helvetica')
-      .fontSize(8.5)
-      .fillColor(MUTED)
-      .text(
-        [
-          snapshot.protection
-            ? `${snapshot.protection.name}: the customer pays at most ${money(snapshot.protection.excessAmount)} for covered damage.`
-            : 'No protection plan: the customer is liable for all damage.',
-          snapshot.mileage.unlimited
-            ? 'Unlimited kilometres.'
-            : `${snapshot.mileage.includedKm} km included${snapshot.mileage.excessKmAmount !== null ? `, then ${money(snapshot.mileage.excessKmAmount)} per km` : ''}.`,
-          `Fuel: returned at the level recorded below (${fuel(out.fuelLevel)}).`,
-        ].join('\n'),
-        LEFT,
-        doc.y,
-        { width: WIDTH }
-      )
-    if (booking.modifications.length) {
-      doc.moveDown(0.5)
-      doc
-        .font('Helvetica-Bold')
-        .fontSize(9)
-        .fillColor(INK)
-        .text('Changes after booking', LEFT, doc.y)
-      for (const change of booking.modifications) {
-        amountRow(
-          doc,
-          `${change.createdAt.setZone(zone).toFormat('d LLL')} · ${change.type.replaceAll('_', ' ')}${change.reason ? ` - ${change.reason}` : ''}`,
-          `${change.priceDifferenceAmount >= 0 ? '+' : '-'}${money(Math.abs(change.priceDifferenceAmount))}`
-        )
-      }
-    }
-
-    heading(doc, 'Car at pickup')
-    const issues = out.checklist.filter((item) => item.result !== 'ok')
-    facts(doc, [
-      ['Odometer', out.odometerKm !== null ? `${out.odometerKm.toLocaleString()} km` : '-'],
-      ['Fuel', fuel(out.fuelLevel)],
-      ['Outside / inside', `${out.exterior ?? '-'} / ${out.interior ?? '-'}`],
-      ['Checked out', when(out.completedAt)],
+    const changes = booking.modifications.reduce(
+      (sum, change) => sum + change.priceDifferenceAmount,
+      0
+    )
+    pdf.table(
+      'Charges',
       [
-        'Checklist',
-        issues.length
-          ? issues.map((item) => `${item.name}: ${item.result}`).join(', ')
-          : `All ${out.checklist.length} items present`,
+        ...snapshot.lines.map((line) => ({ label: line.label, amount: money(line.amount) })),
+        ...booking.modifications.map((change) => ({
+          label: `${capital(label(change.type))} on ${when(change.createdAt, 'd LLL')}`,
+          note: change.reason ?? undefined,
+          amount: `${change.priceDifferenceAmount >= 0 ? '+' : '-'}${money(Math.abs(change.priceDifferenceAmount))}`,
+        })),
       ],
-      ['Notes', out.notes],
+      [
+        { label: 'Subtotal', amount: money(snapshot.subtotal), muted: true },
+        ...snapshot.taxes.map((tax) => ({
+          label: `${tax.name} ${tax.rateBp / 100}%`,
+          amount: money(tax.amount),
+          muted: true,
+        })),
+        {
+          label: changes ? 'Total (with changes)' : 'Total',
+          amount: money(snapshot.total + changes),
+        },
+      ],
+      [
+        `Deposit ${money(snapshot.deposit)} · refundable`,
+        snapshot.protection
+          ? `${snapshot.protection.name} · excess ${money(snapshot.protection.excessAmount)}`
+          : 'No protection plan',
+        snapshot.mileage.unlimited
+          ? 'Unlimited km'
+          : `${snapshot.mileage.includedKm} km included${snapshot.mileage.excessKmAmount !== null ? ` · ${money(snapshot.mileage.excessKmAmount)}/km after` : ''}`,
+        `Return with fuel at ${fuel(out.fuelLevel).toLowerCase()}`,
+      ]
+    )
+
+    readingsCard(pdf, 'Vehicle at pickup', out, [
+      'Checked out',
+      when(out.completedAt, 'd LLL, HH:mm'),
     ])
-    room(doc, 190)
+    damageCard(pdf, 'Damage at pickup', damages, () => false)
+
+    // Terms in two columns, then the signatures
+    pdf.ensure(120)
+    pdf.sectionTitle(`Terms and conditions${terms ? ` · version ${terms.version}` : ''}`)
+    pdf.columns(terms?.body ?? '-')
+
+    pdf.ensure(180)
+    doc.moveDown(0.5)
+    pdf.sectionTitle('Signatures')
     const top = doc.y
-    diagram(doc, damages, LEFT, top, 90)
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(9)
-      .fillColor(INK)
-      .text('Damage on the car at pickup', LEFT + 115, top)
-    if (damages.length === 0) {
-      doc
-        .font('Helvetica')
-        .fontSize(9)
-        .fillColor(MUTED)
-        .text('None recorded.', LEFT + 115, doc.y + 2)
-    } else {
-      damages.forEach((damage, index) => {
-        doc
-          .font('Helvetica')
-          .fontSize(9)
-          .fillColor(INK)
-          .text(
-            `${index + 1}. ${damage.zone.replaceAll('_', ' ')} - ${damage.type.replace('_', ' ')}, ${damage.severity}${damage.note ? ` (${damage.note})` : ''}`,
-            LEFT + 115,
-            doc.y + 2,
-            { width: WIDTH - 115 }
-          )
-      })
-    }
-    doc.y = Math.max(doc.y, top + 175)
-
-    heading(doc, `Terms${terms ? ` (version ${terms.version})` : ''}`)
-    doc
-      .font('Helvetica')
-      .fontSize(8.5)
-      .fillColor(INK)
-      .text(terms?.body ?? '-', LEFT, doc.y, { width: WIDTH, lineGap: 1.5 })
-
-    heading(doc, 'Signed')
-    room(doc, 120)
-    const signedTop = doc.y
+    const gap = 14
+    const box = (pdf.width - gap) / 2
     const image = await imageBuffer(signature)
-    if (image) {
-      try {
-        doc.image(image, LEFT, signedTop, { fit: [200, 70] })
-      } catch {
-        doc
-          .font('Helvetica')
-          .fontSize(9)
-          .fillColor(MUTED)
-          .text('(signature on file)', LEFT, signedTop + 25)
-      }
-    } else {
+    const boxes = [
+      {
+        title: 'Customer',
+        name: out.signedName ?? customer.fullName,
+        at: when(out.signedAt),
+        image,
+      },
+      {
+        title: `For ${head.name}`,
+        name: out.inspector?.fullName ?? out.inspector?.email ?? 'Staff',
+        at: when(out.completedAt),
+        image: null,
+      },
+    ]
+    boxes.forEach((item, index) => {
+      const x = pdf.left + index * (box + gap)
+      pdf.cardBox(x, top, box, 118)
       doc
-        .font('Helvetica')
+        .font('semibold')
+        .fontSize(6.5)
+        .fillColor(THEME.faint)
+        .text(item.title.toUpperCase(), x + 14, top + 12, {
+          width: box - 28,
+          characterSpacing: 0.5,
+        })
+      const placeholder =
+        index === 0 ? '(signature on file)' : 'Handed the car over with the customer'
+      let drawn = false
+      if (item.image) {
+        try {
+          doc.image(item.image, x + 14, top + 26, { fit: [box - 28, 48] })
+          drawn = true
+        } catch {
+          drawn = false
+        }
+      }
+      if (!drawn) {
+        doc
+          .font('regular')
+          .fontSize(8)
+          .fillColor(THEME.muted)
+          .text(placeholder, x + 14, top + 48, { width: box - 28 })
+      }
+      doc
+        .moveTo(x + 14, top + 80)
+        .lineTo(x + box - 14, top + 80)
+        .lineWidth(0.6)
+        .strokeColor(THEME.ink)
+        .stroke()
+      doc
+        .font('bold')
         .fontSize(9)
-        .fillColor(MUTED)
-        .text('(signature on file)', LEFT, signedTop + 25)
-    }
+        .fillColor(THEME.ink)
+        .text(item.name, x + 14, top + 86, { width: box - 28 })
+      doc
+        .font('regular')
+        .fontSize(7.5)
+        .fillColor(THEME.muted)
+        .text(item.at, x + 14, doc.y + 1, { width: box - 28 })
+    })
+    doc.y = top + 130
     doc
-      .moveTo(LEFT, signedTop + 74)
-      .lineTo(LEFT + 220, signedTop + 74)
-      .strokeColor(INK)
-      .lineWidth(0.6)
-      .stroke()
-    doc
-      .font('Helvetica')
-      .fontSize(9)
-      .fillColor(INK)
-      .text(`${out.signedName ?? customer.fullName} - ${when(out.signedAt)}`, LEFT, signedTop + 78)
-    doc
-      .fontSize(7.5)
-      .fillColor(MUTED)
+      .font('regular')
+      .fontSize(7)
+      .fillColor(THEME.faint)
       .text(
-        `By signing, the customer accepted these terms and the car as recorded above.\nFrom ${out.signerIp ?? '-'} · agreement fingerprint (SHA-256) ${out.agreementHash ?? '-'}`,
-        LEFT,
-        doc.y + 4,
-        { width: WIDTH }
+        `By signing, the customer accepted these terms and the vehicle as recorded in this agreement. Signed from ${out.signerIp ?? '-'}.\nAgreement fingerprint (SHA-256): ${out.agreementHash ?? '-'}`,
+        pdf.left,
+        doc.y,
+        { width: pdf.width, lineGap: 1.5 }
       )
 
-    footer(doc, `${booking.reference} · rental agreement`)
-    return toBuffer(doc)
+    return pdf.finish()
   }
 
   static async checkInReport(bookingId: string): Promise<Buffer> {
-    const { booking, business, car, out } = await this.load(bookingId)
+    const { booking, business, car, out, when } = await this.load(bookingId)
     const back = await Inspection.query()
       .where('booking_id', booking.id)
       .where('type', 'check_in')
+      .preload('inspector')
       .first()
     if (!back || back.status !== 'completed') {
       throw new BookingError('status', 'The return report exists once the car has been checked in.')
@@ -485,98 +517,86 @@ export default class HandoverPdfService {
       BookingCharge.query().where('booking_id', booking.id).orderBy('created_at', 'asc'),
       CarDamage.query().where('reported_inspection_id', back.id).orderBy('created_at', 'asc'),
     ])
-    const zone = business?.timezone || 'Africa/Accra'
-    const when = (value: DateTime | null) =>
-      value ? value.setZone(zone).toFormat('ccc d LLL yyyy, HH:mm') : '-'
-
-    const doc = new PDFDocument({
-      size: 'A4',
-      margin: 50,
-      bufferPages: true,
-      info: { Title: `Return report ${booking.reference}` },
-    })
-    header(doc, business, 'Return report', booking.reference)
-
-    heading(doc, 'Rental')
-    facts(doc, [
-      ['Customer', booking.customer.fullName],
-      ['Car', `${car.make} ${car.model} · ${car.registrationNo}`],
-      ['Picked up', when(booking.actualPickupAt)],
-      ['Returned', `${when(booking.actualReturnAt)} (booked ${when(booking.returnAt)})`],
-    ])
-
-    heading(doc, 'Out and back')
     const driven =
       out?.odometerKm !== null && out?.odometerKm !== undefined && back.odometerKm !== null
         ? back.odometerKm - out.odometerKm
         : null
-    facts(doc, [
-      [
-        'Odometer',
-        `${out?.odometerKm?.toLocaleString() ?? '-'} km to ${back.odometerKm?.toLocaleString() ?? '-'} km`,
-      ],
-      ['Driven', driven !== null ? `${driven.toLocaleString()} km` : '-'],
-      ['Fuel', `${fuel(out?.fuelLevel ?? null)} to ${fuel(back.fuelLevel)}`],
-      ['Outside / inside', `${back.exterior ?? '-'} / ${back.interior ?? '-'}`],
-    ])
-    const missing = back.checklist.filter((item) => item.result !== 'ok')
-    if (missing.length) {
-      doc
-        .font('Helvetica')
-        .fontSize(9)
-        .fillColor(INK)
-        .text(
-          `Checklist: ${missing.map((item) => `${item.name} (${item.result})`).join(', ')}`,
-          LEFT,
-          doc.y,
-          { width: WIDTH }
-        )
-    }
+    const late = !!booking.actualReturnAt && booking.actualReturnAt > booking.returnAt
 
-    heading(doc, 'New damage')
-    if (damages.length === 0) {
-      doc.font('Helvetica').fontSize(9).fillColor(MUTED).text('None found at return.', LEFT, doc.y)
-    } else {
-      room(doc, 190)
-      const top = doc.y
-      diagram(doc, damages, LEFT, top, 90)
-      damages.forEach((damage, index) => {
-        doc
-          .font('Helvetica')
-          .fontSize(9)
-          .fillColor(INK)
-          .text(
-            `${index + 1}. ${damage.zone.replaceAll('_', ' ')} - ${damage.type.replace('_', ' ')}, ${damage.severity}${damage.note ? ` (${damage.note})` : ''}`,
-            LEFT + 115,
-            index === 0 ? top : doc.y + 2,
-            { width: WIDTH - 115 }
-          )
-      })
-      doc.y = Math.max(doc.y, top + 175)
-    }
-
-    heading(doc, 'Charges at return')
-    if (charges.length === 0) {
-      doc.font('Helvetica').fontSize(9).fillColor(MUTED).text('No charges.', LEFT, doc.y)
-    }
-    for (const charge of charges) {
-      amountRow(
-        doc,
-        charge.status === 'waived'
-          ? `${charge.label} - waived: ${charge.waiveReason}`
-          : charge.label,
-        charge.status === 'waived' ? 'waived' : money(charge.amount),
-        { muted: charge.status === 'waived' }
-      )
-    }
-    doc.moveDown(0.4)
-    amountRow(doc, 'Booking total (incl. charges and tax)', money(booking.totalAmount), {
-      bold: true,
+    const pdf = new PdfDocument({
+      title: 'Return report',
+      reference: booking.reference,
+      letterhead: letterhead(business),
+      footer: footerLine(business),
     })
-    amountRow(doc, 'Paid so far', money(booking.paidAmount), { muted: true })
-    amountRow(doc, 'Balance', money(booking.balanceAmount), { bold: true })
+    pdf.header(`Returned ${when(booking.actualReturnAt, 'd LLL yyyy')}`)
+    pdf.summary([
+      { label: 'Customer', value: booking.customer.fullName, hint: booking.customer.phone },
+      { label: 'Vehicle', value: `${car.make} ${car.model}`, hint: car.registrationNo },
+      {
+        label: 'Returned',
+        value: when(booking.actualReturnAt, 'd LLL, HH:mm'),
+        hint: late ? `Booked for ${when(booking.returnAt, 'd LLL, HH:mm')}` : 'On time',
+      },
+      {
+        label: 'Balance due',
+        value: money(booking.balanceAmount),
+        hint: `Total ${money(booking.totalAmount)}`,
+        strong: true,
+      },
+    ])
 
-    footer(doc, `${booking.reference} · return report`)
-    return toBuffer(doc)
+    pdf.factsCard(
+      'Out and back',
+      [
+        ['Picked up', when(booking.actualPickupAt)],
+        ['Returned', when(booking.actualReturnAt)],
+        ['Checked out by', out?.inspector?.fullName ?? out?.inspector?.email ?? null],
+        ['Checked in by', back.inspector?.fullName ?? back.inspector?.email ?? null],
+      ],
+      4
+    )
+    readingsCard(
+      pdf,
+      'Vehicle at return',
+      back,
+      ['Driven', driven !== null ? `${driven.toLocaleString()} km` : '-'],
+      out
+    )
+
+    const accepted = charges.filter((charge) => charge.status === 'accepted')
+    pdf.table(
+      'Charges at return',
+      charges.length
+        ? charges.map((charge) => ({
+            label: charge.label,
+            amount: charge.status === 'waived' ? 'Waived' : money(charge.amount),
+            note: charge.status === 'waived' ? `Waived: ${charge.waiveReason}` : undefined,
+            muted: charge.status === 'waived',
+          }))
+        : [
+            {
+              label: 'No charges - the car came back as it went out',
+              amount: money(0),
+              muted: true,
+            },
+          ],
+      [
+        {
+          label: 'Charges at return',
+          amount: money(accepted.reduce((sum, charge) => sum + charge.amount, 0)),
+          muted: true,
+        },
+        {
+          label: 'Booking total (with charges and tax)',
+          amount: money(booking.totalAmount),
+          muted: true,
+        },
+        { label: 'Paid so far', amount: money(booking.paidAmount), muted: true },
+        { label: 'Balance due', amount: money(booking.balanceAmount) },
+      ]
+    )
+    damageCard(pdf, 'New damage at return', damages, () => true)
+    return pdf.finish()
   }
 }
