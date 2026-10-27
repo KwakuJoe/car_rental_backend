@@ -186,7 +186,7 @@ export class BookingModificationSchema extends BaseModel {
 }
 
 export class BookingSchema extends BaseModel {
-  static $columns = ['actualPickupAt', 'actualReturnAt', 'balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverId', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
+  static $columns = ['actualPickupAt', 'actualReturnAt', 'balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'depositHeldAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverId', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
   $columns = BookingSchema.$columns
   @column.dateTime()
   declare actualPickupAt: DateTime | null
@@ -228,6 +228,8 @@ export class BookingSchema extends BaseModel {
   declare deliveryZoneId: string | null
   @column()
   declare depositAmount: number
+  @column()
+  declare depositHeldAmount: number
   @column()
   declare destination: string | null
   @column()
@@ -891,7 +893,7 @@ export class InspectionPhotoSchema extends BaseModel {
 }
 
 export class InspectionSchema extends BaseModel {
-  static $columns = ['agreementHash', 'bookingId', 'carId', 'checklist', 'completedAt', 'createdAt', 'exterior', 'fuelLevel', 'id', 'inspectedBy', 'interior', 'notes', 'odometerKm', 'paymentConfirmed', 'paymentConfirmedBy', 'signatureFileId', 'signedAt', 'signedName', 'signerDevice', 'signerIp', 'status', 'termsVersionId', 'type', 'updatedAt'] as const
+  static $columns = ['agreementHash', 'bookingId', 'carId', 'checklist', 'completedAt', 'createdAt', 'exterior', 'fuelLevel', 'id', 'inspectedBy', 'interior', 'notes', 'odometerKm', 'paymentConfirmed', 'paymentConfirmedBy', 'paymentOverrideReason', 'signatureFileId', 'signedAt', 'signedName', 'signerDevice', 'signerIp', 'status', 'termsVersionId', 'type', 'updatedAt'] as const
   $columns = InspectionSchema.$columns
   @column()
   declare agreementHash: string | null
@@ -923,6 +925,8 @@ export class InspectionSchema extends BaseModel {
   declare paymentConfirmed: boolean
   @column()
   declare paymentConfirmedBy: string | null
+  @column()
+  declare paymentOverrideReason: string | null
   @column()
   declare signatureFileId: string | null
   @column.dateTime()
@@ -1008,6 +1012,55 @@ export class OpeningHourSchema extends BaseModel {
   declare updatedAt: DateTime | null
   @column()
   declare weekday: number
+}
+
+export class PaymentSchema extends BaseModel {
+  static $columns = ['amount', 'bookingId', 'branchId', 'createdAt', 'customerId', 'id', 'method', 'notes', 'number', 'paidAt', 'payerName', 'proofFileId', 'recordedBy', 'status', 'transactionRef', 'type', 'updatedAt', 'verifiedAt', 'verifiedBy', 'voidReason', 'voidedAt', 'voidedBy'] as const
+  $columns = PaymentSchema.$columns
+  @column()
+  declare amount: number
+  @column()
+  declare bookingId: string
+  @column()
+  declare branchId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare customerId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare method: string
+  @column()
+  declare notes: string | null
+  @column()
+  declare number: string | null
+  @column.dateTime()
+  declare paidAt: DateTime
+  @column()
+  declare payerName: string | null
+  @column()
+  declare proofFileId: string | null
+  @column()
+  declare recordedBy: string | null
+  @column()
+  declare status: string
+  @column()
+  declare transactionRef: string | null
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column.dateTime()
+  declare verifiedAt: DateTime | null
+  @column()
+  declare verifiedBy: string | null
+  @column()
+  declare voidReason: string | null
+  @column.dateTime()
+  declare voidedAt: DateTime | null
+  @column()
+  declare voidedBy: string | null
 }
 
 export class PermissionSchema extends BaseModel {

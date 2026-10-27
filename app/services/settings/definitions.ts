@@ -91,16 +91,16 @@ export const settingDefinitions = {
     max: 240,
     unit: 'minutes',
   },
-  'booking.hold_minutes': {
+  'booking.online_hold_hours': {
     group: 'bookings',
     type: 'integer',
-    label: 'Unpaid booking hold',
+    label: 'Unpaid online booking hold',
     description:
-      'How long a car is held for an online booking waiting for payment before it is released.',
-    default: 30,
-    min: 5,
-    max: 1440,
-    unit: 'minutes',
+      'How long an online booking keeps its car while the customer pays the deposit by MoMo or bank. A payment waiting to be verified keeps the car until staff decide.',
+    default: 24,
+    min: 1,
+    max: 72,
+    unit: 'hours',
   },
   'booking.min_lead_hours': {
     group: 'bookings',

@@ -100,6 +100,7 @@ export function bookingToJson(booking: Booking, options: { graceMinutes?: number
     taxAmount: booking.taxAmount,
     totalAmount: booking.totalAmount,
     depositAmount: booking.depositAmount,
+    depositHeldAmount: booking.depositHeldAmount,
     reservationFeeAmount: booking.reservationFeeAmount,
     paidAmount: booking.paidAmount,
     balanceAmount: booking.balanceAmount,

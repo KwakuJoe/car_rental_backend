@@ -20,6 +20,7 @@ import type InspectionTransformer from '#transformers/inspection_transformer'
 import type NotificationTransformer from '#transformers/notification_transformer'
 import type OdometerLogTransformer from '#transformers/odometer_log_transformer'
 import type OpeningHourTransformer from '#transformers/opening_hour_transformer'
+import type PaymentTransformer from '#transformers/payment_transformer'
 import type PermissionTransformer from '#transformers/permission_transformer'
 import type PricingCatalogTransformersTransformer from '#transformers/pricing_catalog_transformers'
 import type PricingRuleTransformer from '#transformers/pricing_rule_transformer'
@@ -89,6 +90,10 @@ export namespace Data {
   export type OpeningHour = InferData<OpeningHourTransformer>
   export namespace OpeningHour {
     export type Variants = InferVariants<OpeningHourTransformer>
+  }
+  export type Payment = InferData<PaymentTransformer>
+  export namespace Payment {
+    export type Variants = InferVariants<PaymentTransformer>
   }
   export type Permission = InferData<PermissionTransformer>
   export namespace Permission {

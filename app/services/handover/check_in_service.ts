@@ -15,6 +15,7 @@ import AuditService from '#services/audit_service'
 import { BookingError } from '#services/bookings/booking_service'
 import type { Requirement } from '#services/handover/check_out_service'
 import TaxService from '#services/pricing/tax_service'
+import PaymentService from '#services/payments/payment_service'
 import SettingsService from '#services/settings/settings_service'
 import { userCan } from '#helpers/permissions'
 
@@ -459,6 +460,8 @@ export default class CheckInService {
         },
         trx
       )
+      // Paid in full and no deposit held: nothing left to settle
+      await PaymentService.closeIfSettled(ctx, booking, trx)
     })
     return inspection
   }

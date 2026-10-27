@@ -241,6 +241,40 @@ router
           })
           .use(middleware.permission({ permissions: ['bookings.cancel'] }))
 
+        // Payments, deposits and refunds (Phase 5)
+        router
+          .group(() => {
+            router.get('bookings/:id/payments', [controllers.admin.Payments, 'forBooking'])
+            router.get('payments', [controllers.admin.Payments, 'index'])
+            router.get('payments/:id/receipt.pdf', [controllers.admin.Payments, 'receipt'])
+          })
+          .use(middleware.permission({ permissions: ['payments.view'] }))
+        router
+          .group(() => {
+            // Refunds also need payments.refund (checked in PaymentService)
+            router.post('bookings/:id/payments', [controllers.admin.Payments, 'store'])
+          })
+          .use(middleware.permission({ permissions: ['payments.record'] }))
+        router
+          .group(() => {
+            router.post('bookings/:id/deposit/settle', [
+              controllers.admin.Payments,
+              'settleDeposit',
+            ])
+          })
+          .use(middleware.permission({ permissions: ['payments.refund'] }))
+        router
+          .group(() => {
+            router.post('payments/:id/verify', [controllers.admin.Payments, 'verify'])
+            router.post('payments/:id/reject', [controllers.admin.Payments, 'reject'])
+          })
+          .use(middleware.permission({ permissions: ['payments.verify'] }))
+        router
+          .group(() => {
+            router.post('payments/:id/void', [controllers.admin.Payments, 'void'])
+          })
+          .use(middleware.permission({ permissions: ['payments.void'] }))
+
         // Vehicle handover (Phase 4)
         router
           .group(() => {

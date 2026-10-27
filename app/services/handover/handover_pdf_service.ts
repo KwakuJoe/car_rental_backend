@@ -10,8 +10,8 @@ import Inspection from '#models/inspection'
 import TermsVersion from '#models/terms_version'
 import { BookingError } from '#services/bookings/booking_service'
 import FileService from '#services/file_service'
-import { logoBuffer } from '#services/pdf/business_logo'
-import { PdfDocument, THEME, type Letterhead } from '#services/pdf/pdf_document'
+import { footerLine, letterhead } from '#services/pdf/letterhead'
+import { PdfDocument, THEME } from '#services/pdf/pdf_document'
 import { maskNumber } from '#transformers/customer_transformer'
 
 const money = PdfDocument.money
@@ -56,25 +56,6 @@ async function imageBuffer(file: File | null): Promise<Buffer | null> {
     return null // unreachable in tests / offline - the box says the signature is on file
   }
 }
-
-async function letterhead(business: Business | null): Promise<Letterhead> {
-  return {
-    name: business?.tradingName || business?.name || 'Car rental',
-    details: [
-      [business?.address, business?.city, business?.region].filter(Boolean).join(', '),
-      [business?.phone, business?.email].filter(Boolean).join('  ·  '),
-      business?.tin
-        ? `TIN ${business.tin}${business.vatNumber ? `  ·  VAT ${business.vatNumber}` : ''}`
-        : '',
-    ].filter(Boolean),
-    logo: await logoBuffer(business?.logo),
-  }
-}
-
-const footerLine = (business: Business | null) =>
-  [business?.tradingName || business?.name, business?.phone, business?.email]
-    .filter(Boolean)
-    .join('  ·  ')
 
 const damageText = (damage: CarDamage) =>
   `${capital(label(damage.zone))} - ${label(damage.type)}, ${damage.severity}${damage.note ? `. ${damage.note}` : ''}`

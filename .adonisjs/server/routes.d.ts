@@ -95,6 +95,14 @@ export type ScannedRoutes = {
     'admin.bookings.assign_driver': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.no_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.for_booking': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.index': { paramsTuple?: []; params?: {} }
+    'admin.payments.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.settle_deposit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.verify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.void': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.save': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.add_damage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -195,6 +203,9 @@ export type ScannedRoutes = {
     'admin.bookings.agreement': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.check_in_report': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.for_booking': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.index': { paramsTuple?: []; params?: {} }
+    'admin.payments.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.checkIn.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.terms.show': { paramsTuple?: []; params?: {} }
@@ -258,6 +269,9 @@ export type ScannedRoutes = {
     'admin.bookings.agreement': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.check_in_report': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.for_booking': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.index': { paramsTuple?: []; params?: {} }
+    'admin.payments.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.checkIn.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.terms.show': { paramsTuple?: []; params?: {} }
@@ -309,6 +323,11 @@ export type ScannedRoutes = {
     'admin.bookings.modify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.no_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.settle_deposit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.verify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.payments.void': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.add_damage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.complete_check_out': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.checkIn.addDamage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

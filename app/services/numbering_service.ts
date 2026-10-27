@@ -3,11 +3,14 @@ import { DateTime } from 'luxon'
 import { ulid } from 'ulid'
 import Business from '#models/business'
 
-export type DocumentType = 'booking'
+export type DocumentType = 'booking' | 'receipt' | 'refund'
+
+/** Receipts and refund notes have their own series; bookings use the business prefix. */
+const SERIES_PREFIX: Partial<Record<DocumentType, string>> = { receipt: 'RCT', refund: 'RFD' }
 
 /**
  * Document numbers (M1.7): WYK-2026-00123 - business prefix, year, 5-digit
- * number restarting each year. Taken inside the caller's transaction with the
+ * number restarting each year. Receipts RCT-2026-00001, refunds RFD-2026-00001. Taken inside the caller's transaction with the
  * counter row locked (SELECT ... FOR UPDATE), so concurrent bookings never get
  * the same number and a rolled-back booking leaves no gap.
  */
@@ -15,7 +18,7 @@ export default class NumberingService {
   static async next(type: DocumentType, trx: TransactionClientContract): Promise<string> {
     const business = await Business.query({ client: trx }).first()
     const zone = business?.timezone || 'Africa/Accra'
-    const prefix = business?.documentPrefix || 'WYK'
+    const prefix = SERIES_PREFIX[type] ?? (business?.documentPrefix || 'WYK')
     const year = DateTime.now().setZone(zone).year
 
     const now = new Date()

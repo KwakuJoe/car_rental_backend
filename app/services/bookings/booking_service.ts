@@ -365,31 +365,44 @@ export default class BookingService {
   /** pending -> confirmed: the hold becomes a booking. */
   static async confirm(ctx: HttpContext, booking: Booking, user: User) {
     this.assertTransition(booking, 'confirmed')
-    await db.transaction(async (trx) => {
-      booking.useTransaction(trx)
-      booking.merge({
-        status: 'confirmed',
-        holdExpiresAt: null,
-        confirmedAt: DateTime.now(),
-        confirmedBy: user.id,
-      })
-      await booking.save()
-      await CarAllocation.query({ client: trx })
-        .where('booking_id', booking.id)
-        .where('active', true)
-        .update({ source: 'booking', updated_at: new Date() })
-      await AuditService.record(
-        ctx,
-        {
-          action: 'booking.confirmed',
-          subject: { type: 'booking', id: booking.id, label: label(booking) },
-          before: { status: 'pending' },
-          after: { status: 'confirmed' },
-        },
-        trx
-      )
-    })
+    await db.transaction((trx) => this.confirmWithin(ctx, booking, user.id, trx))
     return booking
+  }
+
+  /**
+   * The confirmation itself, inside the caller's transaction - also used when
+   * a payment covers the reservation fee (`reason` says so in the audit log).
+   */
+  static async confirmWithin(
+    ctx: HttpContext | null,
+    booking: Booking,
+    userId: string | null,
+    trx: TransactionClientContract,
+    reason?: string
+  ) {
+    booking.useTransaction(trx)
+    booking.merge({
+      status: 'confirmed',
+      holdExpiresAt: null,
+      confirmedAt: DateTime.now(),
+      confirmedBy: userId,
+    })
+    await booking.save()
+    await CarAllocation.query({ client: trx })
+      .where('booking_id', booking.id)
+      .where('active', true)
+      .update({ source: 'booking', updated_at: new Date() })
+    await AuditService.record(
+      ctx,
+      {
+        action: 'booking.confirmed',
+        subject: { type: 'booking', id: booking.id, label: label(booking) },
+        before: { status: 'pending' },
+        after: { status: 'confirmed' },
+        ...(reason ? { metadata: { reason } } : {}),
+      },
+      trx
+    )
   }
 
   /** Cancel with the policy fee worked out (refunds themselves are Phase 5). */
@@ -471,6 +484,13 @@ export default class BookingService {
       .where('status', 'pending')
       .whereNotNull('hold_expires_at')
       .where('hold_expires_at', '<', now.toSQL()!)
+      // A MoMo/bank payment waiting to be checked keeps the car until staff decide
+      .whereNotExists((query) =>
+        query
+          .from('payments')
+          .whereColumn('payments.booking_id', 'bookings.id')
+          .where('payments.status', 'pending_verification')
+      )
     for (const booking of due) {
       await db.transaction(async (trx) => {
         booking.useTransaction(trx)

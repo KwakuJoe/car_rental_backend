@@ -133,10 +133,20 @@ test.group('check-out', (group) => {
     }
     const below = await client.put(url).json({ odometerKm: 900 }).loginAs(owner)
     assert.include(failing(json(below).data), 'odometer') // below the last reading (1,000)
-    const saved = await client
-      .put(url)
-      .json({ odometerKm: 1500, fuelLevel: 6, paymentConfirmed: true })
-      .loginAs(owner)
+    // Money: the balance and the deposit, recorded as payments
+    const bookingUrl = `/api/v1/admin/bookings/${json(created).data.id}`
+    const money = json(await client.get(`${bookingUrl}/payments`).loginAs(owner)).data.summary
+    for (const [type, amount] of [
+      ['rental', money.balance],
+      ['deposit', money.depositDue],
+    ]) {
+      const paid = await client
+        .post(`${bookingUrl}/payments`)
+        .json({ type, method: 'cash', amount })
+        .loginAs(owner)
+      paid.assertStatus(201)
+    }
+    const saved = await client.put(url).json({ odometerKm: 1500, fuelLevel: 6 }).loginAs(owner)
     assert.deepEqual(failing(json(saved).data), [])
     assert.isTrue(json(saved).data.ready)
 
@@ -242,7 +252,13 @@ async function checkedOut(client: any, ctx: Awaited<ReturnType<typeof setup>>) {
   const id = json(created).data.id
   await client
     .put(`/api/v1/admin/bookings/${id}/check-out`)
-    .json({ odometerKm: 1500, fuelLevel: 8, paymentConfirmed: true })
+    // Unpaid on purpose (charges at return are added to the balance)
+    .json({
+      odometerKm: 1500,
+      fuelLevel: 8,
+      paymentConfirmed: true,
+      paymentOverrideReason: 'Pays on return',
+    })
     .loginAs(owner)
   const signature = await File.create({
     disk: 'cloudinary',

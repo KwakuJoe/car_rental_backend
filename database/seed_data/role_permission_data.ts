@@ -216,6 +216,39 @@ export const permissionData = [
     group: 'handover',
     description: 'Take cars back: inspection, extra charges',
   },
+
+  // payments
+  {
+    name: 'View payments',
+    slug: 'payments.view',
+    group: 'payments',
+    description: 'See payments, deposits, refunds and receipts',
+  },
+  {
+    name: 'Record payments',
+    slug: 'payments.record',
+    group: 'payments',
+    description: 'Take rent and deposits by cash, MoMo or bank transfer',
+  },
+  {
+    name: 'Verify payments',
+    slug: 'payments.verify',
+    group: 'payments',
+    description:
+      'Confirm MoMo and bank payments arrived (checked against the statement); without it they wait for someone who has it',
+  },
+  {
+    name: 'Record refunds',
+    slug: 'payments.refund',
+    group: 'payments',
+    description: 'Pay back rent and settle security deposits',
+  },
+  {
+    name: 'Void payments',
+    slug: 'payments.void',
+    group: 'payments',
+    description: 'Cancel a payment recorded by mistake (with a reason; it stays on record)',
+  },
 ]
 
 // ── Role → Permission mapping ──────────────────────────────────
@@ -248,6 +281,11 @@ export const rolePermissionMap: Record<string, string[]> = {
     'drivers.manage',
     'handover.checkout',
     'handover.checkin',
+    'payments.view',
+    'payments.record',
+    'payments.verify',
+    'payments.refund',
+    'payments.void',
   ],
   'front-desk': [
     'fleet.view',
@@ -263,6 +301,9 @@ export const rolePermissionMap: Record<string, string[]> = {
     'drivers.view',
     'handover.checkout',
     'handover.checkin',
+    'payments.view',
+    'payments.record',
+    'payments.refund',
   ],
   'fleet': [
     'fleet.view',
@@ -274,5 +315,12 @@ export const rolePermissionMap: Record<string, string[]> = {
     'handover.checkin',
   ],
   'driver': [],
-  'accountant': ['audit.view', 'customers.view', 'bookings.view'],
+  'accountant': [
+    'audit.view',
+    'customers.view',
+    'bookings.view',
+    'payments.view',
+    'payments.verify',
+    'payments.void',
+  ],
 }

@@ -28,6 +28,7 @@ export const controllers = {
     Lookups: () => import('#controllers/admin/lookups_controller'),
     Notifications: () => import('#controllers/admin/notifications_controller'),
     OpeningHours: () => import('#controllers/admin/opening_hours_controller'),
+    Payments: () => import('#controllers/admin/payments_controller'),
     Permissions: () => import('#controllers/admin/permissions_controller'),
     PricingRules: () => import('#controllers/admin/pricing_rules_controller'),
     ProtectionPlans: () => import('#controllers/admin/protection_plans_controller'),

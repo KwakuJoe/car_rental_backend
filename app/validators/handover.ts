@@ -30,6 +30,7 @@ export const saveInspectionValidator = vine.create({
     .maxLength(30)
     .optional(),
   paymentConfirmed: vine.boolean().optional(),
+  paymentOverrideReason: vine.string().trim().maxLength(300).nullable().optional(),
 })
 
 export const damageValidator = vine.create({

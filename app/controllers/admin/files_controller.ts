@@ -53,6 +53,11 @@ async function canAccessPrivateFile(user: User, file: File): Promise<boolean> {
     return checkSlug('bookings.view')
   }
 
+  // A MoMo/bank screenshot: whoever deals with payments
+  if (file.purpose === 'receipt_proof') {
+    return checkSlug('payments.view')
+  }
+
   return false
 }
 

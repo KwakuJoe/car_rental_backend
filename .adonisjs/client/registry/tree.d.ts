@@ -146,6 +146,16 @@ export interface ApiDefinition {
     quotes: {
       store: typeof routes['admin.quotes.store']
     }
+    payments: {
+      forBooking: typeof routes['admin.payments.for_booking']
+      index: typeof routes['admin.payments.index']
+      receipt: typeof routes['admin.payments.receipt']
+      store: typeof routes['admin.payments.store']
+      settleDeposit: typeof routes['admin.payments.settle_deposit']
+      verify: typeof routes['admin.payments.verify']
+      reject: typeof routes['admin.payments.reject']
+      void: typeof routes['admin.payments.void']
+    }
     handover: {
       show: typeof routes['admin.handover.show']
       save: typeof routes['admin.handover.save']

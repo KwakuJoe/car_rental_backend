@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module'
 import PDFDocument from 'pdfkit'
+import { formatMoney } from '#helpers/money'
 
 const require = createRequire(import.meta.url)
 // Manrope, the dashboard's typeface. WOFF (not WOFF2: fontkit can't subset those).
@@ -29,9 +30,6 @@ export type Letterhead = {
   logo?: Buffer | null
 }
 
-const money = (pesewas: number) =>
-  `GHS ${(pesewas / 100).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-
 /**
  * The house style for every document we print (agreements, return reports,
  * and later invoices and receipts): Manrope, a brand bar, a letterhead, a
@@ -45,7 +43,14 @@ export class PdfDocument {
   private watermark: string
 
   constructor(
-    private options: { title: string; reference: string; letterhead: Letterhead; footer: string }
+    private options: {
+      title: string
+      reference: string
+      letterhead: Letterhead
+      footer: string
+      /** A big red word across every page instead of the name, e.g. VOID */
+      stamp?: string
+    }
   ) {
     this.doc = new PDFDocument({
       size: 'A4',
@@ -80,18 +85,23 @@ export class PdfDocument {
     doc.y = 40
   }
 
-  /** The business name, large, diagonal and very light - over the content, so cards don't hide it. */
+  /**
+   * The business name, large, diagonal and very light - over the content, so
+   * cards don't hide it. A stamp (VOID) replaces it, in red and stronger.
+   */
   private stampWatermark() {
     const { doc } = this
     const { width, height } = THEME.page
+    const stamp = this.options.stamp
+    const text = stamp ?? this.watermark
     doc.save()
-    doc.fillOpacity(0.045)
+    doc.fillOpacity(stamp ? 0.16 : 0.045)
     doc.rotate(-32, { origin: [width / 2, height / 2] })
     doc
       .font('heavy')
-      .fontSize(this.watermark.length > 14 ? 58 : 76)
-      .fillColor(THEME.ink)
-      .text(this.watermark, -60, height / 2 - 40, {
+      .fontSize(stamp ? 120 : text.length > 14 ? 58 : 76)
+      .fillColor(stamp ? THEME.brand : THEME.ink)
+      .text(text, -60, height / 2 - (stamp ? 60 : 40), {
         width: width + 120,
         align: 'center',
         lineBreak: false,
@@ -561,5 +571,5 @@ export class PdfDocument {
     })
   }
 
-  static money = money
+  static money = formatMoney
 }

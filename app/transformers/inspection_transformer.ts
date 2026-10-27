@@ -13,6 +13,7 @@ export function inspectionToJson(inspection: Inspection) {
     interior: inspection.interior,
     notes: inspection.notes,
     paymentConfirmed: Boolean(inspection.paymentConfirmed),
+    paymentOverrideReason: inspection.paymentOverrideReason,
     photos: (inspection.$preloaded.photos ? inspection.photos : []).map((photo) => ({
       id: photo.id,
       angle: photo.angle,

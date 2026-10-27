@@ -120,8 +120,28 @@ Update this list as modules land.
   [x] M3.10 Today board GET /admin/today + dashboard home (pickups / returns /
             running late / holds to confirm / cars needing attention / fleet now /
             7-day outlook), refreshed every minute
-  [~] M3.6  cancellation policy settings + CancellationService (fee shown and
-            stored); refunds come with payments (Phase 5)
+  [x] M3.6  cancellation policy settings + CancellationService (fee shown and
+            stored); refunds recorded as payments (Phase 5 slice 1)
+  [x] M5.1/M5.4/M5.5 (slice 1, 2026-10-27) payments table (rental / deposit /
+            refund / deposit_refund / deposit_applied; cash / momo / bank), no
+            separate folio table - the booking's paid / balance / deposit held
+            are recalculated from completed payments (PaymentService). MoMo/bank
+            from staff without payments.verify wait in "To verify"; transaction
+            ID unique; void / reject with reason; reservation fee paid ->
+            confirmed; returned + balance 0 + deposit settled -> closed; deposit
+            settle (keep against charges + pay back rest); refund caps; hold
+            expiry skips bookings with a payment waiting to be verified;
+            check-out requires paid balance + deposit (manager override with a
+            reason, inspections.payment_override_reason); receipts RCT- /
+            refunds RFD- PDFs (PaymentPdfService, VOID stamp). Permissions:
+            payments.view/record/verify/refund/void (deposits.manage folded
+            into record/refund; refunds.approve deferred).
+            Frontend: booking Payments tab, Payments page (To verify / All),
+            check-out money panel.
+  [ ] M5 next slices: online pay-to-confirm (business MoMo/bank details,
+            customer submits transaction ID - with the public site), daily
+            cash-up (M5.7), invoices/credit notes (M5.6), expenses (M5.8),
+            exports (M5.9); refund approval over a limit
   [ ] M8.6  vehicle usage chart on the Odometer tab (after M8.1, or a simple
             version after Phase 4) - see M8.6
 
@@ -859,6 +879,23 @@ evidence, extra charges are computed, and the signed agreement PDF exists.
 ==========================================================================
 PHASE 5: PAYMENTS & FINANCE
 ==========================================================================
+
+OWNER DECISIONS (2026-10-27) - these override the plan below where they differ
+  - No payment integration for now. Money comes in as cash, MoMo to the
+    business's number, or bank transfer; staff RECORD it. Paystack (M5.2)
+    is deferred; when added it is just another method that verifies itself.
+  - Online bookings: a DEPOSIT (reservation fee: % or fixed, setting) confirms
+    the booking; the rest is paid at pickup. Customer pays to the business's
+    MoMo/bank (details shown, booking reference as payment reference), enters
+    the transaction ID (+ optional screenshot); staff verify against the
+    MoMo/bank statement, never the screenshot alone.
+  - Unpaid online bookings hold the car 24 h by default - a SETTING - then
+    expire and release the car.
+  - Verifying MoMo/bank payments: a permission (payments.verify) the owner
+    gives to the roles they trust.
+  - Security deposit: taken like any payment (cash/MoMo/bank), refunded the
+    same way after return, less charges. Tracked separately from rent.
+  - A MoMo/bank transaction ID can be used once only (duplicate refused).
 
 M5.1 Booking folio (ledger)
 -----------------------------

@@ -1190,6 +1190,110 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['noShow']>>>
     }
   }
+  'admin.payments.for_booking': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/bookings/:id/payments'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['forBooking']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['forBooking']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['forBooking']>>>
+    }
+  }
+  'admin.payments.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/payments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/payment').listPaymentsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.payments.receipt': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/payments/:id/receipt.pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['receipt']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['receipt']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['receipt']>>>
+    }
+  }
+  'admin.payments.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/bookings/:id/payments'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/payment').recordPaymentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/payment').recordPaymentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.payments.settle_deposit': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/bookings/:id/deposit/settle'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/payment').settleDepositValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/payment').settleDepositValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['settleDeposit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['settleDeposit']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['settleDeposit']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.payments.verify': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/payments/:id/verify'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['verify']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['verify']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['verify']>>>
+    }
+  }
+  'admin.payments.reject': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/payments/:id/reject'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/payment').paymentReasonValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/payment').paymentReasonValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['reject']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['reject']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['reject']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.payments.void': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/payments/:id/void'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/payment').paymentReasonValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/payment').paymentReasonValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['void']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['void']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['void']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.handover.show': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/bookings/:id/check-out'

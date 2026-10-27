@@ -20,6 +20,8 @@ import AuditService from '#services/audit_service'
 import { BookingError } from '#services/bookings/booking_service'
 import DocumentComplianceService from '#services/document_compliance_service'
 import SettingsService from '#services/settings/settings_service'
+import { formatMoney as money } from '#helpers/money'
+import { userCan } from '#helpers/permissions'
 
 export type Requirement = { code: string; label: string; ok: boolean; message: string | null }
 
@@ -31,7 +33,9 @@ export type CheckOutDraft = {
   interior?: string | null
   notes?: string | null
   photos?: { angle: string; fileId: string }[]
+  /** A manager lets the car go before the balance/deposit is paid (with a reason) */
   paymentConfirmed?: boolean
+  paymentOverrideReason?: string | null
 }
 
 /**
@@ -82,9 +86,24 @@ export default class CheckOutService {
         notes: draft.notes === undefined ? inspection.notes : draft.notes,
         inspectedBy: user.id,
       })
-      if (draft.paymentConfirmed !== undefined) {
-        inspection.paymentConfirmed = draft.paymentConfirmed
-        inspection.paymentConfirmedBy = draft.paymentConfirmed ? user.id : null
+      if (draft.paymentConfirmed === true && !inspection.paymentConfirmed) {
+        if (!(await userCan(user, 'bookings.override'))) {
+          throw new BookingError(
+            'paymentConfirmed',
+            'Only a manager can let a car go before it’s paid.'
+          )
+        }
+        const reason = draft.paymentOverrideReason?.trim() ?? ''
+        if (reason.length < 3) {
+          throw new BookingError('paymentOverrideReason', 'Say why the car can go unpaid.')
+        }
+        inspection.paymentConfirmed = true
+        inspection.paymentConfirmedBy = user.id
+        inspection.paymentOverrideReason = reason
+      } else if (draft.paymentConfirmed === false) {
+        inspection.paymentConfirmed = false
+        inspection.paymentConfirmedBy = null
+        inspection.paymentOverrideReason = null
       }
       await inspection.save()
       if (draft.photos) {
@@ -119,6 +138,14 @@ export default class CheckOutService {
     const missingAngles = REQUIRED_ANGLES.filter(
       (angle) => !photos.some((photo) => photo.angle === angle)
     )
+    // Money from the payments recorded on the booking (Phase 5)
+    const balanceDue = Math.max(0, booking.balanceAmount)
+    const depositDue = Math.max(0, booking.depositAmount - booking.depositHeldAmount)
+    const paidUp = balanceDue === 0 && depositDue === 0
+    const owing = [
+      ...(balanceDue ? [`${money(balanceDue)} balance`] : []),
+      ...(depositDue ? [`${money(depositDue)} deposit`] : []),
+    ]
 
     const rule = (code: string, label: string, ok: boolean, message: string) => ({
       code,
@@ -192,9 +219,9 @@ export default class CheckOutService {
         : []),
       rule(
         'payment',
-        'Balance and deposit collected',
-        inspection.paymentConfirmed,
-        'Confirm the balance and the security deposit have been collected.'
+        'Balance and deposit paid',
+        paidUp || inspection.paymentConfirmed,
+        `Still to collect: ${owing.join(' and ')} (Payments on the booking).`
       ),
     ]
     return list

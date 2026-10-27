@@ -312,7 +312,8 @@ export class FileService {
   }
 
   /**
-   * Delete private document uploads (ID scans, licences, vehicle documents)
+   * Delete private document uploads (ID scans, licences, vehicle documents,
+   * payment proofs)
    * that were never attached to a record and are older than the cut-off.
    * Returns how many were deleted. Used by `node ace files:cleanup`.
    */
@@ -320,7 +321,7 @@ export class FileService {
     const cutoff = DateTime.now().minus({ hours: options.olderThanHours })
     const orphans = await File.query()
       .whereNull('attachable_id')
-      .whereIn('purpose', ['id_front', 'id_back', 'licence', 'vehicle_document'])
+      .whereIn('purpose', ['id_front', 'id_back', 'licence', 'vehicle_document', 'receipt_proof'])
       .where('created_at', '<', cutoff.toSQL()!)
     for (const file of orphans) await this.delete(file)
     return orphans.length
