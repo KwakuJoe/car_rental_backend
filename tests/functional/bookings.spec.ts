@@ -395,7 +395,13 @@ test.group('changes and drivers', (group) => {
       .json(booking(customer.id, car.id, { confirm: true }))
       .loginAs(desk)
     const id = json(created).data.id
-    const change = (body: Record<string, unknown>, preview = false) =>
+    const change = (
+      body: { type: 'extend' | 'change_dates' | 'swap_car' | 'early_return' } & Record<
+        string,
+        unknown
+      >,
+      preview = false
+    ) =>
       client
         .post(`${url}/${id}/modifications${preview ? '/preview' : ''}`)
         .json(body)

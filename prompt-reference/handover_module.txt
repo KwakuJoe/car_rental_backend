@@ -1,0 +1,52 @@
+CAR RENTAL BACKEND — VEHICLE HANDOVER (Phase 4: M4.1 check-out, M4.2 signatures)
+==================================================================================
+Permissions: handover.checkout (check-out), handover.checkin (check-in, slice 2).
+Roles: manager, front desk and fleet both.
+
+DECIDED with the owner (2026-10-27):
+- Money: until Phase 5 records payments, staff tick "balance and deposit collected"
+  (inspection.payment_confirmed + payment_confirmed_by). Phase 5 replaces the tick.
+- Terms: a versioned text (terms_versions), seeded with a clearly-marked DRAFT the owner
+  replaces before go-live (Settings). Every signature records the version + a hash.
+- Photos: optional. Setting handover.require_photos (off) makes six angles required:
+  front, rear, left, right, odometer, fuel_gauge.
+
+TABLES
+inspections (booking_id + type unique: check_out | check_in; draft -> completed):
+  odometer_km, fuel_level (eighths 0-8), checklist jsonb [{itemId, name, result ok |
+  missing | damaged, note}], exterior clean|dirty, interior clean|dirty|smoking, notes,
+  payment_confirmed(+_by), terms_version_id, agreement_hash (SHA-256 of terms body +
+  version + booking reference/dates/car/total + odometer/fuel), signature_file_id
+  (private file, purpose signature), signed_name, signed_at, signer_ip, signer_device,
+  inspected_by, completed_at.
+inspection_photos (angle, file_id) - purpose inspection_photo (public URL: car evidence).
+car_damages - the CAR's damage register: zone (DAMAGE_ZONES of the top-view diagram),
+  x/y (0-100 % within the diagram), type, severity, note, photo, reported_inspection_id,
+  repaired_at (Phase 8). Open damage shows at every handover as preexisting.
+checklist_items (name, sort_order, active) - seeded defaults, edited in Settings.
+terms_versions (version, body) - never edited; a change is a new version.
+bookings.actual_pickup_at / actual_return_at.
+
+CHECK-OUT (CheckOutService)
+GET  /admin/bookings/:id/check-out   creates the draft on first open; returns
+  { inspection, requirements[{code,label,ok,message}], ready, damages, car
+  {currentOdometerKm}, terms {id, version, body}, requirePhotos }
+PUT  /admin/bookings/:id/check-out   save the draft { odometerKm, fuelLevel, checklist,
+  exterior, interior, notes, photos[{angle, fileId}] (replaces), paymentConfirmed }
+POST /admin/bookings/:id/check-out/damages            mark damage on the diagram
+DELETE /admin/bookings/:id/check-out/damages/:damageId  only damage from this handover
+POST /admin/bookings/:id/check-out/complete { signatureFileId, signedName }
+  Refused (422, code = the failing requirement) unless ALL pass:
+  confirmed; customer not blocked (unless the booking has a manager override); ID (+
+  licence for self-drive) verified when booking.require_verified_customer_for_checkout;
+  with-driver bookings have a driver; car active; roadworthy + insurance valid today;
+  odometer >= the car's last reading; fuel recorded; photos (if required); money ticked.
+  Then: inspection completed with the signature, terms version and hash; booking ->
+  on_rent + actual_pickup_at; car odometer updated (odometer_logs source check_out);
+  audit booking.checked_out. A completed inspection can't change (422).
+
+TERMS & CHECKLIST
+GET /admin/terms, GET /admin/checklist-items (bookings.view)
+POST /admin/terms { body } (settings.manage) - a new version (same text = no-op)
+PUT /admin/checklist-items { items[{id?, name, active}] } (settings.manage) - replaces
+  the list in order; removed items are switched off (old inspections still name them).

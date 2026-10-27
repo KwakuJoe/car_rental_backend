@@ -108,6 +108,11 @@ Update this list as modules land.
             in booking_modifications
   [x] M3.9  drivers: list, licence expiry, daily cost; assign to with-driver
             bookings (driver_allocations exclusion constraint), freed on cancel
+  [x] M4.1  check-out: inspection draft (odometer, fuel, checklist, photos,
+            damage on the car's register), requirements, payment tick (until
+            Phase 5), customer signature -> on_rent (handover_module.txt)
+  [~] M4.2  signatures: PNG + version + SHA-256 hash + IP/device; the PDF that
+            embeds them comes with M4.4
   [x] M3.10 Today board GET /admin/today + dashboard home (pickups / returns /
             running late / holds to confirm / cars needing attention / fleet now /
             7-day outlook), refreshed every minute

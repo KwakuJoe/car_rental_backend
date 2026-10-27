@@ -93,6 +93,15 @@ export type ScannedRoutes = {
     'admin.bookings.assign_driver': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.no_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.handover.show_check_out': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.handover.save_check_out': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.handover.add_damage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.handover.remove_damage': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'damageId': ParamValue} }
+    'admin.handover.complete_check_out': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.terms.show': { paramsTuple?: []; params?: {} }
+    'admin.terms.checklist': { paramsTuple?: []; params?: {} }
+    'admin.terms.store': { paramsTuple?: []; params?: {} }
+    'admin.terms.save_checklist': { paramsTuple?: []; params?: {} }
     'admin.drivers.index': { paramsTuple?: []; params?: {} }
     'admin.drivers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.drivers.store': { paramsTuple?: []; params?: {} }
@@ -175,6 +184,9 @@ export type ScannedRoutes = {
     'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.handover.show_check_out': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.terms.show': { paramsTuple?: []; params?: {} }
+    'admin.terms.checklist': { paramsTuple?: []; params?: {} }
     'admin.drivers.index': { paramsTuple?: []; params?: {} }
     'admin.drivers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
@@ -232,6 +244,9 @@ export type ScannedRoutes = {
     'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.handover.show_check_out': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.terms.show': { paramsTuple?: []; params?: {} }
+    'admin.terms.checklist': { paramsTuple?: []; params?: {} }
     'admin.drivers.index': { paramsTuple?: []; params?: {} }
     'admin.drivers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.index': { paramsTuple?: []; params?: {} }
@@ -279,6 +294,9 @@ export type ScannedRoutes = {
     'admin.bookings.modify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.no_show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.handover.add_damage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.handover.complete_check_out': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.terms.store': { paramsTuple?: []; params?: {} }
     'admin.drivers.store': { paramsTuple?: []; params?: {} }
     'admin.rate_plans.store': { paramsTuple?: []; params?: {} }
     'admin.pricing_rules.store': { paramsTuple?: []; params?: {} }
@@ -304,6 +322,8 @@ export type ScannedRoutes = {
     'admin.customer_identities.update': { paramsTuple: [ParamValue,ParamValue]; params: {'customerId': ParamValue,'id': ParamValue} }
     'admin.bookings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.assign_driver': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.handover.save_check_out': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.terms.save_checklist': { paramsTuple?: []; params?: {} }
     'admin.drivers.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.rate_plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.pricing_rules.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -327,6 +347,7 @@ export type ScannedRoutes = {
     'admin.car_blocks.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.vehicle_documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.customers.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.handover.remove_damage': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'damageId': ParamValue} }
     'admin.pricing_rules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.branches.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.closure_dates.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'branchId': ParamValue,'id': ParamValue} }

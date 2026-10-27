@@ -20,6 +20,7 @@ export const FILE_PURPOSES = [
   'licence',
   'signature',
   'receipt_proof',
+  'inspection_photo',
   'other',
 ] as const
 

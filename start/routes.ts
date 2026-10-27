@@ -236,6 +236,35 @@ router
           })
           .use(middleware.permission({ permissions: ['bookings.cancel'] }))
 
+        // Vehicle handover (Phase 4)
+        router
+          .group(() => {
+            router.get('bookings/:id/check-out', [controllers.admin.Handover, 'showCheckOut'])
+            router.put('bookings/:id/check-out', [controllers.admin.Handover, 'saveCheckOut'])
+            router.post('bookings/:id/check-out/damages', [controllers.admin.Handover, 'addDamage'])
+            router.delete('bookings/:id/check-out/damages/:damageId', [
+              controllers.admin.Handover,
+              'removeDamage',
+            ])
+            router.post('bookings/:id/check-out/complete', [
+              controllers.admin.Handover,
+              'completeCheckOut',
+            ])
+          })
+          .use(middleware.permission({ permissions: ['handover.checkout'] }))
+        router
+          .group(() => {
+            router.get('terms', [controllers.admin.Terms, 'show'])
+            router.get('checklist-items', [controllers.admin.Terms, 'checklist'])
+          })
+          .use(middleware.permission({ permissions: ['bookings.view'] }))
+        router
+          .group(() => {
+            router.post('terms', [controllers.admin.Terms, 'store'])
+            router.put('checklist-items', [controllers.admin.Terms, 'saveChecklist'])
+          })
+          .use(middleware.permission({ permissions: ['settings.manage'] }))
+
         // Drivers (M3.9)
         router
           .group(() => {

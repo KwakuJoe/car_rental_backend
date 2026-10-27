@@ -20,6 +20,7 @@ export type SettingDefinition =
 export const settingGroups = {
   bookings: 'Bookings',
   cancellation: 'Cancellation & no-show',
+  handover: 'Vehicle handover',
   rental: 'Rental policy',
   payments: 'Payments & deposits',
   pricing: 'Pricing',
@@ -166,6 +167,16 @@ export const settingDefinitions = {
         description: 'Whole unused days are refunded at the booking’s average daily price.',
       },
     ],
+  },
+
+  // ── Vehicle handover (Phase 4) ──────────────────────────────
+  'handover.require_photos': {
+    group: 'handover',
+    type: 'boolean',
+    label: 'Require handover photos',
+    description:
+      'A car can only go out once front, rear, both sides, the odometer and the fuel gauge are photographed. Off: photos are optional.',
+    default: false,
   },
 
   // ── Cancellation & no-show (M3.6) ───────────────────────────

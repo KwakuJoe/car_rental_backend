@@ -151,8 +151,12 @@ export class BookingModificationSchema extends BaseModel {
 }
 
 export class BookingSchema extends BaseModel {
-  static $columns = ['balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverId', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
+  static $columns = ['actualPickupAt', 'actualReturnAt', 'balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverId', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
   $columns = BookingSchema.$columns
+  @column.dateTime()
+  declare actualPickupAt: DateTime | null
+  @column.dateTime()
+  declare actualReturnAt: DateTime | null
   @column()
   declare balanceAmount: number
   @column()
@@ -365,6 +369,39 @@ export class CarAllocationSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class CarDamageSchema extends BaseModel {
+  static $columns = ['carId', 'createdAt', 'createdBy', 'id', 'note', 'photoFileId', 'repairedAt', 'reportedInspectionId', 'severity', 'type', 'updatedAt', 'x', 'y', 'zone'] as const
+  $columns = CarDamageSchema.$columns
+  @column()
+  declare carId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare note: string | null
+  @column()
+  declare photoFileId: string | null
+  @column.dateTime()
+  declare repairedAt: DateTime | null
+  @column()
+  declare reportedInspectionId: string | null
+  @column()
+  declare severity: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare x: number
+  @column()
+  declare y: number
+  @column()
+  declare zone: string
+}
+
 export class CarPhotoSchema extends BaseModel {
   static $columns = ['carId', 'createdAt', 'fileId', 'id', 'isCover', 'sortOrder', 'updatedAt'] as const
   $columns = CarPhotoSchema.$columns
@@ -470,6 +507,23 @@ export class CategorySchema extends BaseModel {
   declare selfDriveAllowed: boolean
   @column()
   declare slug: string
+  @column()
+  declare sortOrder: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class ChecklistItemSchema extends BaseModel {
+  static $columns = ['active', 'createdAt', 'id', 'name', 'sortOrder', 'updatedAt'] as const
+  $columns = ChecklistItemSchema.$columns
+  @column()
+  declare active: boolean
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
   @column()
   declare sortOrder: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
@@ -782,6 +836,76 @@ export class FileSchema extends BaseModel {
   declare url: string
 }
 
+export class InspectionPhotoSchema extends BaseModel {
+  static $columns = ['angle', 'createdAt', 'fileId', 'id', 'inspectionId', 'updatedAt'] as const
+  $columns = InspectionPhotoSchema.$columns
+  @column()
+  declare angle: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare fileId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare inspectionId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class InspectionSchema extends BaseModel {
+  static $columns = ['agreementHash', 'bookingId', 'carId', 'checklist', 'completedAt', 'createdAt', 'exterior', 'fuelLevel', 'id', 'inspectedBy', 'interior', 'notes', 'odometerKm', 'paymentConfirmed', 'paymentConfirmedBy', 'signatureFileId', 'signedAt', 'signedName', 'signerDevice', 'signerIp', 'status', 'termsVersionId', 'type', 'updatedAt'] as const
+  $columns = InspectionSchema.$columns
+  @column()
+  declare agreementHash: string | null
+  @column()
+  declare bookingId: string
+  @column()
+  declare carId: string
+  @column()
+  declare checklist: any
+  @column.dateTime()
+  declare completedAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare exterior: string | null
+  @column()
+  declare fuelLevel: number | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare inspectedBy: string | null
+  @column()
+  declare interior: string | null
+  @column()
+  declare notes: string | null
+  @column()
+  declare odometerKm: number | null
+  @column()
+  declare paymentConfirmed: boolean
+  @column()
+  declare paymentConfirmedBy: string | null
+  @column()
+  declare signatureFileId: string | null
+  @column.dateTime()
+  declare signedAt: DateTime | null
+  @column()
+  declare signedName: string | null
+  @column()
+  declare signerDevice: string | null
+  @column()
+  declare signerIp: string | null
+  @column()
+  declare status: string
+  @column()
+  declare termsVersionId: string | null
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class NotificationSchema extends BaseModel {
   static $columns = ['body', 'createdAt', 'dedupeKey', 'id', 'link', 'readAt', 'title', 'type', 'updatedAt', 'userId'] as const
   $columns = NotificationSchema.$columns
@@ -1090,6 +1214,23 @@ export class TaxSchema extends BaseModel {
   declare sortOrder: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+}
+
+export class TermsVersionSchema extends BaseModel {
+  static $columns = ['body', 'createdAt', 'createdBy', 'id', 'updatedAt', 'version'] as const
+  $columns = TermsVersionSchema.$columns
+  @column()
+  declare body: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare version: number
 }
 
 export class UserSchema extends BaseModel {

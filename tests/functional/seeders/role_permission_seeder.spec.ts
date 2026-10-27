@@ -42,6 +42,8 @@ test.group('role_permission_seeder', (group) => {
         'extras.manage',
         'fleet.manage',
         'fleet.view',
+        'handover.checkin',
+        'handover.checkout',
         'permissions.manage',
         'pricing.manage',
         'pricing.view',
@@ -76,6 +78,8 @@ test.group('role_permission_seeder', (group) => {
         'bookings.override',
         'drivers.view',
         'drivers.manage',
+        'handover.checkout',
+        'handover.checkin',
       ]
     )
   })
@@ -104,6 +108,8 @@ test.group('role_permission_seeder', (group) => {
         'bookings.update',
         'bookings.cancel',
         'drivers.view',
+        'handover.checkout',
+        'handover.checkin',
         'roles.manage',
       ]
     )

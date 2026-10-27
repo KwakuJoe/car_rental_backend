@@ -202,6 +202,20 @@ export const permissionData = [
     group: 'drivers',
     description: 'Add drivers and update their licence, status and daily cost',
   },
+
+  // handover
+  {
+    name: 'Check cars out',
+    slug: 'handover.checkout',
+    group: 'handover',
+    description: 'Hand cars over: inspection, photos, damage, customer signature',
+  },
+  {
+    name: 'Check cars in',
+    slug: 'handover.checkin',
+    group: 'handover',
+    description: 'Take cars back: inspection, extra charges',
+  },
 ]
 
 // ── Role → Permission mapping ──────────────────────────────────
@@ -232,6 +246,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'bookings.override',
     'drivers.view',
     'drivers.manage',
+    'handover.checkout',
+    'handover.checkin',
   ],
   'front-desk': [
     'fleet.view',
@@ -245,8 +261,18 @@ export const rolePermissionMap: Record<string, string[]> = {
     'bookings.update',
     'bookings.cancel',
     'drivers.view',
+    'handover.checkout',
+    'handover.checkin',
   ],
-  'fleet': ['fleet.view', 'fleet.manage', 'pricing.view', 'bookings.view', 'drivers.view'],
+  'fleet': [
+    'fleet.view',
+    'fleet.manage',
+    'pricing.view',
+    'bookings.view',
+    'drivers.view',
+    'handover.checkout',
+    'handover.checkin',
+  ],
   'driver': [],
   'accountant': ['audit.view', 'customers.view', 'bookings.view'],
 }

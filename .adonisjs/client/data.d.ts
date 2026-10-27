@@ -16,6 +16,7 @@ import type ClosureDateTransformer from '#transformers/closure_date_transformer'
 import type CustomerTransformer from '#transformers/customer_transformer'
 import type DriverTransformer from '#transformers/driver_transformer'
 import type FileTransformer from '#transformers/file_transformer'
+import type InspectionTransformer from '#transformers/inspection_transformer'
 import type NotificationTransformer from '#transformers/notification_transformer'
 import type OdometerLogTransformer from '#transformers/odometer_log_transformer'
 import type OpeningHourTransformer from '#transformers/opening_hour_transformer'
@@ -72,6 +73,10 @@ export namespace Data {
   export type File = InferData<FileTransformer>
   export namespace File {
     export type Variants = InferVariants<FileTransformer>
+  }
+  export type Inspection = InferData<InspectionTransformer>
+  export namespace Inspection {
+    export type Variants = InferVariants<InspectionTransformer>
   }
   export type Notification = InferData<NotificationTransformer>
   export namespace Notification {

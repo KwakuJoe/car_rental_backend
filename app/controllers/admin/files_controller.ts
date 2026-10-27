@@ -48,6 +48,11 @@ async function canAccessPrivateFile(user: User, file: File): Promise<boolean> {
     return checkSlug('customers.view_documents')
   }
 
+  // A customer's handover signature: anyone who can see the booking
+  if (file.purpose === 'signature') {
+    return checkSlug('bookings.view')
+  }
+
   return false
 }
 
@@ -59,7 +64,13 @@ export default class FilesController {
     const payload = await request.validateUsing(uploadFileMetadataValidator)
     const purpose = payload.purpose as FilePurpose
 
-    const isImagePurpose = ['car_photo', 'category_image', 'business_logo'].includes(purpose)
+    const isImagePurpose = [
+      'car_photo',
+      'category_image',
+      'business_logo',
+      'inspection_photo',
+      'signature',
+    ].includes(purpose)
     const allowedExtensions = isImagePurpose
       ? FileService.IMAGE_EXTENSIONS
       : FileService.DOCUMENT_EXTENSIONS
