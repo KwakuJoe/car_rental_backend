@@ -520,8 +520,8 @@ export default class BookingService {
   }
 
   /**
-   * Pending bookings past their hold expire and free their car. Run from cron
-   * (`node ace bookings:expire-holds`, every 5 minutes). Safe to re-run.
+   * Pending bookings past their hold expire and free their car. The queue runs
+   * it every 5 minutes (ExpireHoldsJob). Safe to re-run.
    */
   static async expireHolds(now = DateTime.now()): Promise<number> {
     const due = await Booking.query()
@@ -598,8 +598,8 @@ export default class BookingService {
 
   /**
    * Staff alert: online bookings whose hold ends within 2 hours with nothing
-   * paid or sent - a call might still save them. Once per booking; run with
-   * the hold expiry job.
+   * paid or sent - a call might still save them. Once per booking; runs in
+   * the hold expiry job (ExpireHoldsJob).
    */
   static async warnExpiringHolds(now: DateTime = DateTime.now()): Promise<number> {
     const soon = await Booking.query()
@@ -637,8 +637,8 @@ export default class BookingService {
 
   /**
    * Staff alert: cars out on rent past their return time (plus the grace
-   * period in Settings). Once per booking. `node ace bookings:check-overdue`,
-   * every 15 minutes.
+   * period in Settings). Once per booking. The queue runs it every 15 minutes
+   * (CheckOverdueReturnsJob).
    */
   static async alertOverdueReturns(now: DateTime = DateTime.now()): Promise<number> {
     const grace = await SettingsService.get('booking.return_grace_minutes')

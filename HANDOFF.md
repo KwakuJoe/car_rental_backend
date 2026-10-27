@@ -34,7 +34,7 @@ Backend `prompt-reference/`:
 - API references for what's built: `auth_module.txt`, `settings_module.txt`,
   `audit_module.txt`, `files_module.txt`, `fleet_module.txt`, `pricing_module.txt`,
   `customers_module.txt`.
-- `setup_command.txt` has install/run instructions and the cron jobs.
+- `setup_command.txt` has install/run instructions and the queue worker (background jobs).
 
 Backend `http/` has one `.http` file per module (VS Code REST Client) as runnable endpoint docs.
 
@@ -79,8 +79,8 @@ of truth; check it first.
   - Cars: soft archive, status changes, and an odometer log with corrections.
   - Photos.
   - Car blocks on `car_allocations`, protected by an exclusion constraint.
-  - Vehicle documents with daily expiry alerts: cron calls
-    `node ace check:document-expiries` (see `setup_command.txt`).
+  - Vehicle documents with daily expiry alerts: a scheduled queue job
+    (`CheckDocumentExpiriesJob`, see `setup_command.txt`).
 - Pricing (M2.5-M2.11), see `pricing_module.txt`:
   - Rates (rate plans).
   - Price rules: up or down, can be switched on and off.
@@ -171,8 +171,9 @@ check-in only proposes when active.
 ### Small items waiting
 - The owner asked for lean testing while building: lightly tested areas are listed in the
   **TESTING BACKLOG** in `modules.txt` (under PROGRESS). Add to it, and cover it before go-live.
-- Cron on the server: `files:cleanup` nightly and `bookings:expire-holds` every 5 minutes
-  (see `setup_command.txt`).
+- Background work runs on the queue (`@adonisjs/queue`, database driver): run
+  `node ace queue:work` next to the server - it sends SMS / email and runs the scheduled jobs
+  in `start/scheduler.ts` (no cron; see `setup_command.txt`).
 - The owner has to review the inactive example extras, plans, zones and fees, and add real
   taxes.
 - Optional, offered to the owner: the backend could also normalise user, branch and business
@@ -219,8 +220,8 @@ For each module, in order:
   for `getByRole('dialog')` to have count 0 instead of waiting for toasts.
 - **ace commands must not import models or services at the top level**
   (`tests/unit/commands_imports.spec.ts` guards this).
-- Scheduled work must actually be scheduled (cron) and must not repeat daily; use
-  `notifications.dedupe_key`.
+- Scheduled work goes in `start/scheduler.ts` (a job in `app/jobs`) and must not repeat
+  alerts; use `notifications.dedupe_key` / once-per-booking checks.
 
 ## Environment facts (important)
 - **Node:** the default shell PATH has an old Node 16. Always prefix commands with
