@@ -25,9 +25,9 @@ export const saveInspectionValidator = vine.create({
     .nullable()
     .optional(),
   notes: vine.string().trim().maxLength(2000).nullable().optional(),
-  photos: vine
-    .array(vine.object({ angle: vine.enum(PHOTO_ANGLES), fileId: vine.string() }))
-    .maxLength(30)
+  // One angle per save: set it (fileId) or remove it (null)
+  photo: vine
+    .object({ angle: vine.enum(PHOTO_ANGLES), fileId: vine.string().nullable() })
     .optional(),
   paymentConfirmed: vine.boolean().optional(),
   paymentOverrideReason: vine.string().trim().maxLength(300).nullable().optional(),

@@ -32,7 +32,11 @@ export type CheckOutDraft = {
   exterior?: string | null
   interior?: string | null
   notes?: string | null
-  photos?: { angle: string; fileId: string }[]
+  /**
+   * One angle at a time - set (fileId) or remove (null). Never the whole list:
+   * two photos saved at once would each drop the other.
+   */
+  photo?: { angle: string; fileId: string | null }
   /** A manager lets the car go before the balance/deposit is paid (with a reason) */
   paymentConfirmed?: boolean
   paymentOverrideReason?: string | null
@@ -106,11 +110,14 @@ export default class CheckOutService {
         inspection.paymentOverrideReason = null
       }
       await inspection.save()
-      if (draft.photos) {
-        await InspectionPhoto.query({ client: trx }).where('inspection_id', inspection.id).delete()
-        for (const photo of draft.photos) {
+      if (draft.photo) {
+        await InspectionPhoto.query({ client: trx })
+          .where('inspection_id', inspection.id)
+          .where('angle', draft.photo.angle)
+          .delete()
+        if (draft.photo.fileId) {
           await InspectionPhoto.create(
-            { inspectionId: inspection.id, angle: photo.angle, fileId: photo.fileId },
+            { inspectionId: inspection.id, angle: draft.photo.angle, fileId: draft.photo.fileId },
             { client: trx }
           )
         }

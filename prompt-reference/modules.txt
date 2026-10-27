@@ -150,39 +150,35 @@ TESTING BACKLOG (owner asked to keep testing lean while building - 2026-10-26)
 ------------------------------------------------------------------------------
 Areas that got a minimal test (or only typecheck + one e2e run) and deserve a
 proper pass before go-live (Milestone A). Tick them off as they're covered.
-  [ ] Full e2e suite on a quiet machine (last full runs hit load-average
-      timeouts; everything passed serially)
-  [ ] ID document dialog: closing without saving deletes the uploads; replacing
-      an image twice keeps only the saved one (frontend, no e2e yet)
-  [ ] files:cleanup against real Cloudinary (tests mock deletion)
-  [ ] PhoneInput: non-Ghana numbers end to end (customer, user, branch,
-      business profile); legacy local numbers ("0244...") load and re-save as
-      E.164
-  [ ] CountrySelect on the document form (issuing country) - only the
-      nationality field has e2e
-  [ ] Signed URL expiry: an ID link really stops working after 5 minutes
-      (Cloudinary side)
+  [x] Full e2e suite - 49 passed serially (2026-10-27). Runs one test at a
+      time now (workers: 1): tests change business-wide settings
+  [x] ID document dialog: cancel deletes the upload, replacing keeps only
+      the saved one, against real Cloudinary (documents.spec)
+  [x] files:cleanup against real Cloudinary - verified (DB row and asset gone)
+  [x] PhoneInput: Nigerian customer, UK business number (phones.spec);
+      legacy "0244..." parses to +233 (checked); foreign numbers now display
+      internationally (+234 803 ...)
+  [x] CountrySelect on the document form (issuing country) - documents.spec
+  [x] Signed URL expiry - FOUND BROKEN: signed delivery URLs never expired.
+      Fixed: private files use Cloudinary API download links (401 after
+      expiry), verified against Cloudinary
   [x] Bookings concurrency test (five simultaneous bookings, one wins) - done
-  [ ] Bookings UI not covered by e2e yet: Hold (instead of Confirm) then
-      Confirm, no-show button, discount + manager override on the review step,
-      blacklisted customer refused at step 1, booking errors jumping back to
-      their step, chauffeur options (out of town, nights away)
-  [ ] Today board in the browser: Confirm from "Confirm or lose the car",
-      row menus, readiness chips (only smoke + screenshots so far; backend test
-      covers the data)
-  [ ] Booking changes in the browser: change dates, swap car (both prices),
-      assign / change / remove driver (backend tests cover the rules; e2e
-      covers extend only). Early return can only be tried once check-out
-      exists (Phase 4)
-  [ ] Check-out on a real tablet: camera capture for photos, finger signature,
-      the damage diagram by touch; with handover.require_photos switched on
-      (e2e covers the desk flow with a mouse, photos skipped)
-  [ ] Check-in in the browser: late return (hours vs days), damage and
-      missing-item amounts, waivers over the limit with a manager reason
-      (backend test covers them; e2e covers a fuel charge)
-  [ ] Booking warnings (no licence, licence/roadworthy expiring) - backend
-      returns them, UI shows them as toasts only; check they read well
-
+  [x] Bookings UI: Hold then Confirm (from the Today board), blocked
+      customer sent back to step 1, manager override + discount above the
+      limit, chauffeur options (booking-flows.spec)
+      [ ] still: no-show button (needs a pickup in the past - backend test only)
+  [~] Today board: Confirm from "Confirm or lose the car" covered; row menus
+      and readiness chips still screenshots only
+  [x] Booking changes in the browser: change dates, swap car (charge the
+      difference), assign / change / remove driver (booking-flows.spec)
+  [~] Check-out on a tablet: emulated tablet + touch (handover-tablet.spec):
+      required photos, damage by tap, finger signature. FOUND: photos taken
+      quickly overwrote each other - fixed (one angle per save).
+      [ ] still: the real camera on a real tablet (needs a person)
+  [ ] Check-in in the browser: late return, damage / missing-item amounts,
+      waivers over the limit (backend tests cover them; e2e covers fuel)
+  [x] Booking warnings - toasts stacked and vanished (one was hidden); now a
+      panel on the booking page until dismissed
 
 PHASE OVERVIEW
 -----------------

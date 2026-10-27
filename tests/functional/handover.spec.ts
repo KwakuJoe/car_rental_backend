@@ -222,6 +222,70 @@ test.group('check-out', (group) => {
       ['Jack and spanner', 'Umbrella']
     )
   })
+
+  test('photos saved at the same moment are all kept (one angle per save)', async ({
+    client,
+    assert,
+  }) => {
+    const { car, customer, owner } = await setup()
+    const created = await client
+      .post('/api/v1/admin/bookings')
+      .json({
+        customerId: customer.id,
+        carId: car.id,
+        pickupAt: '2030-03-04T09:00',
+        returnAt: '2030-03-07T09:00',
+        driveType: 'self_drive',
+        source: 'phone',
+        confirm: true,
+      })
+      .loginAs(owner)
+    const url = `/api/v1/admin/bookings/${json(created).data.id}/check-out`
+    await client.get(url).loginAs(owner)
+    const angles = ['front', 'rear', 'left', 'right', 'odometer', 'fuel_gauge']
+    const files: File[] = []
+    for (const angle of angles) {
+      files.push(
+        await File.create({
+          disk: 'cloudinary',
+          path: `wynk/inspection_photo/${angle}`,
+          url: `https://res.cloudinary.com/test/${angle}.png`,
+          originalName: `${angle}.png`,
+          mime: 'image/png',
+          size: 1000,
+          purpose: 'inspection_photo',
+          isPrivate: false,
+          metadata: {},
+        })
+      )
+    }
+    // Six tiles finishing their uploads together
+    await Promise.all(
+      angles.map((angle, index) =>
+        client
+          .put(url)
+          .json({ photo: { angle, fileId: files[index].id } })
+          .loginAs(owner)
+      )
+    )
+    let screen = json(await client.get(url).loginAs(owner)).data
+    assert.sameMembers(
+      screen.inspection.photos.map((photo: { angle: string }) => photo.angle),
+      angles
+    )
+
+    // Removing one leaves the others
+    await client
+      .put(url)
+      .json({ photo: { angle: 'rear', fileId: null } })
+      .loginAs(owner)
+    screen = json(await client.get(url).loginAs(owner)).data
+    assert.lengthOf(screen.inspection.photos, 5)
+    assert.notInclude(
+      screen.inspection.photos.map((photo: { angle: string }) => photo.angle),
+      'rear'
+    )
+  })
 })
 
 /** A confirmed booking, checked out at 1,500 km with a full tank (verified customer, valid papers). */
