@@ -1,5 +1,5 @@
 /**
- * The branded chrome every email shares (customers and staff): a dark card
+ * The branded chrome every email shares (customers and staff): a white card
  * with the business logo on top, then blocks - heading, paragraphs, an
  * amount box, a details table, a button, a note - then the contact footer.
  * Built from tables and inline styles, so Gmail, Outlook and phone mail
@@ -14,13 +14,14 @@
 export const LOGO_CID = 'business-logo'
 
 const C = {
-  page: '#0e0f13',
-  card: '#17181e',
-  inset: '#0e0f13',
-  line: '#272832',
-  text: '#f2f3f7',
-  body: '#b4b6c4',
-  muted: '#7d7f8f',
+  page: '#f3f4f6',
+  card: '#ffffff',
+  inset: '#f8f9fb',
+  line: '#e8e9ee',
+  text: '#0b0c10',
+  body: '#4a4c5a',
+  muted: '#8a8c99',
+  faint: '#a3a5b1',
   brand: '#fb242f',
 }
 const FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
@@ -101,9 +102,7 @@ export function renderEmail(opts: {
 }) {
   const { brand } = opts
   const logo = brand.hasLogo
-    ? `<table role="presentation" cellpadding="0" cellspacing="0" align="center"><tr><td style="background:#ffffff;border-radius:14px;padding:10px 18px;">
-        <img src="cid:${LOGO_CID}" alt="${escapeHtml(brand.name)}" height="40" style="display:block;height:40px;width:auto;max-width:200px;border:0;" />
-      </td></tr></table>`
+    ? `<img src="cid:${LOGO_CID}" alt="${escapeHtml(brand.name)}" height="44" style="display:block;margin:0 auto;height:44px;width:auto;max-width:200px;border:0;" />`
     : `<p style="margin:0;font-size:22px;font-weight:800;color:${C.text};">${escapeHtml(brand.name)}</p>`
   const contact = [brand.phone, brand.email]
     .filter(Boolean)
@@ -115,25 +114,24 @@ export function renderEmail(opts: {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="dark light" />
+  <meta name="color-scheme" content="light" />
   <title>${escapeHtml(brand.name)}</title>
 </head>
 <body style="margin:0;padding:0;background:${C.page};font-family:${FONT};">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(opts.preheader)}</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.page};">
     <tr><td align="center" style="padding:32px 14px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:${C.card};border:1px solid ${C.line};border-radius:20px;overflow:hidden;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:${C.card};border:1px solid ${C.line};border-radius:20px;overflow:hidden;box-shadow:0 12px 40px -24px rgba(16,24,40,0.25);">
         <tr><td style="height:4px;background:${C.brand};font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td align="center" style="padding:30px 32px 6px;">
-          ${brand.hasLogo ? `<p style="margin:0 0 18px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${C.muted};">${escapeHtml(brand.name)}</p>` : ''}
+        <tr><td align="center" style="padding:28px 32px 4px;">
           ${logo}
         </td></tr>
         <tr><td style="padding:26px 32px 10px;">${opts.body}</td></tr>
         <tr><td style="padding:22px 32px 28px;border-top:1px solid ${C.line};text-align:center;">
           ${contact ? `<p style="margin:0 0 6px;font-size:13px;color:${C.body};">${contact}</p>` : ''}
           ${brand.address ? `<p style="margin:0 0 12px;font-size:12px;color:${C.muted};">${escapeHtml(brand.address)}</p>` : ''}
-          <p style="margin:0;font-size:11px;line-height:1.6;color:#565868;">${escapeHtml(opts.reason)}</p>
-          <p style="margin:8px 0 0;font-size:11px;color:#565868;">&copy; ${new Date().getFullYear()} ${escapeHtml(brand.name)}</p>
+          <p style="margin:0;font-size:11px;line-height:1.6;color:${C.faint};">${escapeHtml(opts.reason)}</p>
+          <p style="margin:8px 0 0;font-size:11px;color:${C.faint};">&copy; ${new Date().getFullYear()} ${escapeHtml(brand.name)}</p>
         </td></tr>
       </table>
     </td></tr>

@@ -195,7 +195,7 @@ export default class DocumentComplianceService {
           preheader: `${vehicle}: ${typeLabel} expires ${expiry.toFormat('d LLL yyyy')}.`,
           eyebrow: {
             text: expiresToday ? 'Expires today' : 'Expiring soon',
-            color: expiresToday ? '#fb242f' : '#f59e0b',
+            color: expiresToday ? '#fb242f' : '#d97706',
           },
           heading: `Renew the ${typeLabel}`,
           paragraphs: [

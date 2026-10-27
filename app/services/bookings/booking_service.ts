@@ -576,7 +576,7 @@ export default class BookingService {
         preheader: `${about.customer} - ${about.car}, ${about.pickup}. The car is free again.`,
         eyebrow: {
           text: how === 'expired' ? 'Hold expired' : how === 'cancelled' ? 'Cancelled' : 'No-show',
-          color: '#9ca3af',
+          color: '#6b7280',
         },
         heading: `${booking.reference} ${what}`,
         paragraphs: [
@@ -621,7 +621,7 @@ export default class BookingService {
         email: {
           subject: `Hold ending soon - ${booking.reference} (${about.customer})`,
           preheader: `Expires ${about.hold} with nothing paid yet.`,
-          eyebrow: { text: 'Hold ending soon', color: '#f59e0b' },
+          eyebrow: { text: 'Hold ending soon', color: '#d97706' },
           heading: `${about.customer} hasn't paid yet`,
           paragraphs: [
             `The hold on ${booking.reference} ends at ${about.hold} (in about ${left} minutes) and no payment has come in. A quick call to ${about.phone} might save the booking.`,

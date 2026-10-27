@@ -872,7 +872,7 @@ export default class PublicBookingService {
       email: {
         subject: `Payment to verify - ${booking.reference} (${formatMoney(amount)})`,
         preheader: `${formatMoney(amount)} by ${method}, ref ${payment.transactionRef}.`,
-        eyebrow: { text: 'Payment to verify', color: '#f59e0b' },
+        eyebrow: { text: 'Payment to verify', color: '#d97706' },
         heading: `${about.customer} says they've paid`,
         paragraphs: [
           'Check that this payment is in your MoMo or bank statement, then verify it in Payments → To verify. The customer is told as soon as you do.',

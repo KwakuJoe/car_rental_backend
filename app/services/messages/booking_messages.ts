@@ -14,8 +14,8 @@ import {
 import MessageService from '#services/messages/message_service'
 import { formatMoney } from '#helpers/money'
 
-const GREEN = '#22c55e'
-const AMBER = '#f59e0b'
+const GREEN = '#16a34a'
+const AMBER = '#d97706'
 
 /**
  * What online customers are told, by SMS and email, at each step of a
@@ -253,7 +253,7 @@ export default class BookingMessages {
         {
           subject: `Booking ${booking.reference} has expired`,
           preheader: 'We didn’t receive the payment in time.',
-          eyebrow: { text: 'Expired', color: '#9ca3af' },
+          eyebrow: { text: 'Expired', color: '#6b7280' },
           heading: 'Your booking has expired',
           paragraphs: [
             `Hi ${c.first}, we didn't receive the payment for booking ${booking.reference} in time, so the ${c.car} has been released.`,

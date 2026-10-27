@@ -128,7 +128,7 @@ export default class StaffAlerts {
       {
         subject: `Test alert from ${brand.name}`,
         preheader: 'Alerts are set up and working.',
-        eyebrow: { text: 'Test', color: '#22c55e' },
+        eyebrow: { text: 'Test', color: '#16a34a' },
         heading: `Hi ${recipient.name.split(/\s+/)[0]}, alerts work!`,
         paragraphs: [
           'This is a test from Settings → Notifications. You’ll get alerts like this one when something needs your attention.',
