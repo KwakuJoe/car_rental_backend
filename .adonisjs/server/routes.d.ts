@@ -112,6 +112,8 @@ export type ScannedRoutes = {
     'admin.payments.verify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.payments.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.payments.void': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.reports.overview': { paramsTuple?: []; params?: {} }
+    'admin.reports.export': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'admin.handover.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.save': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.add_damage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -226,6 +228,8 @@ export type ScannedRoutes = {
     'admin.payments.for_booking': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.payments.index': { paramsTuple?: []; params?: {} }
     'admin.payments.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.reports.overview': { paramsTuple?: []; params?: {} }
+    'admin.reports.export': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'admin.handover.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.checkIn.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.terms.show': { paramsTuple?: []; params?: {} }
@@ -297,6 +301,8 @@ export type ScannedRoutes = {
     'admin.payments.for_booking': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.payments.index': { paramsTuple?: []; params?: {} }
     'admin.payments.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.reports.overview': { paramsTuple?: []; params?: {} }
+    'admin.reports.export': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'admin.handover.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.checkIn.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.terms.show': { paramsTuple?: []; params?: {} }

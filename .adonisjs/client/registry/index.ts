@@ -654,6 +654,18 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"payments"],[1,"id"],[0,"void"]],
     types: placeholder as Registry['admin.payments.void']['types'],
   },
+  'admin.reports.overview': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/reports/overview',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"reports"],[0,"overview"]],
+    types: placeholder as Registry['admin.reports.overview']['types'],
+  },
+  'admin.reports.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/exports/:type',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"exports"],[1,"type"]],
+    types: placeholder as Registry['admin.reports.export']['types'],
+  },
   'admin.handover.show': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/bookings/:id/check-out',

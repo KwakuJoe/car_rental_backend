@@ -35,6 +35,7 @@ export const controllers = {
     ProtectionPlans: () => import('#controllers/admin/protection_plans_controller'),
     Quotes: () => import('#controllers/admin/quotes_controller'),
     RatePlans: () => import('#controllers/admin/rate_plans_controller'),
+    Reports: () => import('#controllers/admin/reports_controller'),
     Roles: () => import('#controllers/admin/roles_controller'),
     Settings: () => import('#controllers/admin/settings_controller'),
     Taxes: () => import('#controllers/admin/taxes_controller'),

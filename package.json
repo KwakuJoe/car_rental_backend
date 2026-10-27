@@ -74,6 +74,7 @@
     "@tuyau/core": "^1.2.2",
     "@vinejs/vine": "^4.4.0",
     "cloudinary": "^2.11.0",
+    "exceljs": "4.4.0",
     "luxon": "^3.7.2",
     "pdfkit": "^0.17.2",
     "pg": "^8.22.0",

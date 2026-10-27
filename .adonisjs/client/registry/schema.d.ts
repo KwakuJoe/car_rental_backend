@@ -1411,6 +1411,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/payments_controller').default['void']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.reports.overview': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/reports/overview'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/report').reportRangeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/reports_controller').default['overview']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/reports_controller').default['overview']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/reports_controller').default['overview']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.reports.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/exports/:type'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { type: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/report').exportValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/reports_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/reports_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/reports_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.handover.show': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/bookings/:id/check-out'

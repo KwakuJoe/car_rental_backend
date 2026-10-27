@@ -169,6 +169,10 @@ export interface ApiDefinition {
       reject: typeof routes['admin.payments.reject']
       void: typeof routes['admin.payments.void']
     }
+    reports: {
+      overview: typeof routes['admin.reports.overview']
+      export: typeof routes['admin.reports.export']
+    }
     handover: {
       show: typeof routes['admin.handover.show']
       save: typeof routes['admin.handover.save']

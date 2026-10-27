@@ -249,6 +249,26 @@ export const permissionData = [
     group: 'payments',
     description: 'Cancel a payment recorded by mistake (with a reason; it stays on record)',
   },
+
+  // reports
+  {
+    name: 'View reports',
+    slug: 'reports.view',
+    group: 'reports',
+    description: 'Bookings, utilisation, cancellations and the fleet over any period',
+  },
+  {
+    name: 'View financial reports',
+    slug: 'reports.financial',
+    group: 'reports',
+    description: 'Money collected, revenue per car, outstanding balances, deposits held and tax',
+  },
+  {
+    name: 'Export data',
+    slug: 'exports.run',
+    group: 'reports',
+    description: 'Download bookings, payments, customers and cars as CSV or Excel',
+  },
 ]
 
 // ── Role → Permission mapping ──────────────────────────────────
@@ -286,6 +306,9 @@ export const rolePermissionMap: Record<string, string[]> = {
     'payments.verify',
     'payments.refund',
     'payments.void',
+    'reports.view',
+    'reports.financial',
+    'exports.run',
   ],
   'front-desk': [
     'fleet.view',
@@ -322,5 +345,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'payments.view',
     'payments.verify',
     'payments.void',
+    'reports.view',
+    'reports.financial',
+    'exports.run',
   ],
 }

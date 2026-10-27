@@ -301,6 +301,14 @@ router
           })
           .use(middleware.permission({ permissions: ['payments.void'] }))
 
+        // Reports & exports (M9 / M5.9)
+        router
+          .get('reports/overview', [controllers.admin.Reports, 'overview'])
+          .use(middleware.permission({ permissions: ['reports.view'] }))
+        router
+          .get('exports/:type', [controllers.admin.Reports, 'export'])
+          .use(middleware.permission({ permissions: ['exports.run'] }))
+
         // Vehicle handover (Phase 4)
         router
           .group(() => {

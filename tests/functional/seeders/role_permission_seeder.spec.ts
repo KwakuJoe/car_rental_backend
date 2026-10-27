@@ -39,6 +39,7 @@ test.group('role_permission_seeder', (group) => {
         'customers.view_documents',
         'drivers.manage',
         'drivers.view',
+        'exports.run',
         'extras.manage',
         'fleet.manage',
         'fleet.view',
@@ -52,6 +53,8 @@ test.group('role_permission_seeder', (group) => {
         'permissions.manage',
         'pricing.manage',
         'pricing.view',
+        'reports.financial',
+        'reports.view',
         'roles.manage',
         'settings.manage',
         'users.manage',
@@ -90,6 +93,9 @@ test.group('role_permission_seeder', (group) => {
         'payments.verify',
         'payments.refund',
         'payments.void',
+        'reports.view',
+        'reports.financial',
+        'exports.run',
       ]
     )
   })
