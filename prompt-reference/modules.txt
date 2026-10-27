@@ -171,10 +171,12 @@ proper pass before go-live (Milestone A). Tick them off as they're covered.
       and readiness chips still screenshots only
   [x] Booking changes in the browser: change dates, swap car (charge the
       difference), assign / change / remove driver (booking-flows.spec)
-  [~] Check-out on a tablet: emulated tablet + touch (handover-tablet.spec):
+  [x] Check-out on a tablet: emulated tablet + touch (handover-tablet.spec):
       required photos, damage by tap, finger signature. FOUND: photos taken
       quickly overwrote each other - fixed (one angle per save).
-      [ ] still: the real camera on a real tablet (needs a person)
+      [x] real camera on the owner's phone over the local network
+          (2026-10-27) - photos taken and saved. Dev from a phone needs
+          allowedDevOrigins (next.config.ts, this machine's address)
   [ ] Check-in in the browser: late return, damage / missing-item amounts,
       waivers over the limit (backend tests cover them; e2e covers fuel)
   [x] Booking warnings - toasts stacked and vanished (one was hidden); now a
