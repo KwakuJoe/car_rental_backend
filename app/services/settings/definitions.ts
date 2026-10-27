@@ -179,6 +179,28 @@ export const settingDefinitions = {
     default: false,
   },
 
+  'handover.default_tank_litres': {
+    group: 'handover',
+    type: 'integer',
+    label: 'Default tank size',
+    description:
+      'Used to work out missing fuel at check-in when a car has no tank capacity set (Vehicles → specifications).',
+    default: 45,
+    min: 10,
+    max: 200,
+    unit: 'litres',
+  },
+  'handover.waiver_limit': {
+    group: 'handover',
+    type: 'money',
+    label: 'Waiver limit',
+    description:
+      'Front desk can waive check-in charges up to this total per return (always with a reason). More needs a manager.',
+    default: 200_00,
+    min: 0,
+    max: 100_000_00,
+  },
+
   // ── Cancellation & no-show (M3.6) ───────────────────────────
   'cancellation.full_refund_hours': {
     group: 'cancellation',

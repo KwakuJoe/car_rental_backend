@@ -239,8 +239,8 @@ router
         // Vehicle handover (Phase 4)
         router
           .group(() => {
-            router.get('bookings/:id/check-out', [controllers.admin.Handover, 'showCheckOut'])
-            router.put('bookings/:id/check-out', [controllers.admin.Handover, 'saveCheckOut'])
+            router.get('bookings/:id/check-out', [controllers.admin.Handover, 'show'])
+            router.put('bookings/:id/check-out', [controllers.admin.Handover, 'save'])
             router.post('bookings/:id/check-out/damages', [controllers.admin.Handover, 'addDamage'])
             router.delete('bookings/:id/check-out/damages/:damageId', [
               controllers.admin.Handover,
@@ -252,6 +252,29 @@ router
             ])
           })
           .use(middleware.permission({ permissions: ['handover.checkout'] }))
+        router
+          .group(() => {
+            router
+              .get('bookings/:id/check-in', [controllers.admin.Handover, 'show'])
+              .as('checkIn.show')
+            router
+              .put('bookings/:id/check-in', [controllers.admin.Handover, 'save'])
+              .as('checkIn.save')
+            router
+              .post('bookings/:id/check-in/damages', [controllers.admin.Handover, 'addDamage'])
+              .as('checkIn.addDamage')
+            router
+              .delete('bookings/:id/check-in/damages/:damageId', [
+                controllers.admin.Handover,
+                'removeDamage',
+              ])
+              .as('checkIn.removeDamage')
+            router.post('bookings/:id/check-in/complete', [
+              controllers.admin.Handover,
+              'completeCheckIn',
+            ])
+          })
+          .use(middleware.permission({ permissions: ['handover.checkin'] }))
         router
           .group(() => {
             router.get('terms', [controllers.admin.Terms, 'show'])

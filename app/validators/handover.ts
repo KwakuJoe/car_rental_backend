@@ -1,4 +1,5 @@
 import vine from '@vinejs/vine'
+import { CHARGE_CODES } from '#models/booking_charge'
 import { DAMAGE_SEVERITIES, DAMAGE_TYPES, DAMAGE_ZONES } from '#models/car_damage'
 import { CHECK_RESULTS, PHOTO_ANGLES } from '#models/inspection'
 
@@ -61,4 +62,22 @@ export const checklistValidator = vine.create({
     )
     .minLength(1)
     .maxLength(40),
+})
+
+export const completeCheckInValidator = vine.create({
+  charges: vine
+    .array(
+      vine.object({
+        code: vine.enum(CHARGE_CODES),
+        label: vine.string().trim().minLength(2).maxLength(200),
+        quantity: vine.number().min(0).max(100_000),
+        unitAmount: vine.number().withoutDecimals().min(0).max(100_000_00),
+        amount: vine.number().withoutDecimals().min(0).max(1_000_000_00),
+        taxable: vine.boolean(),
+        waived: vine.boolean(),
+        waiveReason: vine.string().trim().maxLength(500).nullable().optional(),
+      })
+    )
+    .maxLength(50),
+  overrideReason: vine.string().trim().maxLength(500).nullable().optional(),
 })

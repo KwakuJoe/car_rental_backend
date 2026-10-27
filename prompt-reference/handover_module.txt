@@ -45,6 +45,34 @@ POST /admin/bookings/:id/check-out/complete { signatureFileId, signedName }
   on_rent + actual_pickup_at; car odometer updated (odometer_logs source check_out);
   audit booking.checked_out. A completed inspection can't change (422).
 
+Collected early: completing check-out before the booked pickup moves the car (and
+driver) hold to start NOW; a clash with the previous booking is a 409.
+
+CHECK-IN (CheckInService, M4.3) - same screen shape, handover.checkin
+GET/PUT /admin/bookings/:id/check-in, POST/DELETE .../check-in/damages
+  The draft starts from the check-out checklist. The screen adds
+  comparison { checkOut, checkIn, kmDriven, includedKm, lateMinutes, damageCap, proposed[] }
+  and the saved charges. Requirements: on rent, odometer >= the check-out reading, fuel.
+Proposed charges (only ACTIVE fees from Pricing -> Fees; nothing is saved until complete):
+  excess_km     km over snapshot.mileage.includedKm x (rate's excess price or fee excess_km)
+  fuel          eighths short x tank (car fuel_capacity_l, else handover.default_tank_litres)
+                -> litres x fee fuel_per_litre; plus refuel_service
+  late_hours    after return + grace: hours x late_return_hour while cheaper than a day,
+  late_days     else whole days x the booking's average daily price
+  damage        each damage marked at check-in - staff enter the amount (not taxed)
+  missing_item  items OK at check-out, missing now (lost_key / lost_document fees, else
+                staff enter the amount)
+  cleaning / smoking   dirtier than at check-out
+POST /admin/bookings/:id/check-in/complete { charges[{code, label, quantity, unitAmount,
+  amount, taxable, waived, waiveReason}], overrideReason? }
+  - a waived line needs a reason; waivers above handover.waiver_limit (GHS 200) and damage
+    above the protection plan's excess (negligence) need bookings.override + reason
+  - accepted lines -> booking_charges (+ taxes as "fees"), added to the booking total and
+    balance; waived lines are kept with their reason; zero lines aren't saved
+  - booking -> returned + actual_return_at; car odometer (log source check_in); back early
+    -> the car is free after its cleaning time from now (never before the hold's start)
+  - audit booking.checked_in (charges, waived, override reason)
+
 TERMS & CHECKLIST
 GET /admin/terms, GET /admin/checklist-items (bookings.view)
 POST /admin/terms { body } (settings.manage) - a new version (same text = no-op)

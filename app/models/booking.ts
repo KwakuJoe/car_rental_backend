@@ -2,6 +2,7 @@ import { BookingSchema } from '#database/schema'
 import { compose } from '@adonisjs/core/helpers'
 import { belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
+import BookingCharge from '#models/booking_charge'
 import BookingExtra from '#models/booking_extra'
 import BookingModification from '#models/booking_modification'
 import Car from '#models/car'
@@ -62,6 +63,9 @@ export default class Booking extends compose(BookingSchema, withUlid) {
 
   @hasMany(() => BookingExtra)
   declare extras: HasMany<typeof BookingExtra>
+
+  @hasMany(() => BookingCharge)
+  declare charges: HasMany<typeof BookingCharge>
 
   @hasMany(() => BookingModification)
   declare modifications: HasMany<typeof BookingModification>

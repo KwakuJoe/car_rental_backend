@@ -1164,7 +1164,7 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['noShow']>>>
     }
   }
-  'admin.handover.show_check_out': {
+  'admin.handover.show': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/bookings/:id/check-out'
     types: {
@@ -1172,12 +1172,12 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['showCheckOut']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['showCheckOut']>>>
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['showCheckOut']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['show']>>>
     }
   }
-  'admin.handover.save_check_out': {
+  'admin.handover.save': {
     methods: ["PUT"]
     pattern: '/api/v1/admin/bookings/:id/check-out'
     types: {
@@ -1185,9 +1185,9 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: ExtractQuery<InferInput<(typeof import('#validators/handover').saveInspectionValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['saveCheckOut']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['saveCheckOut']>>> | { status: 422; response: { errors: SimpleError[] } }
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['saveCheckOut']>>> | { status: 422; response: { errors: SimpleError[] } }
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['save']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['save']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['save']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.handover.add_damage': {
@@ -1227,6 +1227,71 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['completeCheckOut']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['completeCheckOut']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['completeCheckOut']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.checkIn.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/bookings/:id/check-in'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['show']>>>
+    }
+  }
+  'admin.checkIn.save': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/bookings/:id/check-in'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/handover').saveInspectionValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/handover').saveInspectionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['save']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['save']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['save']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.checkIn.addDamage': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/bookings/:id/check-in/damages'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/handover').damageValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/handover').damageValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['addDamage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['addDamage']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['addDamage']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.checkIn.removeDamage': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/bookings/:id/check-in/damages/:damageId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; damageId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['removeDamage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['removeDamage']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['removeDamage']>>>
+    }
+  }
+  'admin.handover.complete_check_in': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/bookings/:id/check-in/complete'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/handover').completeCheckInValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/handover').completeCheckInValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['completeCheckIn']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['completeCheckIn']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/handover_controller').default['completeCheckIn']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.terms.show': {

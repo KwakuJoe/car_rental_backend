@@ -145,11 +145,18 @@ export interface ApiDefinition {
       store: typeof routes['admin.quotes.store']
     }
     handover: {
-      showCheckOut: typeof routes['admin.handover.show_check_out']
-      saveCheckOut: typeof routes['admin.handover.save_check_out']
+      show: typeof routes['admin.handover.show']
+      save: typeof routes['admin.handover.save']
       addDamage: typeof routes['admin.handover.add_damage']
       removeDamage: typeof routes['admin.handover.remove_damage']
       completeCheckOut: typeof routes['admin.handover.complete_check_out']
+      completeCheckIn: typeof routes['admin.handover.complete_check_in']
+    }
+    checkIn: {
+      show: typeof routes['admin.checkIn.show']
+      save: typeof routes['admin.checkIn.save']
+      addDamage: typeof routes['admin.checkIn.addDamage']
+      removeDamage: typeof routes['admin.checkIn.removeDamage']
     }
     terms: {
       show: typeof routes['admin.terms.show']

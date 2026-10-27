@@ -100,6 +100,41 @@ export class BlacklistEntrySchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class BookingChargeSchema extends BaseModel {
+  static $columns = ['amount', 'bookingId', 'code', 'createdAt', 'createdBy', 'id', 'inspectionId', 'label', 'quantity', 'status', 'taxAmount', 'taxable', 'unitAmount', 'updatedAt', 'waiveReason'] as const
+  $columns = BookingChargeSchema.$columns
+  @column()
+  declare amount: number
+  @column()
+  declare bookingId: string
+  @column()
+  declare code: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare inspectionId: string | null
+  @column()
+  declare label: string
+  @column()
+  declare quantity: string
+  @column()
+  declare status: string
+  @column()
+  declare taxAmount: number
+  @column()
+  declare taxable: boolean
+  @column()
+  declare unitAmount: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare waiveReason: string | null
+}
+
 export class BookingExtraSchema extends BaseModel {
   static $columns = ['bookingId', 'createdAt', 'extraId', 'id', 'name', 'quantity', 'totalAmount', 'unitAmount', 'updatedAt'] as const
   $columns = BookingExtraSchema.$columns

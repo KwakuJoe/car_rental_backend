@@ -14,6 +14,8 @@ import File from '#models/file'
 import OdometerLog from '#models/odometer_log'
 import ChecklistItem from '#models/checklist_item'
 import TermsVersion from '#models/terms_version'
+import Fee from '#models/fee'
+import Booking from '#models/booking'
 
 const json = (response: { body(): unknown }) => response.body() as Record<string, any>
 
@@ -142,7 +144,7 @@ test.group('check-out', (group) => {
       .post(`${url}/damages`)
       .json({ zone: 'left_front_door', x: 40, y: 55, type: 'scratch', severity: 'minor' })
       .loginAs(owner)
-    marked.assertStatus(201)
+    marked.assertStatus(200)
     assert.lengthOf(json(marked).data.damages, 1)
     assert.isFalse(json(marked).data.damages[0].preexisting)
 
@@ -208,5 +210,146 @@ test.group('check-out', (group) => {
       json(updated).data.map((item: any) => item.name),
       ['Jack and spanner', 'Umbrella']
     )
+  })
+})
+
+/** A confirmed booking, checked out at 1,500 km with a full tank (verified customer, valid papers). */
+async function checkedOut(client: any, ctx: Awaited<ReturnType<typeof setup>>) {
+  const { car, customer, owner } = ctx
+  customer.verificationStatus = 'verified'
+  await customer.save()
+  for (const type of ['roadworthy', 'insurance']) {
+    await VehicleDocument.create({
+      carId: car.id,
+      type,
+      expiresOn: DateTime.now().plus({ years: 1 }),
+    })
+  }
+  const created = await client
+    .post('/api/v1/admin/bookings')
+    .json({
+      customerId: customer.id,
+      carId: car.id,
+      pickupAt: '2030-03-04T09:00',
+      returnAt: '2030-03-07T09:00',
+      driveType: 'self_drive',
+      source: 'phone',
+      protectionPlanId: null,
+      confirm: true,
+    })
+    .loginAs(owner)
+  const id = json(created).data.id
+  await client
+    .put(`/api/v1/admin/bookings/${id}/check-out`)
+    .json({ odometerKm: 1500, fuelLevel: 8, paymentConfirmed: true })
+    .loginAs(owner)
+  const signature = await File.create({
+    disk: 'cloudinary',
+    path: 'wynk/signature/2',
+    url: 'https://res.cloudinary.com/test/signature/2.png',
+    originalName: 'signature.png',
+    mime: 'image/png',
+    size: 1000,
+    purpose: 'signature',
+    isPrivate: true,
+    metadata: {},
+  })
+  const done = await client
+    .post(`/api/v1/admin/bookings/${id}/check-out/complete`)
+    .json({ signatureFileId: signature.id, signedName: 'Ama Owusu' })
+    .loginAs(owner)
+  done.assertStatus(200)
+  return { id, total: json(created).data.totalAmount as number }
+}
+
+test.group('check-in', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('compare with check-out, propose charges, waive with a reason, car returned', async ({
+    client,
+    assert,
+  }) => {
+    const ctx = await setup()
+    // 100 km a day included, GHS 2 per km over; a 40 L tank; fuel GHS 15/L + GHS 50 refuel service
+    await RatePlan.query().update({
+      mileage_mode: 'limited',
+      included_km_per_day: 100,
+      excess_km_amount: 200,
+    })
+    ctx.car.fuelCapacityL = 40 as any
+    await ctx.car.save()
+    await Fee.createMany([
+      {
+        code: 'fuel_per_litre',
+        name: 'Fuel',
+        unit: 'per_litre',
+        amount: 15_00,
+        taxable: true,
+        active: true,
+      },
+      {
+        code: 'refuel_service',
+        name: 'Refuel service',
+        unit: 'flat',
+        amount: 50_00,
+        taxable: true,
+        active: true,
+      },
+    ])
+    const { id, total } = await checkedOut(client, ctx)
+    const url = `/api/v1/admin/bookings/${id}/check-in`
+
+    // Back with 500 km on the clock, half a tank, no jack, a new dent
+    let screen = json(await client.get(url).loginAs(ctx.owner)).data
+    assert.equal(screen.inspection.type, 'check_in')
+    const checklist = screen.inspection.checklist.map((item: any) =>
+      item.name === 'Jack' ? { ...item, result: 'missing' } : item
+    )
+    await client.put(url).json({ odometerKm: 2000, fuelLevel: 4, checklist }).loginAs(ctx.owner)
+    await client
+      .post(`${url}/damages`)
+      .json({ zone: 'rear_bumper', x: 50, y: 95, type: 'dent', severity: 'moderate' })
+      .loginAs(ctx.owner)
+    screen = json(await client.get(url).loginAs(ctx.owner)).data
+    assert.isTrue(screen.ready)
+    assert.equal(screen.comparison.kmDriven, 500)
+    const proposed = Object.fromEntries(
+      screen.comparison.proposed.map((charge: any) => [charge.code, charge])
+    )
+    assert.equal(proposed.excess_km.amount, 200 * 200) // 200 km over x GHS 2
+    assert.equal(proposed.fuel.quantity, 20) // half of a 40 L tank
+    assert.equal(proposed.fuel.amount, 20 * 15_00)
+    assert.equal(proposed.refuel_service.amount, 50_00)
+    assert.isTrue(proposed.missing_item.needsAmount)
+    assert.isTrue(proposed.damage.needsAmount)
+
+    // Accept km + refuel + damage GHS 800; waive the fuel (GHS 300 - above the GHS 200 staff limit)
+    const charges = [
+      { ...proposed.excess_km, waived: false },
+      { ...proposed.fuel, waived: true, waiveReason: 'Customer refuelled at our station' },
+      { ...proposed.refuel_service, waived: false },
+      { ...proposed.damage, amount: 800_00, unitAmount: 800_00, waived: false },
+      { ...proposed.missing_item, waived: false },
+    ]
+    // (typed client can't tell the check-in body from the check-out one by this URL)
+    const tooMuch = await client
+      .post(`${url}/complete`)
+      .json({ charges } as any)
+      .loginAs(ctx.owner)
+    tooMuch.assertStatus(422)
+    assert.equal(json(tooMuch).errors[0].field, 'overrideReason')
+    const done = await client
+      .post(`${url}/complete`)
+      .json({ charges, overrideReason: 'Regular customer, manager approved' } as any)
+      .loginAs(ctx.owner)
+    done.assertStatus(200)
+    assert.equal(json(done).data.inspection.status, 'completed')
+    assert.lengthOf(json(done).data.charges, 4) // the zero missing-item line isn't saved
+
+    const booking = await Booking.findOrFail(id)
+    assert.equal(booking.status, 'returned')
+    assert.equal(booking.totalAmount, total + 40_000 + 50_00 + 800_00)
+    await ctx.car.refresh()
+    assert.equal(ctx.car.currentOdometerKm, 2000)
   })
 })

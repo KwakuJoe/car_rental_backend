@@ -540,17 +540,17 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"no-show"]],
     types: placeholder as Registry['admin.bookings.no_show']['types'],
   },
-  'admin.handover.show_check_out': {
+  'admin.handover.show': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/bookings/:id/check-out',
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"check-out"]],
-    types: placeholder as Registry['admin.handover.show_check_out']['types'],
+    types: placeholder as Registry['admin.handover.show']['types'],
   },
-  'admin.handover.save_check_out': {
+  'admin.handover.save': {
     methods: ["PUT"],
     pattern: '/api/v1/admin/bookings/:id/check-out',
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"check-out"]],
-    types: placeholder as Registry['admin.handover.save_check_out']['types'],
+    types: placeholder as Registry['admin.handover.save']['types'],
   },
   'admin.handover.add_damage': {
     methods: ["POST"],
@@ -569,6 +569,36 @@ const routes = {
     pattern: '/api/v1/admin/bookings/:id/check-out/complete',
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"check-out"],[0,"complete"]],
     types: placeholder as Registry['admin.handover.complete_check_out']['types'],
+  },
+  'admin.checkIn.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/bookings/:id/check-in',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"check-in"]],
+    types: placeholder as Registry['admin.checkIn.show']['types'],
+  },
+  'admin.checkIn.save': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/bookings/:id/check-in',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"check-in"]],
+    types: placeholder as Registry['admin.checkIn.save']['types'],
+  },
+  'admin.checkIn.addDamage': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/bookings/:id/check-in/damages',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"check-in"],[0,"damages"]],
+    types: placeholder as Registry['admin.checkIn.addDamage']['types'],
+  },
+  'admin.checkIn.removeDamage': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/admin/bookings/:id/check-in/damages/:damageId',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"check-in"],[0,"damages"],[1,"damageId"]],
+    types: placeholder as Registry['admin.checkIn.removeDamage']['types'],
+  },
+  'admin.handover.complete_check_in': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/bookings/:id/check-in/complete',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"check-in"],[0,"complete"]],
+    types: placeholder as Registry['admin.handover.complete_check_in']['types'],
   },
   'admin.terms.show': {
     methods: ["GET","HEAD"],

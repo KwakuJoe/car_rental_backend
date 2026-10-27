@@ -111,6 +111,9 @@ Update this list as modules land.
   [x] M4.1  check-out: inspection draft (odometer, fuel, checklist, photos,
             damage on the car's register), requirements, payment tick (until
             Phase 5), customer signature -> on_rent (handover_module.txt)
+  [x] M4.3  check-in: comparison with check-out, proposed charges (km, fuel,
+            late, damage, missing items, cleaning), accept / edit / waive with
+            limits, booking_charges, -> returned
   [~] M4.2  signatures: PNG + version + SHA-256 hash + IP/device; the PDF that
             embeds them comes with M4.4
   [x] M3.10 Today board GET /admin/today + dashboard home (pickups / returns /

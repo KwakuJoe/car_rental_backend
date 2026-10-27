@@ -4,9 +4,11 @@ import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
 import type Booking from '#models/booking'
 import Car from '#models/car'
+import CarAllocation from '#models/car_allocation'
 import CarDamage from '#models/car_damage'
 import ChecklistItem from '#models/checklist_item'
 import Customer from '#models/customer'
+import DriverAllocation from '#models/driver_allocation'
 import File from '#models/file'
 import Inspection, { REQUIRED_ANGLES, type ChecklistResult } from '#models/inspection'
 import InspectionPhoto from '#models/inspection_photo'
@@ -238,6 +240,43 @@ export default class CheckOutService {
       )
       .digest('hex')
 
+    try {
+      await this.handOver(
+        ctx,
+        booking,
+        inspection,
+        signature,
+        terms,
+        agreementHash,
+        input.signedName,
+        now,
+        user
+      )
+    } catch (error: any) {
+      if (error.code === '23P01') {
+        throw new BookingError(
+          'status',
+          'The car (or driver) is still held by the previous booking - it can only go out at the booked time.',
+          409,
+          'E_CAR_UNAVAILABLE'
+        )
+      }
+      throw error
+    }
+    return inspection
+  }
+
+  private static async handOver(
+    ctx: HttpContext,
+    booking: Booking,
+    inspection: Inspection,
+    signature: File,
+    terms: TermsVersion,
+    agreementHash: string,
+    signedName: string,
+    now: DateTime,
+    user: User
+  ) {
     await db.transaction(async (trx) => {
       inspection.useTransaction(trx)
       inspection.merge({
@@ -245,7 +284,7 @@ export default class CheckOutService {
         termsVersionId: terms.id,
         agreementHash,
         signatureFileId: signature.id,
-        signedName: input.signedName,
+        signedName,
         signedAt: now,
         signerIp: ctx.request.ip(),
         signerDevice: ctx.request.header('user-agent')?.slice(0, 255) ?? null,
@@ -273,6 +312,18 @@ export default class CheckOutService {
         car.useTransaction(trx)
         car.currentOdometerKm = inspection.odometerKm!
         await car.save()
+      }
+
+      // Collected early: the car (and driver) are held from now, not from the booked time
+      if (now < booking.pickupAt) {
+        await CarAllocation.query({ client: trx })
+          .where('booking_id', booking.id)
+          .where('active', true)
+          .update({ starts_at: now.toSQL(), updated_at: new Date() })
+        await DriverAllocation.query({ client: trx })
+          .where('booking_id', booking.id)
+          .where('active', true)
+          .update({ starts_at: now.toSQL(), updated_at: new Date() })
       }
 
       booking.useTransaction(trx)
