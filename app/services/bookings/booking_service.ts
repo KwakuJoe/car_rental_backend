@@ -601,7 +601,7 @@ export default class BookingService {
    * paid or sent - a call might still save them. Once per booking; run with
    * the hold expiry job.
    */
-  static async warnExpiringHolds(now = DateTime.now()): Promise<number> {
+  static async warnExpiringHolds(now: DateTime = DateTime.now()): Promise<number> {
     const soon = await Booking.query()
       .where('status', 'pending')
       .whereNotNull('hold_expires_at')
@@ -640,7 +640,7 @@ export default class BookingService {
    * period in Settings). Once per booking. `node ace bookings:check-overdue`,
    * every 15 minutes.
    */
-  static async alertOverdueReturns(now = DateTime.now()): Promise<number> {
+  static async alertOverdueReturns(now: DateTime = DateTime.now()): Promise<number> {
     const grace = await SettingsService.get('booking.return_grace_minutes')
     const late = await Booking.query()
       .where('status', 'on_rent')
