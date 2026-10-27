@@ -166,9 +166,10 @@ proper pass before go-live (Milestone A). Tick them off as they're covered.
   [x] Bookings UI: Hold then Confirm (from the Today board), blocked
       customer sent back to step 1, manager override + discount above the
       limit, chauffeur options (booking-flows.spec)
-      [ ] still: no-show button (needs a pickup in the past - backend test only)
-  [~] Today board: Confirm from "Confirm or lose the car" covered; row menus
-      and readiness chips still screenshots only
+      [x] no-show from the Today board row menu (late-and-no-show.spec; the
+          pickup is moved into the past in the e2e database - E2E_DATABASE_URL)
+  [x] Today board: Confirm from "Confirm or lose the car"; Running late row
+      menus (no-show, check in) and readiness chips (late-and-no-show.spec)
   [x] Booking changes in the browser: change dates, swap car (charge the
       difference), assign / change / remove driver (booking-flows.spec)
   [x] Check-out on a tablet: emulated tablet + touch (handover-tablet.spec):
@@ -177,8 +178,10 @@ proper pass before go-live (Milestone A). Tick them off as they're covered.
       [x] real camera on the owner's phone over the local network
           (2026-10-27) - photos taken and saved. Dev from a phone needs
           allowedDevOrigins (next.config.ts, this machine's address)
-  [ ] Check-in in the browser: late return, damage / missing-item amounts,
-      waivers over the limit (backend tests cover them; e2e covers fuel)
+  [x] Check-in in the browser: late return, damage / missing-item amounts,
+      waiver above the staff limit needs a manager's reason (late-and-no-show.spec)
+  [x] Settings: partner logos (shown on the home page) and staff alert
+      recipients - add, test send, pause, remove (settings-website.spec)
   [x] Booking warnings - toasts stacked and vanished (one was hidden); now a
       panel on the booking page until dismissed
 
