@@ -54,6 +54,11 @@ async function canAccessPrivateFile(user: User, file: File): Promise<boolean> {
   }
 
   // A MoMo/bank screenshot: whoever deals with payments
+  // A receipt for an expense: whoever deals with expenses
+  if (file.purpose === 'expense_receipt') {
+    return checkSlug('expenses.view')
+  }
+
   if (file.purpose === 'receipt_proof') {
     return checkSlug('payments.view')
   }
@@ -77,9 +82,13 @@ export default class FilesController {
       'inspection_photo',
       'signature',
     ].includes(purpose)
-    const allowedExtensions = isImagePurpose
-      ? FileService.IMAGE_EXTENSIONS
-      : FileService.DOCUMENT_EXTENSIONS
+    // A receipt is a phone photo or a PDF
+    const allowedExtensions =
+      purpose === 'expense_receipt'
+        ? [...FileService.IMAGE_EXTENSIONS, 'pdf']
+        : isImagePurpose
+          ? FileService.IMAGE_EXTENSIONS
+          : FileService.DOCUMENT_EXTENSIONS
     const maxSize = isImagePurpose ? FileService.MAX_IMAGE_SIZE : FileService.MAX_DOCUMENT_SIZE
 
     const file = request.file('file', {

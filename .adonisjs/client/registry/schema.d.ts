@@ -1437,6 +1437,84 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/reports_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.expenses.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/expenses'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/expense').listExpensesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.expenses.options': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/expenses/options'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['options']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['options']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['options']>>>
+    }
+  }
+  'admin.expenses.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/expenses'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/expense').expenseValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/expense').expenseValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.expenses.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/expenses/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/expense').expenseValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/expense').expenseValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.expenses.approve': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/expenses/:id/approve'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['approve']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['approve']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['approve']>>>
+    }
+  }
+  'admin.expenses.reject': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/expenses/:id/reject'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/expense').rejectExpenseValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/expense').rejectExpenseValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['reject']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['reject']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/expenses_controller').default['reject']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.handover.show': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/bookings/:id/check-out'

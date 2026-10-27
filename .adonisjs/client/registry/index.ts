@@ -666,6 +666,42 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"exports"],[1,"type"]],
     types: placeholder as Registry['admin.reports.export']['types'],
   },
+  'admin.expenses.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/expenses',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"expenses"]],
+    types: placeholder as Registry['admin.expenses.index']['types'],
+  },
+  'admin.expenses.options': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/expenses/options',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"expenses"],[0,"options"]],
+    types: placeholder as Registry['admin.expenses.options']['types'],
+  },
+  'admin.expenses.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/expenses',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"expenses"]],
+    types: placeholder as Registry['admin.expenses.store']['types'],
+  },
+  'admin.expenses.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/expenses/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"expenses"],[1,"id"]],
+    types: placeholder as Registry['admin.expenses.update']['types'],
+  },
+  'admin.expenses.approve': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/expenses/:id/approve',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"expenses"],[1,"id"],[0,"approve"]],
+    types: placeholder as Registry['admin.expenses.approve']['types'],
+  },
+  'admin.expenses.reject': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/expenses/:id/reject',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"expenses"],[1,"id"],[0,"reject"]],
+    types: placeholder as Registry['admin.expenses.reject']['types'],
+  },
   'admin.handover.show': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/bookings/:id/check-out',

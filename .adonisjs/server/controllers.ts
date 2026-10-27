@@ -22,6 +22,7 @@ export const controllers = {
     Customers: () => import('#controllers/admin/customers_controller'),
     DeliveryZones: () => import('#controllers/admin/delivery_zones_controller'),
     Drivers: () => import('#controllers/admin/drivers_controller'),
+    Expenses: () => import('#controllers/admin/expenses_controller'),
     Extras: () => import('#controllers/admin/extras_controller'),
     Fees: () => import('#controllers/admin/fees_controller'),
     Files: () => import('#controllers/admin/files_controller'),

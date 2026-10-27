@@ -3,6 +3,8 @@ import Booking from '#models/booking'
 import Business from '#models/business'
 import Car from '#models/car'
 import Category from '#models/category'
+import Expense from '#models/expense'
+import ExpenseCategory from '#models/expense_category'
 import Payment from '#models/payment'
 import User from '#models/user'
 
@@ -31,6 +33,8 @@ const sum = <T>(items: T[], value: (item: T) => number) =>
  *    utilisation per car and category (time out / time in the fleet).
  *  - Now: outstanding balances, deposits held.
  *  - Tax on rentals starting in the period, per tax line.
+ *  - Approved expenses paid in the period, by category; spent and
+ *    "earned less spent" per car.
  */
 export default class ReportService {
   static async overview(range: ReportRange, financial: boolean) {
@@ -144,6 +148,27 @@ export default class ReportService {
     )
     const lost = ended.filter((booking) => booking.status !== 'expired')
 
+    // ── Approved expenses paid in the period ──────────────────────────
+    const expensesIn = (from: DateTime, to: DateTime) =>
+      branch(
+        Expense.query()
+          .where('status', 'approved')
+          .where('paid_at', '>=', from.toSQL()!)
+          .where('paid_at', '<=', to.toSQL()!)
+      )
+    const [expenses, previousExpenses, expenseCategories] = financial
+      ? await Promise.all([
+          expensesIn(start, end),
+          expensesIn(prevStart, prevEnd).sum('amount as total'),
+          ExpenseCategory.query().orderBy('sort_order'),
+        ])
+      : [[], [], []]
+    const spentOn = (carId: string) =>
+      sum(
+        expenses.filter((expense) => expense.carId === carId),
+        (expense) => expense.amount
+      )
+
     // ── Rentals starting in the period, and the fleet ─────────────────
     const rentals = await branch(
       Booking.query()
@@ -196,6 +221,8 @@ export default class ReportService {
         rentals: own.length,
         days: sum(own, rentalDays),
         revenue: money(sum(own, (booking) => booking.totalAmount)),
+        spent: money(spentOn(car.id)),
+        profit: money(sum(own, (booking) => booking.totalAmount) - spentOn(car.id)),
         utilisation: available ? Math.min(1, (outMinutes.get(car.id) ?? 0) / available) : 0,
         _out: outMinutes.get(car.id) ?? 0,
         _available: available,
@@ -352,6 +379,29 @@ export default class ReportService {
           .sort((a, b) => b.utilisation - a.utilisation || b.rentals - a.rentals),
         byCategory,
       },
+      expenses: financial
+        ? {
+            total: sum(expenses, (expense) => expense.amount),
+            previous: Number(previousExpenses[0]?.$extras.total ?? 0),
+            count: expenses.length,
+            // Spent on the business as a whole (not on one car)
+            general: sum(
+              expenses.filter((expense) => !expense.carId),
+              (expense) => expense.amount
+            ),
+            byCategory: expenseCategories
+              .map((category) => {
+                const own = expenses.filter((expense) => expense.categoryId === category.id)
+                return {
+                  name: category.name,
+                  count: own.length,
+                  amount: sum(own, (expense) => expense.amount),
+                }
+              })
+              .filter((row) => row.count > 0)
+              .sort((a, b) => b.amount - a.amount),
+          }
+        : null,
       taxes: financial
         ? {
             lines: [...lines.values()].sort((a, b) => b.amount - a.amount),

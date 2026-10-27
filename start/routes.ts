@@ -309,6 +309,26 @@ router
           .get('exports/:type', [controllers.admin.Reports, 'export'])
           .use(middleware.permission({ permissions: ['exports.run'] }))
 
+        // Expenses (M5.8)
+        router
+          .group(() => {
+            router.get('expenses', [controllers.admin.Expenses, 'index'])
+            router.get('expenses/options', [controllers.admin.Expenses, 'options'])
+          })
+          .use(middleware.permission({ permissions: ['expenses.view'] }))
+        router
+          .group(() => {
+            router.post('expenses', [controllers.admin.Expenses, 'store'])
+            router.put('expenses/:id', [controllers.admin.Expenses, 'update'])
+          })
+          .use(middleware.permission({ permissions: ['expenses.manage'] }))
+        router
+          .group(() => {
+            router.post('expenses/:id/approve', [controllers.admin.Expenses, 'approve'])
+            router.post('expenses/:id/reject', [controllers.admin.Expenses, 'reject'])
+          })
+          .use(middleware.permission({ permissions: ['expenses.approve'] }))
+
         // Vehicle handover (Phase 4)
         router
           .group(() => {

@@ -39,6 +39,9 @@ test.group('role_permission_seeder', (group) => {
         'customers.view_documents',
         'drivers.manage',
         'drivers.view',
+        'expenses.approve',
+        'expenses.manage',
+        'expenses.view',
         'exports.run',
         'extras.manage',
         'fleet.manage',
@@ -96,6 +99,9 @@ test.group('role_permission_seeder', (group) => {
         'reports.view',
         'reports.financial',
         'exports.run',
+        'expenses.view',
+        'expenses.manage',
+        'expenses.approve',
       ]
     )
   })

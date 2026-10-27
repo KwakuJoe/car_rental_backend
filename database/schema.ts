@@ -829,6 +829,68 @@ export class DriverSchema extends BaseModel {
   declare userId: string | null
 }
 
+export class ExpenseCategorySchema extends BaseModel {
+  static $columns = ['active', 'createdAt', 'id', 'name', 'slug', 'sortOrder', 'updatedAt'] as const
+  $columns = ExpenseCategorySchema.$columns
+  @column()
+  declare active: boolean
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column()
+  declare slug: string
+  @column()
+  declare sortOrder: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class ExpenseSchema extends BaseModel {
+  static $columns = ['amount', 'approvedAt', 'approvedBy', 'branchId', 'carId', 'categoryId', 'createdAt', 'description', 'id', 'notes', 'paidAt', 'paidVia', 'receiptFileId', 'reference', 'rejectReason', 'status', 'submittedBy', 'updatedAt', 'vendor'] as const
+  $columns = ExpenseSchema.$columns
+  @column()
+  declare amount: number
+  @column.dateTime()
+  declare approvedAt: DateTime | null
+  @column()
+  declare approvedBy: string | null
+  @column()
+  declare branchId: string
+  @column()
+  declare carId: string | null
+  @column()
+  declare categoryId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare notes: string | null
+  @column.dateTime()
+  declare paidAt: DateTime
+  @column()
+  declare paidVia: string
+  @column()
+  declare receiptFileId: string | null
+  @column()
+  declare reference: string | null
+  @column()
+  declare rejectReason: string | null
+  @column()
+  declare status: string
+  @column()
+  declare submittedBy: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare vendor: string | null
+}
+
 export class ExtraSchema extends BaseModel {
   static $columns = ['active', 'amount', 'availableOnline', 'chargeType', 'createdAt', 'createdBy', 'description', 'id', 'maxQuantity', 'name', 'sortOrder', 'stock', 'taxable', 'updatedAt'] as const
   $columns = ExtraSchema.$columns

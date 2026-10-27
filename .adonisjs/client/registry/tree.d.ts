@@ -173,6 +173,14 @@ export interface ApiDefinition {
       overview: typeof routes['admin.reports.overview']
       export: typeof routes['admin.reports.export']
     }
+    expenses: {
+      index: typeof routes['admin.expenses.index']
+      options: typeof routes['admin.expenses.options']
+      store: typeof routes['admin.expenses.store']
+      update: typeof routes['admin.expenses.update']
+      approve: typeof routes['admin.expenses.approve']
+      reject: typeof routes['admin.expenses.reject']
+    }
     handover: {
       show: typeof routes['admin.handover.show']
       save: typeof routes['admin.handover.save']

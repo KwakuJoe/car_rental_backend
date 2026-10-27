@@ -5,10 +5,11 @@ import Booking from '#models/booking'
 import Business from '#models/business'
 import Car from '#models/car'
 import Customer from '#models/customer'
+import Expense from '#models/expense'
 import Payment from '#models/payment'
 import User from '#models/user'
 
-export const EXPORT_TYPES = ['bookings', 'payments', 'customers', 'cars'] as const
+export const EXPORT_TYPES = ['bookings', 'payments', 'customers', 'cars', 'expenses'] as const
 export type ExportType = (typeof EXPORT_TYPES)[number]
 export const EXPORT_FORMATS = ['csv', 'xlsx'] as const
 export type ExportFormat = (typeof EXPORT_FORMATS)[number]
@@ -19,6 +20,7 @@ export const EXPORT_VIEW_PERMISSION: Record<ExportType, string> = {
   payments: 'payments.view',
   customers: 'customers.view',
   cars: 'fleet.view',
+  expenses: 'expenses.view',
 }
 
 export type ExportFilters = {
@@ -43,7 +45,7 @@ const ghs = (pesewas: number | null | undefined) =>
 
 /**
  * CSV / Excel exports for the accountant (M5.9): bookings, payments,
- * customers (no ID numbers - only what the customers list shows) and cars,
+ * customers (no ID numbers - only what the customers list shows), cars and expenses,
  * with a date range (business time zone), status and branch. Money in GHS
  * (2 decimals), dates in the business time zone.
  */
@@ -239,6 +241,57 @@ export default class ExportService {
             customer.marketingOptIn ? 'yes' : 'no',
           ]
         }),
+      }
+    }
+
+    if (type === 'expenses') {
+      const query = Expense.query()
+        .preload('category')
+        .preload('car')
+        .preload('submitter')
+        .preload('approver')
+        .orderBy('paid_at', 'asc')
+        .limit(MAX_ROWS)
+      if (from) query.where('paid_at', '>=', from.toSQL()!)
+      if (to) query.where('paid_at', '<=', to.toSQL()!)
+      if (filters.status) query.where('status', filters.status)
+      if (filters.branchId) query.where('branch_id', filters.branchId)
+      const expenses = await query
+      const name = (user: User | null | undefined) => user?.fullName || user?.email || null
+      return {
+        title: 'Expenses',
+        columns: [
+          { header: 'Paid', kind: 'date' },
+          { header: 'Category', width: 20 },
+          { header: 'Description', width: 32 },
+          { header: 'Vendor', width: 20 },
+          { header: 'Car', width: 24 },
+          { header: 'Registration', width: 14 },
+          { header: 'Amount (GHS)', kind: 'money' },
+          { header: 'Paid by', width: 13 },
+          { header: 'Reference', width: 16 },
+          { header: 'Status', width: 11 },
+          { header: 'Added by', width: 20 },
+          { header: 'Approved / rejected by', width: 20 },
+          { header: 'Reject reason', width: 26 },
+        ],
+        rows: expenses.map((expense) => [
+          local(expense.paidAt),
+          expense.category?.name,
+          expense.description,
+          expense.vendor,
+          expense.car
+            ? expense.car.publicTitle || `${expense.car.make} ${expense.car.model}`
+            : null,
+          expense.car?.registrationNo,
+          ghs(expense.amount),
+          expense.paidVia === 'bank_transfer' ? 'bank transfer' : expense.paidVia,
+          expense.reference,
+          expense.status,
+          name(expense.submitter),
+          name(expense.approver),
+          expense.rejectReason,
+        ]),
       }
     }
 

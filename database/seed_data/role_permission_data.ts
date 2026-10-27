@@ -250,6 +250,26 @@ export const permissionData = [
     description: 'Cancel a payment recorded by mistake (with a reason; it stays on record)',
   },
 
+  // expenses
+  {
+    name: 'View expenses',
+    slug: 'expenses.view',
+    group: 'expenses',
+    description: 'See what the business spends, with receipts',
+  },
+  {
+    name: 'Record expenses',
+    slug: 'expenses.manage',
+    group: 'expenses',
+    description: 'Add and correct expenses (fuel, repairs, salaries...) with a receipt photo',
+  },
+  {
+    name: 'Approve expenses',
+    slug: 'expenses.approve',
+    group: 'expenses',
+    description: 'Approve or reject expenses - only approved ones count in the reports',
+  },
+
   // reports
   {
     name: 'View reports',
@@ -309,6 +329,9 @@ export const rolePermissionMap: Record<string, string[]> = {
     'reports.view',
     'reports.financial',
     'exports.run',
+    'expenses.view',
+    'expenses.manage',
+    'expenses.approve',
   ],
   'front-desk': [
     'fleet.view',
@@ -336,6 +359,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'drivers.view',
     'handover.checkout',
     'handover.checkin',
+    'expenses.view',
+    'expenses.manage',
   ],
   'driver': [],
   'accountant': [
@@ -348,5 +373,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'reports.view',
     'reports.financial',
     'exports.run',
+    'expenses.view',
+    'expenses.manage',
+    'expenses.approve',
   ],
 }
