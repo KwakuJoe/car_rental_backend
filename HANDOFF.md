@@ -131,7 +131,7 @@ See `customers_module.txt`.
     `meta.expected4xx`.
 
 ### Tests (last green run)
-- Backend: **154** Japa tests (incl. the bookings concurrency test).
+- Backend: **158** Japa tests (incl. the bookings concurrency test).
 - Frontend: **37** Playwright tests (setup, smoke and workflows: fleet, pricing,
   pricing-catalog, quote, customers, bookings), plus the visual tour. The last full run was
   before bookings; bookings, quote and smoke were run after it.
@@ -139,36 +139,25 @@ See `customers_module.txt`.
   ~200, from VS Code extension hosts and Rider). Re-run serially with `--workers=1`, all 9
   tests in those files passed.
 
-## NEXT TASK: Phase 4 - vehicle handover (see modules.txt)
-**Phase 3 is DONE** (`bookings_module.txt`):
-- customers and blacklist
-- numbering (`WYK-2026-00001`, prefix editable)
-- availability, bookings (held / confirmed, quote snapshot, discounts, overrides)
-- cancellation policy, Today board, calendar
-- changes (M3.8): extend at today's rates, change dates, swap car, early return; preview
-  first, recorded in `booking_modifications`
-- drivers (M3.9) with double-booking protection
+## NEXT TASK: Phase 5 - payments & finance (see modules.txt)
+**Phase 4 is DONE** (`handover_module.txt`):
+- check-out: inspection, live requirements, the money tick, customer signature → on rent
+- check-in: comparison, charges proposed from ACTIVE fees, waivers with limits → returned
+- the rental agreement and return report as PDFs (PDFKit, `HandoverPdfService`)
+- Settings → Handover for the versioned terms and the checklist
 
-**Phase 4 slice 1 (check-out) is DONE** (`handover_module.txt`): inspection draft with
-readings, checklist, photos, damage on the car's register, live requirements, the money
-tick, and the customer's signature against versioned terms. The booking then goes
-**on rent**. The decisions are recorded in the module doc.
-**Slice 2 (check-in) is DONE:** comparison with check-out, charges proposed from ACTIVE
-fees, accept / edit / waive (limits), `booking_charges`, `returned`.
-**Next: slice 3:** the agreement PDF and check-in report, plus a Settings page for the terms
-text and the checklist (the API exists).
+Phase 5 replaces the "balance and deposit collected" tick with real payments:
+- Paystack and manual payments (cash, MoMo, card at the desk)
+- deposits held and settled
+- invoices and receipts with taxes (reuse the PDF helpers)
+- refunds (cancellation fees, early returns), cash-up, expenses, exports
 
-Phase 4 overall:
-- inspections (fuel, mileage, damage photos, signatures), the rental agreement PDF
-- moving the booking to `on_rent` / `returned`
-- swap-on-rent (a mini check-in / check-out)
-- early return becomes usable then (the service already supports it)
+The booking already keeps `paid_amount` / `balance_amount` and `booking_charges` for the
+folio to take over. Ask the owner about the payment providers before building.
 
-Remember `booking.require_verified_customer_for_checkout` and drivers on with-driver
-bookings at check-out.
-
-Small items waiting: the TESTING BACKLOG in `modules.txt`; the owner reviews the example
-extras / plans / zones / fees and adds real taxes.
+Small items waiting: the TESTING BACKLOG in `modules.txt`; the owner replaces the DRAFT
+terms (Settings → Handover) and reviews / activates the fees (Pricing → Fees), which
+check-in only proposes when active.
 
 ### Owner decisions already made (don't re-ask)
 - Customers book a **specific car**; staff can swap it (M3.8).
