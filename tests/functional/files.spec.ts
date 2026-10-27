@@ -135,8 +135,12 @@ test.group('files / upload and signed URLs', (group) => {
     const urlBody = json(urlResponse)
     assert.isTrue(urlBody.data.isPrivate)
     assert.isString(urlBody.data.url)
-    assert.include(urlBody.data.url, '/s--')
-    assert.include(urlBody.data.url, 'authenticated')
+    // An API download link with an expiry Cloudinary enforces - never a
+    // signed delivery URL (/s--sig--/), which works for ever
+    assert.notInclude(urlBody.data.url, '/s--')
+    assert.include(urlBody.data.url, 'type=authenticated')
+    const expiresAt = Number(new URL(urlBody.data.url).searchParams.get('expires_at'))
+    assert.closeTo(expiresAt, Math.floor(Date.now() / 1000) + 3600, 60)
 
     fs.unlinkSync(tempFilePath)
   })

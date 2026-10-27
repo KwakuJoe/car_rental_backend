@@ -266,7 +266,10 @@ export class FileService {
   /**
    * Get accessible URL for a file.
    * If public, returns the CDN URL directly.
-   * If private, generates a short-lived signed delivery URL.
+   * If private, a download link through Cloudinary's API that stops working
+   * at `expiresAt` (401 after). Never use a signed delivery URL
+   * (`/authenticated/s--sig--/`) or the stored `url` for private files: those
+   * ignore expiry and work for ever - checked against Cloudinary 2026-10-27.
    */
   static getUrl(file: File, options: { expiresInSeconds?: number } = {}): string {
     if (!file.isPrivate) {
@@ -279,12 +282,12 @@ export class FileService {
       (file.metadata?.resourceType as string) ?? (file.mime.startsWith('image/') ? 'image' : 'raw')
 
     if (cloudName && apiSecret) {
-      return cloudinary.utils.url(file.path, {
-        sign_url: true,
+      // Raw files (PDFs) keep the extension in their public ID; images come back in their own format
+      return cloudinary.utils.private_download_url(file.path, '', {
         type: 'authenticated',
         resource_type: resourceType,
         expires_at: expiresAt,
-        secure: true,
+        attachment: false,
       })
     }
 
