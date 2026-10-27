@@ -18,11 +18,26 @@ export default class BusinessTransformer extends BaseTransformer<Business> {
       'vatRegistered',
       'vatNumber',
       'documentPrefix',
+      'momoNumber',
+      'momoName',
+      'momoNetwork',
+      'bankName',
+      'bankAccountName',
+      'bankAccountNumber',
+      'bankBranch',
+      'instagramUrl',
+      'facebookUrl',
+      'tiktokUrl',
+      'xUrl',
       'currency',
       'timezone',
       'createdAt',
       'updatedAt',
     ])
-    return { ...fields, logoUrl: this.resource.logo?.url ?? null }
+    return {
+      ...fields,
+      logoUrl: this.resource.logo?.url ?? null,
+      coverUrl: this.resource.cover?.url ?? null,
+    }
   }
 }

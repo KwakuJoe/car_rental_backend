@@ -19,6 +19,10 @@ export default class Business extends compose(BusinessSchema, withUlid) {
   @belongsTo(() => File, { foreignKey: 'logoFileId' })
   declare logo: BelongsTo<typeof File>
 
+  /** The website home page's big photo; a public image file. */
+  @belongsTo(() => File, { foreignKey: 'coverFileId' })
+  declare cover: BelongsTo<typeof File>
+
   /**
    * The install's single business row. Every install has exactly one,
    * created by `business:create`.
@@ -27,8 +31,8 @@ export default class Business extends compose(BusinessSchema, withUlid) {
     return this.query().firstOrFail()
   }
 
-  /** The business row with its logo file, for screens and documents that show it. */
+  /** The business row with its logo and cover photo, for screens and documents that show them. */
   static currentWithLogo() {
-    return this.query().preload('logo').firstOrFail()
+    return this.query().preload('logo').preload('cover').firstOrFail()
   }
 }

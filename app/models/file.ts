@@ -14,6 +14,7 @@ export const FILE_PURPOSES = [
   'car_photo',
   'category_image',
   'business_logo',
+  'website_cover',
   'vehicle_document',
   'id_front',
   'id_back',

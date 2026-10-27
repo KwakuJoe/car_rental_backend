@@ -151,6 +151,8 @@ export type ScannedRoutes = {
     'admin.business.update': { paramsTuple?: []; params?: {} }
     'admin.business.update_logo': { paramsTuple?: []; params?: {} }
     'admin.business.remove_logo': { paramsTuple?: []; params?: {} }
+    'admin.business.update_cover': { paramsTuple?: []; params?: {} }
+    'admin.business.remove_cover': { paramsTuple?: []; params?: {} }
     'admin.branches.index': { paramsTuple?: []; params?: {} }
     'admin.branches.store': { paramsTuple?: []; params?: {} }
     'admin.branches.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -372,6 +374,7 @@ export type ScannedRoutes = {
     'admin.settings.update': { paramsTuple?: []; params?: {} }
     'admin.business.update': { paramsTuple?: []; params?: {} }
     'admin.business.update_logo': { paramsTuple?: []; params?: {} }
+    'admin.business.update_cover': { paramsTuple?: []; params?: {} }
     'admin.branches.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.opening_hours.update': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
   }
@@ -389,6 +392,7 @@ export type ScannedRoutes = {
     'admin.checkIn.removeDamage': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'damageId': ParamValue} }
     'admin.pricing_rules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.business.remove_logo': { paramsTuple?: []; params?: {} }
+    'admin.business.remove_cover': { paramsTuple?: []; params?: {} }
     'admin.branches.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.closure_dates.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'branchId': ParamValue,'id': ParamValue} }
   }

@@ -1918,6 +1918,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['removeLogo']>>>
     }
   }
+  'admin.business.update_cover': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/business/cover'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['updateCover']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['updateCover']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['updateCover']>>>
+    }
+  }
+  'admin.business.remove_cover': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/business/cover'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['removeCover']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['removeCover']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['removeCover']>>>
+    }
+  }
   'admin.branches.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/branches'

@@ -229,6 +229,8 @@ export interface ApiDefinition {
       update: typeof routes['admin.business.update']
       updateLogo: typeof routes['admin.business.update_logo']
       removeLogo: typeof routes['admin.business.remove_logo']
+      updateCover: typeof routes['admin.business.update_cover']
+      removeCover: typeof routes['admin.business.remove_cover']
     }
     branches: {
       index: typeof routes['admin.branches.index']

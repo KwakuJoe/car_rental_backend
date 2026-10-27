@@ -20,10 +20,29 @@ const AUDITED_FIELDS = [
   'vatRegistered',
   'vatNumber',
   'documentPrefix',
+  'momoNumber',
+  'momoName',
+  'momoNetwork',
+  'bankName',
+  'bankAccountName',
+  'bankAccountNumber',
+  'bankBranch',
+  'instagramUrl',
+  'facebookUrl',
+  'tiktokUrl',
+  'xUrl',
 ] as const
 
-/** Logos print on documents: PDFs can embed these (converted to PNG on the way). */
-const LOGO_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp']
+/**
+ * The business's two images. Logos print on documents: PDFs can embed these
+ * (converted to PNG on the way). The cover is the website home page photo.
+ */
+const IMAGES = {
+  logo: { column: 'logoFileId', purpose: 'business_logo', size: '2mb', label: 'Logo' },
+  cover: { column: 'coverFileId', purpose: 'website_cover', size: '8mb', label: 'Cover photo' },
+} as const
+type ImageSlot = keyof typeof IMAGES
+const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp']
 
 export default class BusinessController {
   async show({ response, serialize }: HttpContext) {
@@ -54,10 +73,27 @@ export default class BusinessController {
     return response.ok({ message: 'Business updated successfully', data: transformed.data })
   }
 
-  /** Upload a new logo; the old one is deleted once the new one is in place. */
   async updateLogo(ctx: HttpContext) {
+    return this.replaceImage(ctx, 'logo')
+  }
+
+  async removeLogo(ctx: HttpContext) {
+    return this.removeImage(ctx, 'logo')
+  }
+
+  async updateCover(ctx: HttpContext) {
+    return this.replaceImage(ctx, 'cover')
+  }
+
+  async removeCover(ctx: HttpContext) {
+    return this.removeImage(ctx, 'cover')
+  }
+
+  /** Upload a new image; the old one is deleted once the new one is in place. */
+  private async replaceImage(ctx: HttpContext, slot: ImageSlot) {
     const { auth, request, response, serialize } = ctx
-    const upload = request.file('file', { size: '2mb', extnames: LOGO_EXTENSIONS })
+    const image = IMAGES[slot]
+    const upload = request.file('file', { size: image.size, extnames: IMAGE_EXTENSIONS })
     if (!upload) {
       return response.badRequest({
         message: 'No file provided. Send as multipart/form-data with field name "file".',
@@ -65,52 +101,53 @@ export default class BusinessController {
     }
     if (!upload.isValid) {
       return response.unprocessableEntity({
-        message: 'Use a PNG, JPG or WebP image up to 2 MB.',
+        message: `Use a PNG, JPG or WebP image up to ${image.size.toUpperCase()}.`,
         errors: upload.errors,
       })
     }
 
     const business = await Business.currentWithLogo()
-    const previous: File | null = business.logo ?? null
+    const previous: File | null = business[slot] ?? null
     const file = await FileService.upload(upload, {
-      purpose: 'business_logo',
+      purpose: image.purpose,
       uploadedBy: auth.getUserOrFail().id,
       attachableType: 'business',
       attachableId: business.id,
     })
-    business.logoFileId = file.id
+    business[image.column] = file.id
     await business.save()
     if (previous) await FileService.delete(previous)
 
     await AuditService.record(ctx, {
-      action: 'business.logo_updated',
+      action: `business.${slot}_updated`,
       subject: { type: 'business', id: business.id, label: business.name },
-      before: { logoFileId: previous?.id ?? null },
-      after: { logoFileId: file.id, originalName: file.originalName },
+      before: { [image.column]: previous?.id ?? null },
+      after: { [image.column]: file.id, originalName: file.originalName },
     })
 
-    await business.load('logo')
+    await business.load(slot)
     const transformed = await serialize(BusinessTransformer.transform(business))
-    return response.ok({ message: 'Logo updated', data: transformed.data })
+    return response.ok({ message: `${image.label} updated`, data: transformed.data })
   }
 
-  async removeLogo(ctx: HttpContext) {
+  private async removeImage(ctx: HttpContext, slot: ImageSlot) {
     const { response, serialize } = ctx
+    const image = IMAGES[slot]
     const business = await Business.currentWithLogo()
-    const previous = business.logo
+    const previous = business[slot]
     if (previous) {
-      business.logoFileId = null
+      business[image.column] = null
       await business.save()
       await FileService.delete(previous)
       await AuditService.record(ctx, {
-        action: 'business.logo_removed',
+        action: `business.${slot}_removed`,
         subject: { type: 'business', id: business.id, label: business.name },
-        before: { logoFileId: previous.id },
-        after: { logoFileId: null },
+        before: { [image.column]: previous.id },
+        after: { [image.column]: null },
       })
     }
-    await business.load('logo')
+    await business.load(slot)
     const transformed = await serialize(BusinessTransformer.transform(business))
-    return response.ok({ message: 'Logo removed', data: transformed.data })
+    return response.ok({ message: `${image.label} removed`, data: transformed.data })
   }
 }

@@ -888,6 +888,18 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"business"],[0,"logo"]],
     types: placeholder as Registry['admin.business.remove_logo']['types'],
   },
+  'admin.business.update_cover': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/business/cover',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"business"],[0,"cover"]],
+    types: placeholder as Registry['admin.business.update_cover']['types'],
+  },
+  'admin.business.remove_cover': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/admin/business/cover',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"business"],[0,"cover"]],
+    types: placeholder as Registry['admin.business.remove_cover']['types'],
+  },
   'admin.branches.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/branches',

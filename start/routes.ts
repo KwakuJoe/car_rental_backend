@@ -396,6 +396,8 @@ router
             router.put('business', [controllers.admin.Business, 'update'])
             router.put('business/logo', [controllers.admin.Business, 'updateLogo'])
             router.delete('business/logo', [controllers.admin.Business, 'removeLogo'])
+            router.put('business/cover', [controllers.admin.Business, 'updateCover'])
+            router.delete('business/cover', [controllers.admin.Business, 'removeCover'])
 
             router.get('branches', [controllers.admin.Branches, 'index'])
             router.post('branches', [controllers.admin.Branches, 'store'])

@@ -172,6 +172,22 @@ test.group('business logo', (group) => {
     assert.includeMembers(actions, ['business.logo_updated', 'business.logo_removed'])
   })
 
+  test('the website cover photo uploads like the logo', async ({ client, assert }) => {
+    const { owner } = await setup()
+    const response = await client
+      .put('/api/v1/admin/business/cover')
+      .file('file', tempFile('cover.png', png), { filename: 'cover.png', contentType: 'image/png' })
+      .loginAs(owner)
+    response.assertStatus(200)
+    assert.match(json(response).data.coverUrl, /cover\.png$/)
+    assert.isNull(json(response).data.logoUrl)
+    const file = await File.findByOrFail('original_name', 'cover.png')
+    assert.equal(file.purpose, 'website_cover')
+
+    const removed = await client.delete('/api/v1/admin/business/cover').loginAs(owner)
+    assert.isNull(json(removed).data.coverUrl)
+  })
+
   test('only images, and only for settings.manage', async ({ client }) => {
     const { owner, frontDesk } = await setup()
     const pdf = await client
@@ -191,6 +207,39 @@ test.group('business logo', (group) => {
       })
       .loginAs(frontDesk)
     desk.assertStatus(403)
+  })
+})
+
+test.group('business payment details and links', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('MoMo, bank and social links are saved; links must be web addresses', async ({
+    client,
+    assert,
+  }) => {
+    const { owner } = await setup()
+    const saved = await client.put('/api/v1/admin/business').loginAs(owner).json({
+      momoNumber: '+233241234567',
+      momoName: 'Sunrise Car Rentals',
+      momoNetwork: 'mtn',
+      bankName: 'GCB Bank',
+      bankAccountName: 'Sunrise Car Rentals Ltd',
+      bankAccountNumber: '1234567890123',
+      bankBranch: 'Airport City',
+      instagramUrl: 'https://instagram.com/sunrise',
+    })
+    saved.assertStatus(200)
+    const data = json(saved).data
+    assert.equal(data.momoNetwork, 'mtn')
+    assert.equal(data.bankAccountNumber, '1234567890123')
+    assert.equal(data.instagramUrl, 'https://instagram.com/sunrise')
+    assert.isNull(data.coverUrl)
+
+    const bad = await client
+      .put('/api/v1/admin/business')
+      .loginAs(owner)
+      .json({ facebookUrl: 'facebook sunrise', momoNetwork: 'vodafone' })
+    bad.assertStatus(422)
   })
 })
 

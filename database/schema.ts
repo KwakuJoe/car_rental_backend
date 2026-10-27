@@ -335,12 +335,22 @@ export class BranchSchema extends BaseModel {
 }
 
 export class BusinessSchema extends BaseModel {
-  static $columns = ['address', 'city', 'createdAt', 'currency', 'digitalAddress', 'documentPrefix', 'email', 'id', 'logoFileId', 'name', 'phone', 'region', 'timezone', 'tin', 'tradingName', 'updatedAt', 'vatNumber', 'vatRegistered', 'whatsappPhone'] as const
+  static $columns = ['address', 'bankAccountName', 'bankAccountNumber', 'bankBranch', 'bankName', 'city', 'coverFileId', 'createdAt', 'currency', 'digitalAddress', 'documentPrefix', 'email', 'facebookUrl', 'id', 'instagramUrl', 'logoFileId', 'momoName', 'momoNetwork', 'momoNumber', 'name', 'phone', 'region', 'tiktokUrl', 'timezone', 'tin', 'tradingName', 'updatedAt', 'vatNumber', 'vatRegistered', 'whatsappPhone', 'xUrl'] as const
   $columns = BusinessSchema.$columns
   @column()
   declare address: string | null
   @column()
+  declare bankAccountName: string | null
+  @column()
+  declare bankAccountNumber: string | null
+  @column()
+  declare bankBranch: string | null
+  @column()
+  declare bankName: string | null
+  @column()
   declare city: string | null
+  @column()
+  declare coverFileId: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
@@ -351,16 +361,28 @@ export class BusinessSchema extends BaseModel {
   declare documentPrefix: string
   @column()
   declare email: string
+  @column()
+  declare facebookUrl: string | null
   @column({ isPrimary: true })
   declare id: string
   @column()
+  declare instagramUrl: string | null
+  @column()
   declare logoFileId: string | null
+  @column()
+  declare momoName: string | null
+  @column()
+  declare momoNetwork: string | null
+  @column()
+  declare momoNumber: string | null
   @column()
   declare name: string
   @column()
   declare phone: string | null
   @column()
   declare region: string | null
+  @column()
+  declare tiktokUrl: string | null
   @column()
   declare timezone: string
   @column()
@@ -375,6 +397,8 @@ export class BusinessSchema extends BaseModel {
   declare vatRegistered: boolean
   @column()
   declare whatsappPhone: string | null
+  @column()
+  declare xUrl: string | null
 }
 
 export class CarAllocationSchema extends BaseModel {
