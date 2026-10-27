@@ -11,7 +11,7 @@ import User from '#models/user'
  */
 export default class LookupsController {
   async business({ response }: HttpContext) {
-    const business = await Business.current()
+    const business = await Business.currentWithLogo()
     return response.ok({
       message: 'Business fetched successfully',
       data: {
@@ -23,6 +23,7 @@ export default class LookupsController {
         whatsappPhone: business.whatsappPhone,
         currency: business.currency,
         timezone: business.timezone,
+        logoUrl: business.logo?.url ?? null,
       },
     })
   }

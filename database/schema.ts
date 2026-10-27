@@ -333,7 +333,7 @@ export class BranchSchema extends BaseModel {
 }
 
 export class BusinessSchema extends BaseModel {
-  static $columns = ['address', 'city', 'createdAt', 'currency', 'digitalAddress', 'documentPrefix', 'email', 'id', 'name', 'phone', 'region', 'timezone', 'tin', 'tradingName', 'updatedAt', 'vatNumber', 'vatRegistered', 'whatsappPhone'] as const
+  static $columns = ['address', 'city', 'createdAt', 'currency', 'digitalAddress', 'documentPrefix', 'email', 'id', 'logoFileId', 'name', 'phone', 'region', 'timezone', 'tin', 'tradingName', 'updatedAt', 'vatNumber', 'vatRegistered', 'whatsappPhone'] as const
   $columns = BusinessSchema.$columns
   @column()
   declare address: string | null
@@ -351,6 +351,8 @@ export class BusinessSchema extends BaseModel {
   declare email: string
   @column({ isPrimary: true })
   declare id: string
+  @column()
+  declare logoFileId: string | null
   @column()
   declare name: string
   @column()

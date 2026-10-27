@@ -97,4 +97,7 @@ tiles, bordered fact cards, charges table with highlighted total and chips, fuel
 terms in two balanced columns (paragraphs never split; carries over pages), business
 name watermark at 4.5% drawn last (on top of cards), footer "REF · Page X of Y".
 Agreement: 2 pages typical. Return report: 1 page (charges before the damage card).
-Business logo upload: deferred, owner to decide; pass it as letterhead.logo (Buffer).
+Business logo: PUT/DELETE /admin/business/logo (settings.manage; PNG/JPG/WebP, 2 MB;
+businesses.logo_file_id). Documents fetch a PNG rendition from Cloudinary (PDFKit embeds
+PNG/JPEG only), cached in memory per file id (app/services/pdf/business_logo.ts); header
+fits it into 130 x 44, falls back to the initials monogram if missing or unreadable.

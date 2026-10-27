@@ -5,6 +5,12 @@ import Branch from '#models/branch'
 import OpeningHour from '#models/opening_hour'
 import Role from '#models/role'
 import User from '#models/user'
+import File from '#models/file'
+import AuditLog from '#models/audit_log'
+import FileService from '#services/file_service'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
 const json = (response: { body(): unknown }) => response.body() as Record<string, any>
 
@@ -105,6 +111,86 @@ test.group('business profile', (group) => {
       .json({ vatRegistered: false })
     assert.isNull(json(withoutVat).data.vatNumber)
     assert.equal(json(withoutVat).data.currency, 'GHS')
+  })
+})
+
+test.group('business logo', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.setup(() => {
+    FileService.setMockUploader(async (file, options) => ({
+      url: `https://res.cloudinary.com/test/${options.purpose}/${file.clientName}`,
+      publicId: `wynk/${options.purpose}/mock_${file.clientName}`,
+      bytes: file.size,
+      format: 'png',
+      resourceType: 'image',
+    }))
+    return () => FileService.setMockUploader(null)
+  })
+
+  // 1x1 transparent PNG
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+    'base64'
+  )
+  const tempFile = (name: string, content: Buffer) => {
+    const filePath = path.join(os.tmpdir(), name)
+    fs.writeFileSync(filePath, content)
+    return filePath
+  }
+
+  test('owner uploads, replaces and removes the logo; the old file goes', async ({
+    client,
+    assert,
+  }) => {
+    const { owner } = await setup()
+    const upload = (name: string) =>
+      client
+        .put('/api/v1/admin/business/logo')
+        .file('file', tempFile(name, png), { filename: name, contentType: 'image/png' })
+        .loginAs(owner)
+
+    const first = await upload('logo-a.png')
+    first.assertStatus(200)
+    assert.match(json(first).data.logoUrl, /logo-a\.png$/)
+    const firstFile = await File.findByOrFail('original_name', 'logo-a.png')
+    assert.equal(firstFile.purpose, 'business_logo')
+    assert.isFalse(firstFile.isPrivate)
+
+    const second = await upload('logo-b.png')
+    assert.match(json(second).data.logoUrl, /logo-b\.png$/)
+    assert.isNull(await File.find(firstFile.id))
+
+    const lookup = await client.get('/api/v1/admin/lookups/business').loginAs(owner)
+    assert.match(json(lookup).data.logoUrl, /logo-b\.png$/)
+
+    const removed = await client.delete('/api/v1/admin/business/logo').loginAs(owner)
+    removed.assertStatus(200)
+    assert.isNull(json(removed).data.logoUrl)
+    assert.lengthOf(await File.query().where('purpose', 'business_logo'), 0)
+    const logs = await AuditLog.query().where('subject_type', 'business')
+    const actions = logs.map((log) => log.action)
+    assert.includeMembers(actions, ['business.logo_updated', 'business.logo_removed'])
+  })
+
+  test('only images, and only for settings.manage', async ({ client }) => {
+    const { owner, frontDesk } = await setup()
+    const pdf = await client
+      .put('/api/v1/admin/business/logo')
+      .file('file', tempFile('logo.pdf', Buffer.from('%PDF-1.4')), {
+        filename: 'logo.pdf',
+        contentType: 'application/pdf',
+      })
+      .loginAs(owner)
+    pdf.assertStatus(422)
+
+    const desk = await client
+      .put('/api/v1/admin/business/logo')
+      .file('file', tempFile('logo-c.png', png), {
+        filename: 'logo-c.png',
+        contentType: 'image/png',
+      })
+      .loginAs(frontDesk)
+    desk.assertStatus(403)
   })
 })
 

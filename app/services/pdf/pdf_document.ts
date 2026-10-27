@@ -109,27 +109,22 @@ export class PdfDocument {
     const { doc } = this
     const { letterhead } = this.options
     const top = 30
-    // Mark: the logo, or a monogram in the brand colour
-    if (letterhead.logo) {
-      try {
-        doc.image(letterhead.logo, this.left, top, { fit: [44, 44] })
-      } catch {
-        this.monogram(top)
-      }
-    } else {
-      this.monogram(top)
-    }
+    // Mark: the logo at its own shape (up to 130 x 44), or a monogram in the brand colour
+    const markWidth = (letterhead.logo && this.logo(letterhead.logo, top)) || this.monogram(top)
+    const textX = this.left + markWidth + 12
+    // The letterhead text stays clear of the title on the right
+    const textWidth = 316 - markWidth
     doc
       .font('bold')
       .fontSize(14)
       .fillColor(THEME.ink)
-      .text(letterhead.name, this.left + 56, top + 2, { width: 260 })
+      .text(letterhead.name, textX, top + 2, { width: textWidth })
     doc
       .font('regular')
       .fontSize(7.5)
       .fillColor(THEME.muted)
-      .text(letterhead.details.filter(Boolean).join('\n'), this.left + 56, doc.y + 2, {
-        width: 260,
+      .text(letterhead.details.filter(Boolean).join('\n'), textX, doc.y + 2, {
+        width: textWidth,
         lineGap: 1,
       })
     const leftBottom = doc.y
@@ -157,6 +152,23 @@ export class PdfDocument {
     doc.y = Math.max(leftBottom, doc.y) + 18
   }
 
+  /** Draws the logo scaled into 130 x 44 and returns its width, or 0 if it can't be read. */
+  private logo(image: Buffer, top: number) {
+    try {
+      // openImage is public in PDFKit but missing from its typings
+      const opener = this.doc as unknown as {
+        openImage(source: Buffer): { width: number; height: number }
+      }
+      const { width, height } = opener.openImage(image)
+      const scale = Math.min(130 / width, 44 / height)
+      const drawn = { width: width * scale, height: height * scale }
+      this.doc.image(image, this.left, top + (44 - drawn.height) / 2, drawn)
+      return drawn.width
+    } catch {
+      return 0 // not a PNG / JPEG PDFKit can read
+    }
+  }
+
   private monogram(top: number) {
     const initials = this.options.letterhead.name
       .split(/\s+/)
@@ -170,6 +182,7 @@ export class PdfDocument {
       .fontSize(17)
       .fillColor('#ffffff')
       .text(initials, this.left, top + 12.5, { width: 44, align: 'center' })
+    return 44
   }
 
   /** The at-a-glance strip: equal tiles with a label, a main line and a hint. */

@@ -10,6 +10,7 @@ import Inspection from '#models/inspection'
 import TermsVersion from '#models/terms_version'
 import { BookingError } from '#services/bookings/booking_service'
 import FileService from '#services/file_service'
+import { logoBuffer } from '#services/pdf/business_logo'
 import { PdfDocument, THEME, type Letterhead } from '#services/pdf/pdf_document'
 import { maskNumber } from '#transformers/customer_transformer'
 
@@ -56,7 +57,7 @@ async function imageBuffer(file: File | null): Promise<Buffer | null> {
   }
 }
 
-function letterhead(business: Business | null): Letterhead {
+async function letterhead(business: Business | null): Promise<Letterhead> {
   return {
     name: business?.tradingName || business?.name || 'Car rental',
     details: [
@@ -66,8 +67,7 @@ function letterhead(business: Business | null): Letterhead {
         ? `TIN ${business.tin}${business.vatNumber ? `  ·  VAT ${business.vatNumber}` : ''}`
         : '',
     ].filter(Boolean),
-    // The business logo goes here once the profile can upload one
-    logo: null,
+    logo: await logoBuffer(business?.logo),
   }
 }
 
@@ -242,7 +242,7 @@ export default class HandoverPdfService {
       .preload('modifications', (q) => q.orderBy('created_at', 'asc'))
       .firstOrFail()
     const [business, car, out] = await Promise.all([
-      Business.query().first(),
+      Business.query().preload('logo').first(),
       Car.findOrFail(booking.carId),
       Inspection.query()
         .where('booking_id', booking.id)
@@ -281,7 +281,7 @@ export default class HandoverPdfService {
     const idOf = (types: string[]) => identities.find((identity) => types.includes(identity.type))
     const id = idOf(['ghana_card', 'passport', 'voter_id'])
     const licence = idOf(['drivers_licence', 'international_driving_permit'])
-    const head = letterhead(business)
+    const head = await letterhead(business)
     const sameDay = when(booking.pickupAt, 'yyyy-LL-dd') === when(booking.returnAt, 'yyyy-LL-dd')
 
     const pdf = new PdfDocument({
@@ -526,7 +526,7 @@ export default class HandoverPdfService {
     const pdf = new PdfDocument({
       title: 'Return report',
       reference: booking.reference,
-      letterhead: letterhead(business),
+      letterhead: await letterhead(business),
       footer: footerLine(business),
     })
     pdf.header(`Returned ${when(booking.actualReturnAt, 'd LLL yyyy')}`)

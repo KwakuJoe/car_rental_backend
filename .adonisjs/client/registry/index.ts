@@ -828,6 +828,18 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"business"]],
     types: placeholder as Registry['admin.business.update']['types'],
   },
+  'admin.business.update_logo': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/business/logo',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"business"],[0,"logo"]],
+    types: placeholder as Registry['admin.business.update_logo']['types'],
+  },
+  'admin.business.remove_logo': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/admin/business/logo',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"business"],[0,"logo"]],
+    types: placeholder as Registry['admin.business.remove_logo']['types'],
+  },
   'admin.branches.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/branches',

@@ -3,7 +3,7 @@ import type Business from '#models/business'
 
 export default class BusinessTransformer extends BaseTransformer<Business> {
   toObject() {
-    return this.pick(this.resource, [
+    const fields = this.pick(this.resource, [
       'id',
       'name',
       'tradingName',
@@ -23,5 +23,6 @@ export default class BusinessTransformer extends BaseTransformer<Business> {
       'createdAt',
       'updatedAt',
     ])
+    return { ...fields, logoUrl: this.resource.logo?.url ?? null }
   }
 }

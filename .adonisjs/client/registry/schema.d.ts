@@ -1788,6 +1788,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.business.update_logo': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/business/logo'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['updateLogo']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['updateLogo']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['updateLogo']>>>
+    }
+  }
+  'admin.business.remove_logo': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/business/logo'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['removeLogo']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['removeLogo']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/business_controller').default['removeLogo']>>>
+    }
+  }
   'admin.branches.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/branches'
