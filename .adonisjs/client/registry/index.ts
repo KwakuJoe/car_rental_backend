@@ -666,6 +666,42 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"exports"],[1,"type"]],
     types: placeholder as Registry['admin.reports.export']['types'],
   },
+  'admin.invoices.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/invoices',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"invoices"]],
+    types: placeholder as Registry['admin.invoices.index']['types'],
+  },
+  'admin.invoices.pdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/invoices/:id/invoice.pdf',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"invoices"],[1,"id"],[0,"invoice.pdf"]],
+    types: placeholder as Registry['admin.invoices.pdf']['types'],
+  },
+  'admin.invoices.credit_note_pdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/credit-notes/:id/credit-note.pdf',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"credit-notes"],[1,"id"],[0,"credit-note.pdf"]],
+    types: placeholder as Registry['admin.invoices.credit_note_pdf']['types'],
+  },
+  'admin.invoices.for_booking': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/bookings/:id/invoices',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"invoices"]],
+    types: placeholder as Registry['admin.invoices.for_booking']['types'],
+  },
+  'admin.invoices.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/bookings/:id/invoices',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"invoices"]],
+    types: placeholder as Registry['admin.invoices.store']['types'],
+  },
+  'admin.invoices.credit': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/invoices/:id/credit-note',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"invoices"],[1,"id"],[0,"credit-note"]],
+    types: placeholder as Registry['admin.invoices.credit']['types'],
+  },
   'admin.expenses.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/expenses',

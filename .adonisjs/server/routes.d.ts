@@ -114,6 +114,12 @@ export type ScannedRoutes = {
     'admin.payments.void': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.reports.overview': { paramsTuple?: []; params?: {} }
     'admin.reports.export': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'admin.invoices.index': { paramsTuple?: []; params?: {} }
+    'admin.invoices.pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.credit_note_pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.for_booking': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.credit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.expenses.index': { paramsTuple?: []; params?: {} }
     'admin.expenses.options': { paramsTuple?: []; params?: {} }
     'admin.expenses.store': { paramsTuple?: []; params?: {} }
@@ -236,6 +242,10 @@ export type ScannedRoutes = {
     'admin.payments.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.reports.overview': { paramsTuple?: []; params?: {} }
     'admin.reports.export': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'admin.invoices.index': { paramsTuple?: []; params?: {} }
+    'admin.invoices.pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.credit_note_pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.for_booking': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.expenses.index': { paramsTuple?: []; params?: {} }
     'admin.expenses.options': { paramsTuple?: []; params?: {} }
     'admin.handover.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -311,6 +321,10 @@ export type ScannedRoutes = {
     'admin.payments.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.reports.overview': { paramsTuple?: []; params?: {} }
     'admin.reports.export': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'admin.invoices.index': { paramsTuple?: []; params?: {} }
+    'admin.invoices.pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.credit_note_pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.for_booking': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.expenses.index': { paramsTuple?: []; params?: {} }
     'admin.expenses.options': { paramsTuple?: []; params?: {} }
     'admin.handover.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -375,6 +389,8 @@ export type ScannedRoutes = {
     'admin.payments.verify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.payments.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.payments.void': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.credit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.expenses.store': { paramsTuple?: []; params?: {} }
     'admin.expenses.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.expenses.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

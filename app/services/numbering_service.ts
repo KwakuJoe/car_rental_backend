@@ -3,14 +3,20 @@ import { DateTime } from 'luxon'
 import { ulid } from 'ulid'
 import Business from '#models/business'
 
-export type DocumentType = 'booking' | 'receipt' | 'refund'
+export type DocumentType = 'booking' | 'receipt' | 'refund' | 'invoice' | 'credit_note'
 
-/** Receipts and refund notes have their own series; bookings use the business prefix. */
-const SERIES_PREFIX: Partial<Record<DocumentType, string>> = { receipt: 'RCT', refund: 'RFD' }
+/** Receipts, refund notes, invoices and credit notes have their own series; bookings use the business prefix. */
+const SERIES_PREFIX: Partial<Record<DocumentType, string>> = {
+  receipt: 'RCT',
+  refund: 'RFD',
+  invoice: 'INV',
+  credit_note: 'CN',
+}
 
 /**
  * Document numbers (M1.7): WYK-2026-00123 - business prefix, year, 5-digit
- * number restarting each year. Receipts RCT-2026-00001, refunds RFD-2026-00001. Taken inside the caller's transaction with the
+ * number restarting each year. Receipts RCT-2026-00001, refunds RFD-2026-00001,
+ * invoices INV-2026-00001, credit notes CN-2026-00001. Taken inside the caller's transaction with the
  * counter row locked (SELECT ... FOR UPDATE), so concurrent bookings never get
  * the same number and a rolled-back booking leaves no gap.
  */

@@ -173,6 +173,14 @@ export interface ApiDefinition {
       overview: typeof routes['admin.reports.overview']
       export: typeof routes['admin.reports.export']
     }
+    invoices: {
+      index: typeof routes['admin.invoices.index']
+      pdf: typeof routes['admin.invoices.pdf']
+      creditNotePdf: typeof routes['admin.invoices.credit_note_pdf']
+      forBooking: typeof routes['admin.invoices.for_booking']
+      store: typeof routes['admin.invoices.store']
+      credit: typeof routes['admin.invoices.credit']
+    }
     expenses: {
       index: typeof routes['admin.expenses.index']
       options: typeof routes['admin.expenses.options']

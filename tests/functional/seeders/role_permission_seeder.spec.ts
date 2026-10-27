@@ -48,6 +48,8 @@ test.group('role_permission_seeder', (group) => {
         'fleet.view',
         'handover.checkin',
         'handover.checkout',
+        'invoices.manage',
+        'invoices.view',
         'payments.record',
         'payments.refund',
         'payments.verify',
@@ -102,6 +104,8 @@ test.group('role_permission_seeder', (group) => {
         'expenses.view',
         'expenses.manage',
         'expenses.approve',
+        'invoices.view',
+        'invoices.manage',
       ]
     )
   })
@@ -135,6 +139,8 @@ test.group('role_permission_seeder', (group) => {
         'payments.view',
         'payments.record',
         'payments.refund',
+        'invoices.view',
+        'invoices.manage',
         'roles.manage',
       ]
     )

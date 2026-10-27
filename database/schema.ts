@@ -639,6 +639,33 @@ export class ClosureDateSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class CreditNoteSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'invoiceId', 'issuedAt', 'issuedBy', 'number', 'reason', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
+  $columns = CreditNoteSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare invoiceId: string
+  @column.dateTime()
+  declare issuedAt: DateTime
+  @column()
+  declare issuedBy: string | null
+  @column()
+  declare number: string
+  @column()
+  declare reason: string
+  @column()
+  declare subtotalAmount: number
+  @column()
+  declare taxAmount: number
+  @column()
+  declare totalAmount: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class CustomerIdentitySchema extends BaseModel {
   static $columns = ['backFileId', 'createdAt', 'createdBy', 'customerId', 'expiresOn', 'frontFileId', 'id', 'issuedOn', 'issuingCountry', 'licenceClass', 'number', 'rejectionReason', 'status', 'type', 'updatedAt', 'verifiedAt', 'verifiedBy'] as const
   $columns = CustomerIdentitySchema.$columns
@@ -1058,6 +1085,47 @@ export class InspectionSchema extends BaseModel {
   declare termsVersionId: string | null
   @column()
   declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class InvoiceSchema extends BaseModel {
+  static $columns = ['billTo', 'bookingId', 'branchId', 'createdAt', 'customerId', 'dueOn', 'id', 'issuedAt', 'issuedBy', 'lines', 'notes', 'number', 'status', 'subtotalAmount', 'taxAmount', 'taxes', 'totalAmount', 'updatedAt'] as const
+  $columns = InvoiceSchema.$columns
+  @column()
+  declare billTo: any
+  @column()
+  declare bookingId: string
+  @column()
+  declare branchId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare customerId: string
+  @column.date()
+  declare dueOn: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column.dateTime()
+  declare issuedAt: DateTime
+  @column()
+  declare issuedBy: string | null
+  @column()
+  declare lines: any
+  @column()
+  declare notes: string | null
+  @column()
+  declare number: string
+  @column()
+  declare status: string
+  @column()
+  declare subtotalAmount: number
+  @column()
+  declare taxAmount: number
+  @column()
+  declare taxes: any
+  @column()
+  declare totalAmount: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }

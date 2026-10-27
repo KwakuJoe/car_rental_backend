@@ -27,6 +27,7 @@ export const controllers = {
     Fees: () => import('#controllers/admin/fees_controller'),
     Files: () => import('#controllers/admin/files_controller'),
     Handover: () => import('#controllers/admin/handover_controller'),
+    Invoices: () => import('#controllers/admin/invoices_controller'),
     Lookups: () => import('#controllers/admin/lookups_controller'),
     Notifications: () => import('#controllers/admin/notifications_controller'),
     OpeningHours: () => import('#controllers/admin/opening_hours_controller'),

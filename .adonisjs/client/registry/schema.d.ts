@@ -1437,6 +1437,84 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/reports_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.invoices.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/invoices'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/invoice').listInvoicesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.invoices.pdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/invoices/:id/invoice.pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['pdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['pdf']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['pdf']>>>
+    }
+  }
+  'admin.invoices.credit_note_pdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/credit-notes/:id/credit-note.pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['creditNotePdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['creditNotePdf']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['creditNotePdf']>>>
+    }
+  }
+  'admin.invoices.for_booking': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/bookings/:id/invoices'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['forBooking']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['forBooking']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['forBooking']>>>
+    }
+  }
+  'admin.invoices.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/bookings/:id/invoices'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/invoice').issueInvoiceValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/invoice').issueInvoiceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.invoices.credit': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/invoices/:id/credit-note'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/invoice').creditNoteValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/invoice').creditNoteValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['credit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['credit']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['credit']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.expenses.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/expenses'

@@ -250,6 +250,20 @@ export const permissionData = [
     description: 'Cancel a payment recorded by mistake (with a reason; it stays on record)',
   },
 
+  // invoices
+  {
+    name: 'View invoices',
+    slug: 'invoices.view',
+    group: 'invoices',
+    description: 'See and download invoices and credit notes',
+  },
+  {
+    name: 'Issue invoices',
+    slug: 'invoices.manage',
+    group: 'invoices',
+    description: 'Issue an invoice for a booking, or cancel one with a credit note',
+  },
+
   // expenses
   {
     name: 'View expenses',
@@ -332,6 +346,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'expenses.view',
     'expenses.manage',
     'expenses.approve',
+    'invoices.view',
+    'invoices.manage',
   ],
   'front-desk': [
     'fleet.view',
@@ -350,6 +366,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'payments.view',
     'payments.record',
     'payments.refund',
+    'invoices.view',
+    'invoices.manage',
   ],
   'fleet': [
     'fleet.view',
@@ -376,5 +394,7 @@ export const rolePermissionMap: Record<string, string[]> = {
     'expenses.view',
     'expenses.manage',
     'expenses.approve',
+    'invoices.view',
+    'invoices.manage',
   ],
 }

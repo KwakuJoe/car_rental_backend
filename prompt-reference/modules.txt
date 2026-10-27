@@ -138,10 +138,24 @@ Update this list as modules land.
             into record/refund; refunds.approve deferred).
             Frontend: booking Payments tab, Payments page (To verify / All),
             check-out money panel.
+  [x] M5.6  Invoices & credit notes (2026-10-27): one live invoice per
+            booking (INV-), a snapshot of its charges (price lines, accepted
+            return charges, one line for later changes - always adds up to the
+            booking total), bill-to with company + TIN, due date, note.
+            Never edited: a credit note (CN-) cancels it in full, then a new
+            one can be issued. Paid / balance / overdue read from the booking.
+            PDFs (InvoicePdfService). Permissions invoices.view/manage.
+            Frontend: Invoice section on the booking Payments tab, Invoices
+            page (Unpaid / Overdue / Paid / Cancelled). Not yet: partial
+            credit notes, one invoice for several bookings (corporate
+            accounts, Phase 8), emailing the PDF, GRA E-VAT.
+  [x] M5.8  Expenses (2026-10-27) - approval, receipts, spending and
+            earned-less-spent per car in Reports, expenses export.
+  [x] M5.9  Exports (CSV / Excel) - with Reports.
   [ ] M5 next slices: online pay-to-confirm (business MoMo/bank details,
-            customer submits transaction ID - with the public site), daily
-            cash-up (M5.7), invoices/credit notes (M5.6), expenses (M5.8),
-            exports (M5.9); refund approval over a limit
+            customer submits transaction ID - with the public site); daily
+            cash-up (M5.7) - skipped for now by the owner (2026-10-27), the
+            day's cash is in Reports; refund approval over a limit
   [ ] M8.6  vehicle usage chart on the Odometer tab (after M8.1, or a simple
             version after Phase 4) - see M8.6
 

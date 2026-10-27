@@ -309,6 +309,25 @@ router
           .get('exports/:type', [controllers.admin.Reports, 'export'])
           .use(middleware.permission({ permissions: ['exports.run'] }))
 
+        // Invoices & credit notes (M5.6)
+        router
+          .group(() => {
+            router.get('invoices', [controllers.admin.Invoices, 'index'])
+            router.get('invoices/:id/invoice.pdf', [controllers.admin.Invoices, 'pdf'])
+            router.get('credit-notes/:id/credit-note.pdf', [
+              controllers.admin.Invoices,
+              'creditNotePdf',
+            ])
+            router.get('bookings/:id/invoices', [controllers.admin.Invoices, 'forBooking'])
+          })
+          .use(middleware.permission({ permissions: ['invoices.view'] }))
+        router
+          .group(() => {
+            router.post('bookings/:id/invoices', [controllers.admin.Invoices, 'store'])
+            router.post('invoices/:id/credit-note', [controllers.admin.Invoices, 'credit'])
+          })
+          .use(middleware.permission({ permissions: ['invoices.manage'] }))
+
         // Expenses (M5.8)
         router
           .group(() => {
