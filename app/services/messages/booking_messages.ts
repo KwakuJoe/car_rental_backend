@@ -267,6 +267,112 @@ export default class BookingMessages {
     }
   }
 
+  /** Reminder before pickup: when, where, what to bring, what's left to pay. */
+  static async pickupReminder(booking: Booking) {
+    try {
+      const c = await this.context(booking)
+      const url = this.link(booking)
+      const balance = Math.max(0, booking.balanceAmount)
+      const place = booking.deliveryZoneId
+        ? `we bring it to you (${c.where.replace('Delivered - ', '')})`
+        : `at our office${c.brand.address ? `, ${c.brand.address}` : ''}`
+      await this.send(
+        booking,
+        'pickup_reminder',
+        `${c.name}: Reminder - your ${c.car} pickup is ${c.pickup}, ${place}. Bring your Ghana Card (or passport) and driving licence.${balance ? ` Balance due: ${formatMoney(balance)}.` : ''}${url ? ` ${url}` : ''}`,
+        {
+          subject: `See you soon - pickup ${c.pickup}`,
+          preheader: `Your ${c.car} is ready for ${c.pickup}.`,
+          eyebrow: { text: 'Pickup reminder', color: GREEN },
+          heading: `See you soon, ${c.first}`,
+          paragraphs: [`Your ${c.car} will be ready ${c.pickup} - ${place}.`],
+          ...(balance
+            ? {
+                amount: {
+                  label: 'Balance at pickup',
+                  value: formatMoney(balance),
+                  note: 'Plus the refundable security deposit.',
+                },
+              }
+            : {}),
+          details: this.trip(booking, c),
+          ...(url ? { button: { label: 'View my booking', url } } : {}),
+          notes: [
+            'Bring your Ghana Card (or passport) and your driving licence. We’ll inspect the car with you before you drive off.',
+          ],
+        }
+      )
+    } catch (error) {
+      this.failed(booking, error)
+    }
+  }
+
+  /** Reminder before the return time: when, where, and to call if running late. */
+  static async returnReminder(booking: Booking) {
+    try {
+      const c = await this.context(booking)
+      const phone = c.brand.phone
+      const place = booking.collectionZoneId ? 'we collect it from you' : 'back at our office'
+      await this.send(
+        booking,
+        'return_reminder',
+        `${c.name}: Your ${c.car} is due back ${c.returns}, ${place}. Running late? Please call${phone ? ` ${phone}` : ' us'} - late hours are charged.`,
+        {
+          subject: `Return reminder - ${c.returns}`,
+          preheader: `Your ${c.car} is due back ${c.returns}.`,
+          eyebrow: { text: 'Return reminder', color: AMBER },
+          heading: `Your trip ends ${c.returns}`,
+          paragraphs: [
+            `Hi ${c.first}, the ${c.car} is due back ${c.returns} - ${place}.`,
+            `Running late? Please call${phone ? ` ${phone}` : ' us'} so we can plan - late hours are charged under the rental terms.`,
+          ],
+          details: this.trip(booking, c),
+          notes: ['Please return it with the same fuel level, and take your belongings with you.'],
+        }
+      )
+    } catch (error) {
+      this.failed(booking, error)
+    }
+  }
+
+  /** Online booking, nothing paid yet: the hold ends soon. */
+  static async holdReminder(booking: Booking) {
+    if (!booking.publicTokenEncrypted) return
+    try {
+      const c = await this.context(booking)
+      const url = this.link(booking)!
+      const owed =
+        booking.paymentPlan === 'full'
+          ? booking.totalAmount
+          : (booking.reservationFeeAmount ?? booking.totalAmount)
+      await this.send(
+        booking,
+        'hold_reminder',
+        `${c.name}: Your ${c.car} is held until ${c.hold}. Pay ${formatMoney(owed)} (ref ${booking.reference}) to keep it, then send the transaction ID: ${url}`,
+        {
+          subject: `Your car is held until ${c.hold} - ${booking.reference}`,
+          preheader: `Pay ${formatMoney(owed)} to keep the ${c.car}.`,
+          eyebrow: { text: 'Hold ending soon', color: AMBER },
+          heading: `Keep your ${c.car}`,
+          paragraphs: [
+            `Hi ${c.first}, we're still holding the car for you until ${c.hold}. After that it's released for other customers.`,
+          ],
+          amount: {
+            label: 'To confirm',
+            value: formatMoney(owed),
+            note: `Use ${booking.reference} as the reference.`,
+          },
+          button: { label: 'Pay and confirm', url },
+          notes: [
+            'Already paid? Enter the transaction ID on your booking page so we can check it.',
+          ],
+        }
+      )
+    } catch (error) {
+      this.failed(booking, error)
+    }
+  }
+
   /** "Find my booking": the link again, to the phone and email on record. */
   static async resendLink(booking: Booking) {
     const url = this.link(booking)

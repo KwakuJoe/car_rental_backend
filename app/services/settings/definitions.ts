@@ -24,6 +24,7 @@ export const settingGroups = {
   rental: 'Rental policy',
   payments: 'Payments & deposits',
   pricing: 'Pricing',
+  reminders: 'Customer reminders',
 } as const
 
 export type SettingGroup = keyof typeof settingGroups
@@ -365,6 +366,47 @@ export const settingDefinitions = {
     type: 'boolean',
     label: 'Show prices including tax',
     description: 'Quotes and the website show tax-inclusive prices.',
+    default: true,
+  },
+
+  // ── Customer reminders (SMS, and email when they gave one) ──
+  'reminders.pickup_hours_before': {
+    group: 'reminders',
+    type: 'integer',
+    label: 'Pickup reminder',
+    description:
+      'Confirmed bookings get a reminder this long before pickup: when, where and what to bring. 0 = off.',
+    default: 24,
+    min: 0,
+    max: 72,
+    unit: 'hours before',
+  },
+  'reminders.return_hours_before': {
+    group: 'reminders',
+    type: 'integer',
+    label: 'Return reminder',
+    description: 'Cars on rent: a reminder this long before the return time. 0 = off.',
+    default: 3,
+    min: 0,
+    max: 24,
+    unit: 'hours before',
+  },
+  'reminders.hold_hours_before': {
+    group: 'reminders',
+    type: 'integer',
+    label: 'Unpaid hold reminder',
+    description:
+      'Online bookings with nothing paid yet: a nudge this long before the hold ends and the car is released. 0 = off.',
+    default: 3,
+    min: 0,
+    max: 24,
+    unit: 'hours before',
+  },
+  'reminders.quiet_hours': {
+    group: 'reminders',
+    type: 'boolean',
+    label: 'Quiet at night',
+    description: 'No reminders between 9pm and 7am - they wait for the morning.',
     default: true,
   },
 } as const satisfies Record<string, SettingDefinition>

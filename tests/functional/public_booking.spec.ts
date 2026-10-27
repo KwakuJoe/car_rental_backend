@@ -18,6 +18,7 @@ import RatePlan from '#models/rate_plan'
 import Role from '#models/role'
 import User from '#models/user'
 import BookingService from '#services/bookings/booking_service'
+import Reminders from '#services/messages/reminders'
 
 const json = (response: { body(): unknown }) => response.body() as Record<string, any>
 
@@ -400,6 +401,70 @@ test.group('public website', (group) => {
     assert.deepEqual(await staff('staff_payment_to_verify'), [`email:${kofi.email}`])
     assert.lengthOf(await staff('staff_booking_ended'), 0)
     assert.isTrue(ama.active)
+  })
+
+  test('reminders: unpaid hold, pickup, return - each once, and only when due', async ({
+    client,
+    assert,
+  }) => {
+    const { listed, owner } = await setup()
+    // Quiet hours off: the test's clock may land at night in Accra
+    const off = await client
+      .put('/api/v1/admin/settings')
+      .json({ values: { 'reminders.quiet_hours': false } })
+      .loginAs(owner)
+    off.assertStatus(200)
+    const made = await client.post('/api/v1/public/bookings').json(booking(listed.id, '0245557700'))
+    made.assertStatus(201)
+    const saved = await Booking.findByOrFail('reference', json(made).data.reference)
+    const reminders = async (kind: string) => {
+      const messages = await OutboundMessage.query()
+        .where('booking_id', saved.id)
+        .where('kind', kind)
+      return messages.map((message) => message.channel).sort()
+    }
+
+    // Unpaid hold: not yet (hours to go), then once in the last 3 hours
+    await Reminders.run(saved.holdExpiresAt!.minus({ hours: 6 }))
+    assert.deepEqual(await reminders('hold_reminder'), [])
+    await Reminders.run(saved.holdExpiresAt!.minus({ hours: 2 }))
+    await Reminders.run(saved.holdExpiresAt!.minus({ hours: 1 }))
+    assert.deepEqual(await reminders('hold_reminder'), ['email', 'sms'])
+    const hold = await OutboundMessage.findByOrFail({
+      bookingId: saved.id,
+      kind: 'hold_reminder',
+      channel: 'sms',
+    })
+    assert.include(hold.body, saved.reference)
+    assert.include(hold.body, '/booking/')
+
+    // Confirmed: a pickup reminder the day before (once)
+    saved.status = 'confirmed'
+    await saved.save()
+    await Reminders.run(saved.pickupAt.minus({ hours: 20 }))
+    await Reminders.run(saved.pickupAt.minus({ hours: 19 }))
+    assert.deepEqual(await reminders('pickup_reminder'), ['email', 'sms'])
+    const pickup = await OutboundMessage.findByOrFail({
+      bookingId: saved.id,
+      kind: 'pickup_reminder',
+      channel: 'sms',
+    })
+    assert.include(pickup.body, 'Ghana Card')
+
+    // On rent: a return reminder a few hours before (once)
+    saved.status = 'on_rent'
+    await saved.save()
+    await Reminders.run(saved.returnAt.minus({ hours: 5 }))
+    assert.deepEqual(await reminders('return_reminder'), [])
+    await Reminders.run(saved.returnAt.minus({ hours: 2 }))
+    await Reminders.run(saved.returnAt.minus({ hours: 1 }))
+    assert.deepEqual(await reminders('return_reminder'), ['email', 'sms'])
+  })
+
+  test('reminders wait for the morning when quiet hours are on', async ({ assert }) => {
+    const night = DateTime.fromISO('2030-03-03T23:30', { zone: 'Africa/Accra' })
+    const sent = await Reminders.run(night)
+    assert.deepEqual(sent, { pickup: 0, return: 0, hold: 0 })
   })
 
   test('online booking can be switched off', async ({ client, assert }) => {

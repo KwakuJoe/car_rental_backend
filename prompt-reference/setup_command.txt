@@ -201,7 +201,8 @@ It sends every customer / staff SMS and email (retried after 1, 4, 16 and 60
 minutes if the provider fails - 5 tries, then marked failed) and runs:
 
   every 5 minutes   expire unpaid holds (frees the car); "hold ending" alerts
-  every 15 minutes  "car not returned" alerts
+  every 15 minutes  "car not returned" alerts; customer reminders (pickup,
+                    return, unpaid hold - set in Settings → Business rules)
   daily 06:00       vehicle document expiry alerts      (Africa/Accra)
   nightly 02:00     delete uploads never saved onto a record (> 24h)
 
@@ -223,7 +224,7 @@ with systemd or pm2.
 
 By hand (the same work, e.g. to check something):
   node ace bookings:expire-holds | bookings:check-overdue
-  node ace check:document-expiries | files:cleanup
+  node ace check:document-expiries | files:cleanup | messages:reminders
   node ace messages:send   (sends anything left pending - e.g. stored while the queue was down)
 
 Who gets staff SMS / email alerts is set in Settings → Notifications.
