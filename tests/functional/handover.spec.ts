@@ -16,6 +16,7 @@ import ChecklistItem from '#models/checklist_item'
 import TermsVersion from '#models/terms_version'
 import Fee from '#models/fee'
 import Booking from '#models/booking'
+import HandoverPdfService from '#services/handover/handover_pdf_service'
 
 const json = (response: { body(): unknown }) => response.body() as Record<string, any>
 
@@ -351,5 +352,42 @@ test.group('check-in', (group) => {
     assert.equal(booking.totalAmount, total + 40_000 + 50_00 + 800_00)
     await ctx.car.refresh()
     assert.equal(ctx.car.currentOdometerKm, 2000)
+
+    // The signed agreement and the return report, as PDFs
+    for (const name of ['agreement.pdf', 'check-in-report.pdf']) {
+      const pdf = await client.get(`/api/v1/admin/bookings/${id}/${name}`).loginAs(ctx.owner)
+      pdf.assertStatus(200)
+      assert.equal(pdf.header('content-type'), 'application/pdf')
+    }
+    const agreement = await HandoverPdfService.agreement(id)
+    const report = await HandoverPdfService.checkInReport(id)
+    assert.equal(agreement.subarray(0, 4).toString(), '%PDF')
+    assert.equal(report.subarray(0, 4).toString(), '%PDF')
+    // PDF_OUT=<folder> keeps a copy to look at
+    if (process.env.PDF_OUT) {
+      const { writeFile } = await import('node:fs/promises')
+      await writeFile(`${process.env.PDF_OUT}/agreement.pdf`, agreement)
+      await writeFile(`${process.env.PDF_OUT}/return-report.pdf`, report)
+    }
+  })
+
+  test('no agreement before the car goes out', async ({ client }) => {
+    const { car, customer, owner } = await setup()
+    const created = await client
+      .post('/api/v1/admin/bookings')
+      .json({
+        customerId: customer.id,
+        carId: car.id,
+        pickupAt: '2030-03-04T09:00',
+        returnAt: '2030-03-07T09:00',
+        driveType: 'self_drive',
+        source: 'phone',
+        confirm: true,
+      })
+      .loginAs(owner)
+    const pdf = await client
+      .get(`/api/v1/admin/bookings/${json(created).data.id}/agreement.pdf`)
+      .loginAs(owner)
+    pdf.assertStatus(422)
   })
 })

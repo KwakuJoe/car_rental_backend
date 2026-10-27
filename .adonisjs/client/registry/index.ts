@@ -480,6 +480,18 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"history"]],
     types: placeholder as Registry['admin.bookings.history']['types'],
   },
+  'admin.bookings.agreement': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/bookings/:id/agreement.pdf',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"agreement.pdf"]],
+    types: placeholder as Registry['admin.bookings.agreement']['types'],
+  },
+  'admin.bookings.check_in_report': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/bookings/:id/check-in-report.pdf',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"bookings"],[1,"id"],[0,"check-in-report.pdf"]],
+    types: placeholder as Registry['admin.bookings.check_in_report']['types'],
+  },
   'admin.bookings.cancellation_preview': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/bookings/:id/cancellation-preview',

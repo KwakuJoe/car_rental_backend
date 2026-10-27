@@ -83,6 +83,8 @@ export type ScannedRoutes = {
     'admin.bookings.index': { paramsTuple?: []; params?: {} }
     'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.agreement': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.check_in_report': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.quotes.store': { paramsTuple?: []; params?: {} }
     'admin.bookings.store': { paramsTuple?: []; params?: {} }
@@ -188,6 +190,8 @@ export type ScannedRoutes = {
     'admin.bookings.index': { paramsTuple?: []; params?: {} }
     'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.agreement': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.check_in_report': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.checkIn.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -249,6 +253,8 @@ export type ScannedRoutes = {
     'admin.bookings.index': { paramsTuple?: []; params?: {} }
     'admin.bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.history': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.agreement': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.bookings.check_in_report': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.cancellation_preview': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.checkIn.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

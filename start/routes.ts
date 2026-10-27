@@ -201,6 +201,11 @@ router
             router.get('bookings', [controllers.admin.Bookings, 'index'])
             router.get('bookings/:id', [controllers.admin.Bookings, 'show'])
             router.get('bookings/:id/history', [controllers.admin.Bookings, 'history'])
+            router.get('bookings/:id/agreement.pdf', [controllers.admin.Bookings, 'agreement'])
+            router.get('bookings/:id/check-in-report.pdf', [
+              controllers.admin.Bookings,
+              'checkInReport',
+            ])
             router.get('bookings/:id/cancellation-preview', [
               controllers.admin.Bookings,
               'cancellationPreview',

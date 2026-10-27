@@ -131,6 +131,8 @@ export interface ApiDefinition {
       index: typeof routes['admin.bookings.index']
       show: typeof routes['admin.bookings.show']
       history: typeof routes['admin.bookings.history']
+      agreement: typeof routes['admin.bookings.agreement']
+      checkInReport: typeof routes['admin.bookings.check_in_report']
       cancellationPreview: typeof routes['admin.bookings.cancellation_preview']
       store: typeof routes['admin.bookings.store']
       update: typeof routes['admin.bookings.update']

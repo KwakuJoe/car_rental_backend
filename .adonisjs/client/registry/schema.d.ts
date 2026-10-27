@@ -1034,6 +1034,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['history']>>>
     }
   }
+  'admin.bookings.agreement': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/bookings/:id/agreement.pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['agreement']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['agreement']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['agreement']>>>
+    }
+  }
+  'admin.bookings.check_in_report': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/bookings/:id/check-in-report.pdf'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['checkInReport']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['checkInReport']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/bookings_controller').default['checkInReport']>>>
+    }
+  }
   'admin.bookings.cancellation_preview': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/bookings/:id/cancellation-preview'

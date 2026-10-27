@@ -9,6 +9,7 @@ import BookingService, { BookingError } from '#services/bookings/booking_service
 import CancellationService from '#services/bookings/cancellation_service'
 import DriverService from '#services/bookings/driver_service'
 import ModificationService from '#services/bookings/modification_service'
+import HandoverPdfService from '#services/handover/handover_pdf_service'
 import SettingsService from '#services/settings/settings_service'
 import AuditLogTransformer from '#transformers/audit_log_transformer'
 import { bookingToJson } from '#transformers/booking_transformer'
@@ -250,6 +251,37 @@ export default class BookingsController {
         message: driverId ? 'Driver assigned' : 'Driver removed',
         data: { ...bookingToJson(saved), quote: saved.priceSnapshot },
       })
+    } catch (error) {
+      if (error instanceof BookingError) return fail(response, error)
+      throw error
+    }
+  }
+
+  /** The rental agreement as signed at check-out (M4.4). */
+  async agreement({ params, response }: HttpContext) {
+    const booking = await Booking.findOrFail(params.id)
+    try {
+      const pdf = await HandoverPdfService.agreement(booking.id)
+      response.header('Content-Type', 'application/pdf')
+      response.header(
+        'Content-Disposition',
+        `inline; filename="${booking.reference}-agreement.pdf"`
+      )
+      return response.send(pdf)
+    } catch (error) {
+      if (error instanceof BookingError) return fail(response, error)
+      throw error
+    }
+  }
+
+  /** What came back: readings, new damage, charges (M4.4). */
+  async checkInReport({ params, response }: HttpContext) {
+    const booking = await Booking.findOrFail(params.id)
+    try {
+      const pdf = await HandoverPdfService.checkInReport(booking.id)
+      response.header('Content-Type', 'application/pdf')
+      response.header('Content-Disposition', `inline; filename="${booking.reference}-return.pdf"`)
+      return response.send(pdf)
     } catch (error) {
       if (error instanceof BookingError) return fail(response, error)
       throw error

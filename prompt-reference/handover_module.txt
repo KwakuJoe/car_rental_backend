@@ -78,3 +78,17 @@ GET /admin/terms, GET /admin/checklist-items (bookings.view)
 POST /admin/terms { body } (settings.manage) - a new version (same text = no-op)
 PUT /admin/checklist-items { items[{id?, name, active}] } (settings.manage) - replaces
   the list in order; removed items are switched off (old inspections still name them).
+
+PDFS (M4.4) - HandoverPdfService (PDFKit: pure JS, no headless browser on the server)
+GET /admin/bookings/:id/agreement.pdf       after check-out (422 before)
+GET /admin/bookings/:id/check-in-report.pdf after check-in (422 before)
+(bookings.view, inline, filename <reference>-agreement.pdf / -return.pdf)
+Built on request from records that don't change after signing: the price snapshot as
+booked (+ "Changes after booking" from booking_modifications), the check-out inspection,
+the car's damage as at signing, the terms version signed, the signature image (private
+file fetched with a 60 s signed URL; "(signature on file)" if unreachable), signer IP and
+the agreement fingerprint. ID / licence numbers masked. A4, page numbers.
+The return report: readings out vs back, km driven, checklist issues, new damage with the
+diagram, charges (accepted + waived with reasons), total / paid / balance.
+Shared helpers (header, facts, amount rows, diagram, footer) are reused by invoices and
+receipts in Phase 5.

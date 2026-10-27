@@ -114,8 +114,9 @@ Update this list as modules land.
   [x] M4.3  check-in: comparison with check-out, proposed charges (km, fuel,
             late, damage, missing items, cleaning), accept / edit / waive with
             limits, booking_charges, -> returned
-  [~] M4.2  signatures: PNG + version + SHA-256 hash + IP/device; the PDF that
-            embeds them comes with M4.4
+  [x] M4.2  signatures: PNG + version + SHA-256 hash + IP/device, embedded in the
+            agreement PDF
+  [x] M4.4  rental agreement PDF + return report (PDFKit, HandoverPdfService)
   [x] M3.10 Today board GET /admin/today + dashboard home (pickups / returns /
             running late / holds to confirm / cars needing attention / fleet now /
             7-day outlook), refreshed every minute
