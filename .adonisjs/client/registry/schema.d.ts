@@ -2191,4 +2191,69 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/closure_dates_controller').default['destroy']>>>
     }
   }
+  'admin.alert_recipients.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/alert-recipients'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['index']>>>
+    }
+  }
+  'admin.alert_recipients.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/alert-recipients'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['store']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['store']>>>
+    }
+  }
+  'admin.alert_recipients.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/alert-recipients/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['update']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['update']>>>
+    }
+  }
+  'admin.alert_recipients.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/alert-recipients/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['destroy']>>>
+    }
+  }
+  'admin.alert_recipients.test': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/alert-recipients/:id/test'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['test']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['test']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/alert_recipients_controller').default['test']>>>
+    }
+  }
 }

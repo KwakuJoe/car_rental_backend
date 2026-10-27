@@ -261,5 +261,12 @@ export interface ApiDefinition {
       store: typeof routes['admin.closure_dates.store']
       destroy: typeof routes['admin.closure_dates.destroy']
     }
+    alertRecipients: {
+      index: typeof routes['admin.alert_recipients.index']
+      store: typeof routes['admin.alert_recipients.store']
+      update: typeof routes['admin.alert_recipients.update']
+      destroy: typeof routes['admin.alert_recipients.destroy']
+      test: typeof routes['admin.alert_recipients.test']
+    }
   }
 }

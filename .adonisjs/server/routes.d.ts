@@ -172,6 +172,11 @@ export type ScannedRoutes = {
     'admin.closure_dates.index': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
     'admin.closure_dates.store': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
     'admin.closure_dates.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'branchId': ParamValue,'id': ParamValue} }
+    'admin.alert_recipients.index': { paramsTuple?: []; params?: {} }
+    'admin.alert_recipients.store': { paramsTuple?: []; params?: {} }
+    'admin.alert_recipients.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.alert_recipients.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.alert_recipients.test': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'public.public.site': { paramsTuple?: []; params?: {} }
@@ -242,6 +247,7 @@ export type ScannedRoutes = {
     'admin.branches.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.opening_hours.index': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
     'admin.closure_dates.index': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
+    'admin.alert_recipients.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'public.public.site': { paramsTuple?: []; params?: {} }
@@ -312,6 +318,7 @@ export type ScannedRoutes = {
     'admin.branches.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.opening_hours.index': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
     'admin.closure_dates.index': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
+    'admin.alert_recipients.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'auth.access_tokens.store': { paramsTuple?: []; params?: {} }
@@ -367,6 +374,8 @@ export type ScannedRoutes = {
     'admin.taxes.store': { paramsTuple?: []; params?: {} }
     'admin.branches.store': { paramsTuple?: []; params?: {} }
     'admin.closure_dates.store': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
+    'admin.alert_recipients.store': { paramsTuple?: []; params?: {} }
+    'admin.alert_recipients.test': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PUT: {
     'admin.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -399,6 +408,7 @@ export type ScannedRoutes = {
     'admin.business.update_cover': { paramsTuple?: []; params?: {} }
     'admin.branches.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.opening_hours.update': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
+    'admin.alert_recipients.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'admin.roles.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -417,6 +427,7 @@ export type ScannedRoutes = {
     'admin.business.remove_cover': { paramsTuple?: []; params?: {} }
     'admin.branches.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.closure_dates.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'branchId': ParamValue,'id': ParamValue} }
+    'admin.alert_recipients.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PATCH: {
     'admin.notifications.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

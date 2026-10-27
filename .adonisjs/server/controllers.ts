@@ -6,6 +6,7 @@
 export const controllers = {
   AccessTokens: () => import('#controllers/access_tokens_controller'),
   admin: {
+    AlertRecipients: () => import('#controllers/admin/alert_recipients_controller'),
     AuditLogs: () => import('#controllers/admin/audit_logs_controller'),
     Availability: () => import('#controllers/admin/availability_controller'),
     Blacklist: () => import('#controllers/admin/blacklist_controller'),

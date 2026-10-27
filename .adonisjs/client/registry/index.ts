@@ -1014,6 +1014,36 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"branches"],[1,"branchId"],[0,"closure-dates"],[1,"id"]],
     types: placeholder as Registry['admin.closure_dates.destroy']['types'],
   },
+  'admin.alert_recipients.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/admin/alert-recipients',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"alert-recipients"]],
+    types: placeholder as Registry['admin.alert_recipients.index']['types'],
+  },
+  'admin.alert_recipients.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/alert-recipients',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"alert-recipients"]],
+    types: placeholder as Registry['admin.alert_recipients.store']['types'],
+  },
+  'admin.alert_recipients.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/admin/alert-recipients/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"alert-recipients"],[1,"id"]],
+    types: placeholder as Registry['admin.alert_recipients.update']['types'],
+  },
+  'admin.alert_recipients.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/admin/alert-recipients/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"alert-recipients"],[1,"id"]],
+    types: placeholder as Registry['admin.alert_recipients.destroy']['types'],
+  },
+  'admin.alert_recipients.test': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/alert-recipients/:id/test',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"alert-recipients"],[1,"id"],[0,"test"]],
+    types: placeholder as Registry['admin.alert_recipients.test']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }
