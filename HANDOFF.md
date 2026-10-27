@@ -153,9 +153,10 @@ See `customers_module.txt`.
 readings, checklist, photos, damage on the car's register, live requirements, the money
 tick, and the customer's signature against versioned terms. The booking then goes
 **on rent**. The decisions are recorded in the module doc.
-**Next: slice 2 check-in** (comparison, proposed charges, waivers, `returned`). Then
-**slice 3:** the agreement PDF, plus a Settings page for the terms text and the checklist
-(the API exists).
+**Slice 2 (check-in) is DONE:** comparison with check-out, charges proposed from ACTIVE
+fees, accept / edit / waive (limits), `booking_charges`, `returned`.
+**Next: slice 3:** the agreement PDF and check-in report, plus a Settings page for the terms
+text and the checklist (the API exists).
 
 Phase 4 overall:
 - inspections (fuel, mileage, damage photos, signatures), the rental agreement PDF

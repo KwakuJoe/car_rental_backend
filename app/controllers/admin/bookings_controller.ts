@@ -42,6 +42,7 @@ const detail = (id: string) =>
     )
     .preload('extras', (q) => q.orderBy('created_at', 'asc'))
     .preload('driver')
+    .preload('charges', (q) => q.orderBy('created_at', 'asc'))
     .preload('modifications', (q) => q.preload('creator').orderBy('created_at', 'asc'))
     .firstOrFail()
 

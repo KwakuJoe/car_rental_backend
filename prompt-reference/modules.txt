@@ -156,6 +156,9 @@ proper pass before go-live (Milestone A). Tick them off as they're covered.
   [ ] Check-out on a real tablet: camera capture for photos, finger signature,
       the damage diagram by touch; with handover.require_photos switched on
       (e2e covers the desk flow with a mouse, photos skipped)
+  [ ] Check-in in the browser: late return (hours vs days), damage and
+      missing-item amounts, waivers over the limit with a manager reason
+      (backend test covers them; e2e covers a fuel charge)
   [ ] Booking warnings (no licence, licence/roadworthy expiring) - backend
       returns them, UI shows them as toasts only; check they read well
 

@@ -17,6 +17,7 @@ export function bookingToJson(booking: Booking, options: { graceMinutes?: number
   const extras = booking.$preloaded.extras ? booking.extras : null
   const driver = booking.$preloaded.driver ? booking.driver : null
   const modifications = booking.$preloaded.modifications ? booking.modifications : null
+  const charges = booking.$preloaded.charges ? booking.charges : null
   const grace = options.graceMinutes ?? 0
   return {
     id: booking.id,
@@ -72,6 +73,18 @@ export function bookingToJson(booking: Booking, options: { graceMinutes?: number
         createdByName: modification.creator?.fullName ?? modification.creator?.email ?? null,
         createdAt: modification.createdAt.toISO(),
       })) ?? null,
+    // Found at check-in (accepted and waived)
+    charges:
+      charges?.map((charge) => ({
+        id: charge.id,
+        code: charge.code,
+        label: charge.label,
+        amount: charge.amount,
+        status: charge.status,
+        waiveReason: charge.waiveReason,
+      })) ?? null,
+    actualPickupAt: booking.actualPickupAt?.toISO() ?? null,
+    actualReturnAt: booking.actualReturnAt?.toISO() ?? null,
     extras:
       extras?.map((extra) => ({
         id: extra.id,
