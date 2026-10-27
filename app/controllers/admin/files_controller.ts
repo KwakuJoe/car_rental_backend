@@ -73,6 +73,7 @@ export default class FilesController {
       'car_photo',
       'category_image',
       'business_logo',
+      'partner_logo',
       'inspection_photo',
       'signature',
     ].includes(purpose)

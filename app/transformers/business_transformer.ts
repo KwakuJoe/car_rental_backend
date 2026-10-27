@@ -38,6 +38,7 @@ export default class BusinessTransformer extends BaseTransformer<Business> {
       ...fields,
       logoUrl: this.resource.logo?.url ?? null,
       coverUrl: this.resource.cover?.url ?? null,
+      partners: this.resource.partners ?? [],
     }
   }
 }

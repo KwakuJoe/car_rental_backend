@@ -7,12 +7,15 @@ import Branch from '#models/branch'
 import Business from '#models/business'
 import Car from '#models/car'
 import Category from '#models/category'
+import ClosureDate from '#models/closure_date'
 import Customer from '#models/customer'
 import DeliveryZone from '#models/delivery_zone'
 import Extra from '#models/extra'
 import File from '#models/file'
 import OpeningHour from '#models/opening_hour'
+import Fee from '#models/fee'
 import Payment from '#models/payment'
+import PricingRule from '#models/pricing_rule'
 import ProtectionPlan from '#models/protection_plan'
 import RatePlan from '#models/rate_plan'
 import TermsVersion from '#models/terms_version'
@@ -88,9 +91,18 @@ export default class PublicBookingService {
         .orderBy('sort_order'),
       TermsVersion.current(),
     ])
-    const hours = branch
-      ? await OpeningHour.query().where('branch_id', branch.id).orderBy('weekday', 'asc')
-      : []
+    const today = DateTime.now().toISODate()!
+    const [hours, closures] = branch
+      ? await Promise.all([
+          OpeningHour.query().where('branch_id', branch.id).orderBy('weekday', 'asc'),
+          // Upcoming days the office is shut (holidays) - the date pickers skip them
+          ClosureDate.query()
+            .where('branch_id', branch.id)
+            .where('date', '>=', today)
+            .where('date', '<=', DateTime.now().plus({ months: 12 }).toISODate()!)
+            .orderBy('date', 'asc'),
+        ])
+      : [[], []]
     const [onlineBookings, holdHours, leadHours, minAge, feeType, feePercent, feeAmount] =
       await Promise.all([
         SettingsService.get('booking.online_bookings_enabled'),
@@ -115,6 +127,7 @@ export default class PublicBookingService {
         coverUrl: business.cover?.url ?? null,
         currency: business.currency,
         timezone: business.timezone,
+        partners: business.partners ?? [],
         social: {
           instagram: business.instagramUrl,
           facebook: business.facebookUrl,
@@ -122,6 +135,10 @@ export default class PublicBookingService {
           x: business.xUrl,
         },
       },
+      closures: closures.map((closure) => ({
+        date: closure.date.toISODate()!,
+        reason: closure.reason,
+      })),
       openingHours: hours.map((hour) => ({
         weekday: hour.weekday,
         isClosed: Boolean(hour.isClosed),
@@ -169,6 +186,168 @@ export default class PublicBookingService {
         collectionAmount: zone.collectionAmount,
       })),
       terms: terms ? { version: terms.version, body: terms.body } : null,
+      pricing: await this.pricing(categories),
+    }
+  }
+
+  /**
+   * What the website shows about prices before anyone picks dates: each
+   * category's day / week / month rates (self-drive and with a driver), the
+   * running offers and peak dates (pricing rules), the charges at return
+   * (fees) and the policies that affect the price. Only public numbers.
+   */
+  private static async pricing(categories: Category[]) {
+    const today = DateTime.now().toISODate()!
+    const ids = categories.map((category) => category.id)
+    const [plans, rules, fees, counts, settings] = await Promise.all([
+      ids.length
+        ? RatePlan.query()
+            .whereIn('category_id', ids)
+            .whereNull('car_id')
+            .where('active', true)
+            .where((q) => q.whereNull('effective_from').orWhere('effective_from', '<=', today))
+            .where((q) => q.whereNull('effective_to').orWhere('effective_to', '>=', today))
+            .orderBy('effective_from', 'desc')
+        : [],
+      PricingRule.query().where('active', true).orderBy('priority', 'desc'),
+      Fee.query().where('active', true).orderBy('sort_order'),
+      ids.length
+        ? db
+            .from('cars')
+            .whereIn('category_id', ids)
+            .where('is_listed_online', true)
+            .where('status', 'active')
+            .groupBy('category_id')
+            .select('category_id')
+            .count('* as total')
+        : [],
+      Promise.all([
+        SettingsService.get('pricing.weekly_threshold_days'),
+        SettingsService.get('pricing.monthly_threshold_days'),
+        SettingsService.get('rental.fuel_policy'),
+        SettingsService.get('rental.mileage_policy'),
+        SettingsService.get('rental.daily_km_allowance'),
+        SettingsService.get('cancellation.full_refund_hours'),
+        SettingsService.get('cancellation.fee_only_hours'),
+        SettingsService.get('cancellation.late_charge_days'),
+        SettingsService.get('booking.min_licence_years'),
+        SettingsService.get('booking.min_rental_days'),
+        SettingsService.get('booking.return_grace_minutes'),
+        SettingsService.get('booking.after_hours_fee'),
+        SettingsService.get('payment.allow_pay_at_pickup'),
+      ]),
+    ])
+    const [
+      weeklyFromDays,
+      monthlyFromDays,
+      fuelPolicy,
+      mileagePolicy,
+      dailyKmAllowance,
+      freeCancellationHours,
+      feeOnlyHours,
+      lateChargeDays,
+      minLicenceYears,
+      minRentalDays,
+      returnGraceMinutes,
+      afterHoursFee,
+      payAtPickup,
+    ] = settings
+    const carsIn = new Map(counts.map((row: any) => [row.category_id, Number(row.total)]))
+    // The newest plan in effect per category and drive type (they come newest first)
+    const planFor = (categoryId: string, driveType: DriveType) =>
+      plans.find((plan) => plan.categoryId === categoryId && plan.driveType === driveType) ?? null
+    const mileage = (plan: RatePlan) =>
+      plan.mileageMode === 'unlimited' ||
+      (plan.mileageMode === 'default' && mileagePolicy === 'unlimited')
+        ? { unlimited: true, includedKmPerDay: null, excessKmAmount: null }
+        : {
+            unlimited: false,
+            includedKmPerDay:
+              plan.mileageMode === 'limited' ? plan.includedKmPerDay : dailyKmAllowance,
+            excessKmAmount: plan.excessKmAmount,
+          }
+    const names = new Map(categories.map((category) => [category.id, category.name]))
+
+    return {
+      weeklyFromDays,
+      monthlyFromDays,
+      categories: categories.map((category) => {
+        const self = planFor(category.id, 'self_drive')
+        const driver = planFor(category.id, 'chauffeur')
+        return {
+          id: category.id,
+          name: category.name,
+          slug: category.slug,
+          image: category.image,
+          description: category.description,
+          carsCount: carsIn.get(category.id) ?? 0,
+          securityDeposit: category.defaultDepositAmount,
+          selfDrive:
+            self && category.selfDriveAllowed
+              ? {
+                  daily: self.dailyAmount,
+                  weekly: self.weeklyAmount,
+                  monthly: self.monthlyAmount,
+                  mileage: mileage(self),
+                }
+              : null,
+          chauffeur: driver
+            ? {
+                daily: driver.dailyAmount,
+                weekly: driver.weeklyAmount,
+                monthly: driver.monthlyAmount,
+                outOfTownDaily: driver.outOfTownDailyAmount,
+                fuelIncluded: Boolean(driver.fuelIncluded),
+                driverHoursPerDay: driver.driverHoursPerDay,
+                overnightAmount: driver.driverOvernightAmount,
+                overtimeHourAmount: driver.driverOvertimeHourAmount,
+              }
+            : null,
+        }
+      }),
+      // Running and upcoming rules only (a one-off period that has ended is history)
+      rules: rules
+        .filter((rule) => {
+          if (rule.recursYearly || !rule.dateFrom) return true
+          return (rule.dateTo ?? rule.dateFrom).toISODate()! >= today
+        })
+        .map((rule) => ({
+          id: rule.id,
+          name: rule.name,
+          type: rule.type,
+          adjustmentType: rule.adjustmentType,
+          adjustmentValue: rule.adjustmentValue,
+          dateFrom: rule.dateFrom?.toISODate() ?? null,
+          dateTo: rule.dateTo?.toISODate() ?? null,
+          recursYearly: Boolean(rule.recursYearly),
+          weekdays: rule.weekdays,
+          minRentalDays: rule.minRentalDays,
+          blockOnlineBooking: Boolean(rule.blockOnlineBooking),
+          categories:
+            rule.appliesTo === 'categories'
+              ? (rule.categoryIds ?? []).map((id) => names.get(id)).filter(Boolean)
+              : rule.appliesTo === 'cars'
+                ? ['Selected cars']
+                : [],
+        })),
+      fees: fees.map((fee) => ({
+        code: fee.code,
+        name: fee.name,
+        description: fee.description,
+        amount: fee.amount,
+        unit: fee.unit,
+      })),
+      policies: {
+        fuel: fuelPolicy,
+        freeCancellationHours,
+        feeOnlyHours,
+        lateChargeDays,
+        minLicenceYears,
+        minRentalDays,
+        returnGraceMinutes,
+        afterHoursFee,
+        payAtPickup,
+      },
     }
   }
 

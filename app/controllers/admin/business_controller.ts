@@ -28,6 +28,7 @@ const AUDITED_FIELDS = [
   'bankAccountNumber',
   'bankBranch',
   'instagramUrl',
+  'partners',
   'facebookUrl',
   'tiktokUrl',
   'xUrl',

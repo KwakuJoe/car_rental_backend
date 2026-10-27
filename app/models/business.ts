@@ -1,12 +1,24 @@
 import { BusinessSchema } from '#database/schema'
 import { compose } from '@adonisjs/core/helpers'
-import { belongsTo, hasMany, hasOne } from '@adonisjs/lucid/orm'
+import { belongsTo, column, hasMany, hasOne } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations'
 import Branch from '#models/branch'
 import File from '#models/file'
 import { withUlid } from '#models/mixins/with_ulid'
 
+/** A company the business has worked with (the website's logo strip). */
+export type Partner = { name: string; logoUrl: string; website: string | null }
+
+// jsonb: encode explicitly (the pg driver would send arrays as Postgres arrays)
+const json = {
+  prepare: (value: unknown) =>
+    value === null || value === undefined ? null : JSON.stringify(value),
+}
+
 export default class Business extends compose(BusinessSchema, withUlid) {
+  @column(json)
+  declare partners: Partner[] | null
+
   @hasMany(() => Branch)
   declare branches: HasMany<typeof Branch>
 

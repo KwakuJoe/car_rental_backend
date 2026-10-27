@@ -39,6 +39,22 @@ export const updateBusinessValidator = vine.create({
   bankAccountNumber: vine.string().trim().maxLength(40).nullable().optional(),
   bankBranch: vine.string().trim().maxLength(120).nullable().optional(),
   // Website footer
+  // Website logo strip: companies worked with, in order
+  partners: vine
+    .array(
+      vine.object({
+        name: vine.string().trim().minLength(1).maxLength(80),
+        logoUrl: vine
+          .string()
+          .trim()
+          .maxLength(500)
+          .url({ require_protocol: true, protocols: ['https', 'http'] }),
+        website: socialUrl().transform((value) => value ?? null),
+      })
+    )
+    .maxLength(40)
+    .nullable()
+    .optional(),
   instagramUrl: socialUrl(),
   facebookUrl: socialUrl(),
   tiktokUrl: socialUrl(),

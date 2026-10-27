@@ -12,6 +12,7 @@ import Extra from '#models/extra'
 import Notification from '#models/notification'
 import OutboundMessage from '#models/outbound_message'
 import Payment from '#models/payment'
+import PricingRule from '#models/pricing_rule'
 import RatePlan from '#models/rate_plan'
 import Role from '#models/role'
 import User from '#models/user'
@@ -95,6 +96,62 @@ const booking = (carId: string, phone = '0241112233', extra: Record<string, unkn
 
 test.group('public website', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('site pricing: category rates, running offers, no ended ones', async ({
+    client,
+    assert,
+  }) => {
+    const { listed } = await setup()
+    await RatePlan.query()
+      .where('category_id', listed.categoryId)
+      .update({ weekly_amount: 245_000 })
+    await PricingRule.createMany([
+      {
+        name: 'Weekend deal',
+        type: 'weekend',
+        weekdays: [6, 7],
+        adjustmentType: 'percent',
+        adjustmentValue: -1000,
+        appliesTo: 'all',
+        priority: 0,
+        stackable: false,
+        recursYearly: false,
+        blockOnlineBooking: false,
+        minRentalDays: 2,
+        active: true,
+      },
+      {
+        name: 'Last Easter',
+        type: 'holiday',
+        dateFrom: DateTime.fromISO('2020-04-10'),
+        dateTo: DateTime.fromISO('2020-04-13'),
+        adjustmentType: 'percent',
+        adjustmentValue: 2500,
+        appliesTo: 'all',
+        priority: 0,
+        stackable: false,
+        recursYearly: false,
+        blockOnlineBooking: false,
+        active: true,
+      },
+    ])
+
+    const { pricing } = json(await client.get('/api/v1/public/site')).data
+    assert.lengthOf(pricing.categories, 1)
+    const economy = pricing.categories[0]
+    assert.equal(economy.carsCount, 1)
+    assert.equal(economy.securityDeposit, 50_000)
+    assert.equal(economy.selfDrive.daily, 40_000)
+    assert.equal(economy.selfDrive.weekly, 245_000)
+    assert.isNull(economy.chauffeur)
+    assert.deepEqual(
+      pricing.rules.map((rule: { name: string }) => rule.name),
+      ['Weekend deal']
+    )
+    assert.equal(pricing.rules[0].minRentalDays, 2)
+    assert.isNumber(pricing.weeklyFromDays)
+    assert.property(pricing.policies, 'freeCancellationHours')
+  })
 
   test('site and cars: only listed cars, priced for the dates, nothing private', async ({
     client,
