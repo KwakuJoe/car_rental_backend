@@ -5,6 +5,14 @@ type ParamValue = string | number | bigint | boolean
 export type ScannedRoutes = {
   ALL: {
     'auth.access_tokens.store': { paramsTuple?: []; params?: {} }
+    'public.public.site': { paramsTuple?: []; params?: {} }
+    'public.public.cars': { paramsTuple?: []; params?: {} }
+    'public.public.car': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'public.public.quote': { paramsTuple?: []; params?: {} }
+    'public.public.book': { paramsTuple?: []; params?: {} }
+    'public.public.booking': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'public.public.upload_proof': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'public.public.submit_payment': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'account.profile.show': { paramsTuple?: []; params?: {} }
     'account.access_tokens.destroy': { paramsTuple?: []; params?: {} }
     'account.change_password.store': { paramsTuple?: []; params?: {} }
@@ -165,6 +173,10 @@ export type ScannedRoutes = {
     'admin.closure_dates.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'branchId': ParamValue,'id': ParamValue} }
   }
   GET: {
+    'public.public.site': { paramsTuple?: []; params?: {} }
+    'public.public.cars': { paramsTuple?: []; params?: {} }
+    'public.public.car': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'public.public.booking': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'account.profile.show': { paramsTuple?: []; params?: {} }
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.users.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -231,6 +243,10 @@ export type ScannedRoutes = {
     'admin.closure_dates.index': { paramsTuple: [ParamValue]; params: {'branchId': ParamValue} }
   }
   HEAD: {
+    'public.public.site': { paramsTuple?: []; params?: {} }
+    'public.public.cars': { paramsTuple?: []; params?: {} }
+    'public.public.car': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'public.public.booking': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'account.profile.show': { paramsTuple?: []; params?: {} }
     'admin.users.index': { paramsTuple?: []; params?: {} }
     'admin.users.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -298,6 +314,10 @@ export type ScannedRoutes = {
   }
   POST: {
     'auth.access_tokens.store': { paramsTuple?: []; params?: {} }
+    'public.public.quote': { paramsTuple?: []; params?: {} }
+    'public.public.book': { paramsTuple?: []; params?: {} }
+    'public.public.upload_proof': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'public.public.submit_payment': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'account.access_tokens.destroy': { paramsTuple?: []; params?: {} }
     'account.change_password.store': { paramsTuple?: []; params?: {} }
     'admin.users.store': { paramsTuple?: []; params?: {} }

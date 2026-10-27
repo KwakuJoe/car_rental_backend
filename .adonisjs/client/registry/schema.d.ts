@@ -20,6 +20,110 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/access_tokens_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'public.public.site': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/public/site'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/public_controller').default['site']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/public_controller').default['site']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/public_controller').default['site']>>>
+    }
+  }
+  'public.public.cars': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/public/cars'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/public').publicCarsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/public_controller').default['cars']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/public_controller').default['cars']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/public_controller').default['cars']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'public.public.car': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/public/cars/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/public').publicCarValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/public_controller').default['car']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/public_controller').default['car']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/public_controller').default['car']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'public.public.quote': {
+    methods: ["POST"]
+    pattern: '/api/v1/public/quotes'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/public').publicQuoteValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/public').publicQuoteValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/public_controller').default['quote']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/public_controller').default['quote']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/public_controller').default['quote']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'public.public.book': {
+    methods: ["POST"]
+    pattern: '/api/v1/public/bookings'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/public').publicBookingValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/public').publicBookingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/public_controller').default['book']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/public_controller').default['book']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/public_controller').default['book']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'public.public.booking': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/public/bookings/:token'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/public_controller').default['booking']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/public_controller').default['booking']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/public_controller').default['booking']>>>
+    }
+  }
+  'public.public.upload_proof': {
+    methods: ["POST"]
+    pattern: '/api/v1/public/bookings/:token/proof'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/public_controller').default['uploadProof']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/public_controller').default['uploadProof']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/public_controller').default['uploadProof']>>>
+    }
+  }
+  'public.public.submit_payment': {
+    methods: ["POST"]
+    pattern: '/api/v1/public/bookings/:token/payments'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/public').publicPaymentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/public').publicPaymentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/public_controller').default['submitPayment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/public_controller').default['submitPayment']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/public_controller').default['submitPayment']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'account.profile.show': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/account/profile'

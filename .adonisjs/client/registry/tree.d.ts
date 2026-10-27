@@ -7,6 +7,18 @@ export interface ApiDefinition {
       store: typeof routes['auth.access_tokens.store']
     }
   }
+  public: {
+    public: {
+      site: typeof routes['public.public.site']
+      cars: typeof routes['public.public.cars']
+      car: typeof routes['public.public.car']
+      quote: typeof routes['public.public.quote']
+      book: typeof routes['public.public.book']
+      booking: typeof routes['public.public.booking']
+      uploadProof: typeof routes['public.public.upload_proof']
+      submitPayment: typeof routes['public.public.submit_payment']
+    }
+  }
   account: {
     profile: {
       show: typeof routes['account.profile.show']

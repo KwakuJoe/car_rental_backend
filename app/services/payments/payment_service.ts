@@ -306,6 +306,72 @@ export default class PaymentService {
     }
   }
 
+  /**
+   * A payment the customer says they made (website: MoMo or bank). Always
+   * waits for someone with payments.verify - nobody has seen the money yet.
+   */
+  static async submitByCustomer(
+    ctx: HttpContext,
+    bookingId: string,
+    input: {
+      method: 'momo' | 'bank_transfer'
+      amount: number
+      transactionRef: string
+      payerName: string | null
+      proofFileId: string | null
+      customerName: string
+    }
+  ) {
+    const ref = normaliseRef(input.transactionRef)
+    if (!ref) throw new BookingError('transactionRef', 'Enter the transaction ID.')
+    try {
+      return await db.transaction(async (trx) => {
+        const booking = await this.lock(bookingId, trx)
+        const summary = await this.summary(booking, trx)
+        this.assertAmount('rental', input.amount, summary)
+        await this.assertRefUnused(ref, trx)
+        const payment = await Payment.create(
+          {
+            number: null,
+            bookingId: booking.id,
+            customerId: booking.customerId,
+            branchId: booking.branchId,
+            type: 'rental',
+            method: input.method,
+            amount: input.amount,
+            transactionRef: ref,
+            payerName: input.payerName?.trim() || null,
+            status: 'pending_verification',
+            paidAt: DateTime.now(),
+            proofFileId: input.proofFileId,
+            notes: 'Submitted by the customer online',
+            recordedBy: null,
+          },
+          { client: trx }
+        )
+        await AuditService.record(
+          ctx,
+          {
+            action: 'payment.submitted',
+            actorType: 'customer',
+            actorLabel: input.customerName,
+            subject: { type: 'booking', id: booking.id, label: booking.reference },
+            after: {
+              method: payment.method,
+              amount: payment.amount,
+              transactionRef: payment.transactionRef,
+              status: payment.status,
+            },
+          },
+          trx
+        )
+        return payment
+      })
+    } catch (error) {
+      throw this.duplicateRef(error, ref)
+    }
+  }
+
   /** What this payment may be, given what's owed and held. */
   private static assertAmount(type: PaymentType, amount: number, summary: MoneySummary) {
     const fail = (message: string) => {

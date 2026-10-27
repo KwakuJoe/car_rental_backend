@@ -26,3 +26,32 @@ export const loginThrottle = limiter.define('login', (ctx) => {
     .blockFor('15 minutes')
     .usingKey(`login_${ctx.request.ip()}_${email}`)
 })
+
+/**
+ * The public website (no login). Browsing is generous; making a booking,
+ * saying "I've paid" and looking a booking up are tight, per IP - each of
+ * those holds a car, alerts staff or sends an SMS.
+ */
+export const publicReadThrottle = limiter.define('public_read', (ctx) =>
+  limiter.allowRequests(120).every('1 minute').usingKey(`public_read_${ctx.request.ip()}`)
+)
+
+export const publicBookThrottle = limiter.define('public_book', (ctx) =>
+  limiter
+    .allowRequests(5)
+    .every('10 minutes')
+    .blockFor('30 minutes')
+    .usingKey(`public_book_${ctx.request.ip()}`)
+)
+
+export const publicPayThrottle = limiter.define('public_pay', (ctx) =>
+  limiter.allowRequests(10).every('10 minutes').usingKey(`public_pay_${ctx.request.ip()}`)
+)
+
+export const publicLookupThrottle = limiter.define('public_lookup', (ctx) =>
+  limiter
+    .allowRequests(5)
+    .every('15 minutes')
+    .blockFor('30 minutes')
+    .usingKey(`public_lookup_${ctx.request.ip()}`)
+)

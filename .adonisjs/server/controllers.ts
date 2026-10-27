@@ -44,4 +44,5 @@ export const controllers = {
   },
   ChangePassword: () => import('#controllers/change_password_controller'),
   Profile: () => import('#controllers/profile_controller'),
+  Public: () => import('#controllers/public_controller'),
 }

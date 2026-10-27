@@ -186,7 +186,7 @@ export class BookingModificationSchema extends BaseModel {
 }
 
 export class BookingSchema extends BaseModel {
-  static $columns = ['actualPickupAt', 'actualReturnAt', 'balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'depositHeldAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverId', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
+  static $columns = ['actualPickupAt', 'actualReturnAt', 'balanceAmount', 'branchId', 'cancelReason', 'cancellationFeeAmount', 'cancelledAt', 'cancelledBy', 'carId', 'categoryId', 'collectionAddress', 'collectionZoneId', 'confirmedAt', 'confirmedBy', 'createdAt', 'createdBy', 'customerId', 'deliveryAddress', 'deliveryZoneId', 'depositAmount', 'depositHeldAmount', 'destination', 'discountAmount', 'discountReason', 'driveType', 'driverId', 'driverNightsAway', 'holdExpiresAt', 'id', 'noShowAt', 'notes', 'outOfTown', 'overrideBy', 'overrideReason', 'paidAmount', 'paymentPlan', 'pickupAt', 'priceSnapshot', 'protectionPlanId', 'publicTokenHash', 'reference', 'reservationFeeAmount', 'returnAt', 'source', 'status', 'subtotalAmount', 'taxAmount', 'totalAmount', 'updatedAt'] as const
   $columns = BookingSchema.$columns
   @column.dateTime()
   declare actualPickupAt: DateTime | null
@@ -258,12 +258,16 @@ export class BookingSchema extends BaseModel {
   declare overrideReason: string | null
   @column()
   declare paidAmount: number
+  @column()
+  declare paymentPlan: string | null
   @column.dateTime()
   declare pickupAt: DateTime
   @column()
   declare priceSnapshot: any
   @column()
   declare protectionPlanId: string | null
+  @column()
+  declare publicTokenHash: string | null
   @column()
   declare reference: string
   @column()

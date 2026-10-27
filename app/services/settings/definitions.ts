@@ -91,6 +91,14 @@ export const settingDefinitions = {
     max: 240,
     unit: 'minutes',
   },
+  'booking.online_bookings_enabled': {
+    group: 'bookings',
+    type: 'boolean',
+    label: 'Take bookings on the website',
+    description:
+      'Turn off to stop new online bookings (the website still shows the cars and asks customers to call).',
+    default: true,
+  },
   'booking.online_hold_hours': {
     group: 'bookings',
     type: 'integer',

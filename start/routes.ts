@@ -9,7 +9,12 @@
 
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
-import { loginThrottle } from '#start/limiter'
+import {
+  loginThrottle,
+  publicBookThrottle,
+  publicPayThrottle,
+  publicReadThrottle,
+} from '#start/limiter'
 import { controllers } from '#generated/controllers'
 
 router.get('/', () => {
@@ -24,6 +29,25 @@ router
       })
       .prefix('auth')
       .as('auth')
+
+    // The public website (no login). The private link token is the only key to a booking.
+    router
+      .group(() => {
+        router.get('site', [controllers.Public, 'site']).use(publicReadThrottle)
+        router.get('cars', [controllers.Public, 'cars']).use(publicReadThrottle)
+        router.get('cars/:id', [controllers.Public, 'car']).use(publicReadThrottle)
+        router.post('quotes', [controllers.Public, 'quote']).use(publicReadThrottle)
+        router.post('bookings', [controllers.Public, 'book']).use(publicBookThrottle)
+        router.get('bookings/:token', [controllers.Public, 'booking']).use(publicReadThrottle)
+        router
+          .post('bookings/:token/proof', [controllers.Public, 'uploadProof'])
+          .use(publicPayThrottle)
+        router
+          .post('bookings/:token/payments', [controllers.Public, 'submitPayment'])
+          .use(publicPayThrottle)
+      })
+      .prefix('public')
+      .as('public')
 
     router
       .group(() => {

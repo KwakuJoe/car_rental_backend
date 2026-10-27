@@ -3,7 +3,7 @@ import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import db from '@adonisjs/lucid/services/db'
 import type { Infer } from '@vinejs/vine/types'
 import { DateTime } from 'luxon'
-import Booking, { type BookingStatus } from '#models/booking'
+import Booking, { type BookingSource, type BookingStatus } from '#models/booking'
 import BookingExtra from '#models/booking_extra'
 import Business from '#models/business'
 import CarAllocation from '#models/car_allocation'
@@ -22,7 +22,18 @@ import SettingsService from '#services/settings/settings_service'
 import { userCan } from '#helpers/permissions'
 import type { createBookingValidator } from '#validators/booking'
 
-export type CreateBookingPayload = Infer<typeof createBookingValidator>
+/** What staff send, or what the website sends (source "website", which staff can't pick). */
+export type CreateBookingPayload = Omit<Infer<typeof createBookingValidator>, 'source'> & {
+  source: BookingSource
+}
+
+/** A booking from the public website: no staff, no overrides, the online hold. */
+export type CreateOptions = {
+  online?: boolean
+  /** SHA-256 of the customer's private link secret */
+  publicTokenHash?: string
+  paymentPlan?: 'deposit' | 'full'
+}
 export type BookingWarning = { code: string; message: string }
 
 /** A booking can't be made / changed: 422 with the field to fix, or 409 when the car is taken. */
@@ -69,14 +80,29 @@ export default class BookingService {
    * extras and the car's allocation in one transaction - the exclusion
    * constraint on car_allocations refuses a clash even under concurrency.
    */
-  static async create(ctx: HttpContext, payload: CreateBookingPayload, user: User) {
+  static async create(
+    ctx: HttpContext | null,
+    payload: CreateBookingPayload,
+    user: User | null,
+    options: CreateOptions = {}
+  ) {
+    const online = !!options.online
     const warnings: BookingWarning[] = []
     const overrides: string[] = []
-    const canOverride = await userCan(user, 'bookings.override')
+    const canOverride = !online && !!user && (await userCan(user, 'bookings.override'))
     const needsOverride = (field: string, message: string, what: string) => {
       if (canOverride && payload.overrideReason) {
         overrides.push(what)
         return
+      }
+      if (online) {
+        // Never tell a website visitor why (a blacklist match is personal data)
+        throw new BookingError(
+          field,
+          what === 'driver_age'
+            ? message
+            : 'We can’t take this booking online. Please call or WhatsApp us.'
+        )
       }
       throw new BookingError(
         field,
@@ -143,7 +169,11 @@ export default class BookingService {
           'E_CAR_UNAVAILABLE'
         )
       }
-      if (warning.code === 'lead_time') continue // staff may book at short notice
+      if (warning.code === 'lead_time') {
+        // Staff may book at short notice; the website keeps to the notice period
+        if (online) throw new BookingError('pickupAt', warning.message)
+        continue
+      }
       const field = BLOCKING_WARNINGS[warning.code]
       if (field) throw new BookingError(field, warning.message)
       warnings.push(warning)
@@ -223,9 +253,12 @@ export default class BookingService {
     }
 
     // ── Save: booking + extras + allocation, one transaction ───────
-    const confirm = payload.confirm ?? false
+    // Online bookings wait for their deposit; staff choose
+    const confirm = !online && (payload.confirm ?? false)
     const buffer = await SettingsService.get('booking.turnaround_buffer_minutes')
-    const holdHours = await SettingsService.get('booking.staff_hold_hours')
+    const holdHours = await SettingsService.get(
+      online ? 'booking.online_hold_hours' : 'booking.staff_hold_hours'
+    )
     const extras = await this.extraRows(payload.extras ?? [], quote.rentalDays)
 
     try {
@@ -262,11 +295,13 @@ export default class BookingService {
             paidAmount: 0,
             balanceAmount: quote.total,
             overrideReason: overrides.length ? payload.overrideReason! : null,
-            overrideBy: overrides.length ? user.id : null,
+            overrideBy: overrides.length ? (user?.id ?? null) : null,
             confirmedAt: confirm ? DateTime.now() : null,
-            confirmedBy: confirm ? user.id : null,
+            confirmedBy: confirm ? (user?.id ?? null) : null,
             notes: payload.notes ?? null,
-            createdBy: user.id,
+            createdBy: user?.id ?? null,
+            publicTokenHash: options.publicTokenHash ?? null,
+            paymentPlan: online ? (options.paymentPlan ?? 'deposit') : null,
           },
           { client: trx }
         )
@@ -283,7 +318,7 @@ export default class BookingService {
             endsAtWithBuffer: returnAt.plus({ minutes: buffer }),
             bufferMinutes: buffer,
             active: true,
-            createdBy: user.id,
+            createdBy: user?.id ?? null,
           },
           { client: trx }
         )
@@ -292,6 +327,7 @@ export default class BookingService {
           {
             action: 'booking.created',
             subject: { type: 'booking', id: created.id, label: created.reference },
+            ...(online ? { actorType: 'customer' as const, actorLabel: customer.fullName } : {}),
             after: {
               status: created.status,
               customer: customer.fullName,
