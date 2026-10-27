@@ -1,6 +1,7 @@
 import app from '@adonisjs/core/services/app'
 import logger from '@adonisjs/core/services/logger'
 import mail from '@adonisjs/mail/services/main'
+import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
 import Business from '#models/business'
 import OutboundMessage, { type MessageChannel } from '#models/outbound_message'
@@ -10,6 +11,8 @@ import env from '#start/env'
 const MAX_ATTEMPTS = 5
 /** Wait before retry n (minutes): 1, 5, 15, 60 */
 const BACKOFF = [1, 5, 15, 60]
+/** A send claimed this long ago and never finished (the process died): try it again */
+const STUCK_AFTER_MINUTES = 10
 
 export type NewMessage = {
   channel: MessageChannel
@@ -99,10 +102,21 @@ export default class MessageService {
     return record
   }
 
-  /** One try at one message. Safe to call twice: only pending messages go out. */
+  /**
+   * One try at one message. Safe to call from several places at once (the
+   * request that queued it, the retry job, a second server): the first to
+   * switch it from pending to sending in one atomic update owns it; the
+   * others see it's taken and leave it alone - so nothing goes out twice.
+   */
   static async deliver(id: string) {
-    const message = await OutboundMessage.find(id)
-    if (!message || message.status !== 'pending') return message
+    const claimed = await db
+      .from('outbound_messages')
+      .where('id', id)
+      .where('status', 'pending')
+      .update({ status: 'sending', updated_at: DateTime.now().toSQL() })
+    if (Number(claimed) !== 1) return OutboundMessage.find(id)
+
+    const message = await OutboundMessage.findOrFail(id)
     const configured = message.channel === 'sms' ? smsConfigured() : emailConfigured()
     if (app.inTest || !configured) {
       message.merge({
@@ -165,8 +179,17 @@ export default class MessageService {
     return message
   }
 
-  /** The retry job: everything pending and due. Returns how many were tried. */
+  /**
+   * The retry job (`node ace messages:send`, every minute): first puts back
+   * sends that were claimed but never finished (the process died mid-send),
+   * then tries everything pending and due. Returns how many were tried.
+   */
   static async deliverDue() {
+    await db
+      .from('outbound_messages')
+      .where('status', 'sending')
+      .where('updated_at', '<', DateTime.now().minus({ minutes: STUCK_AFTER_MINUTES }).toSQL()!)
+      .update({ status: 'pending', next_attempt_at: DateTime.now().toSQL() })
     const due = await OutboundMessage.query()
       .where('status', 'pending')
       .where('next_attempt_at', '<=', DateTime.now().toSQL()!)

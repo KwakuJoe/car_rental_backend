@@ -214,7 +214,9 @@ app (`crontab -e`), adjusting the path:
 Each job is safe to re-run: alerts are de-duplicated per document and
 milestone (30/14/7/1 days and the expiry day), so a missed or doubled run
 never spams staff, and the hold-ending and overdue alerts go out once per
-booking. Who gets staff SMS / email alerts is set in Settings → Notifications.
+booking. messages:send is safe alongside the web server and on several
+servers: each message is claimed atomically before it's sent, so it never goes
+out twice; a send interrupted by a crash is retried after 10 minutes. Who gets staff SMS / email alerts is set in Settings → Notifications.
 
 
 OTHER OPERATIONAL COMMANDS
