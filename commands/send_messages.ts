@@ -2,13 +2,13 @@ import { BaseCommand } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 
 /**
- * Every minute: SMS and emails that couldn't be sent straight away are
- * tried again (5 tries, growing gaps). Run from cron - see
- * prompt-reference/setup_command.txt, "SCHEDULED JOBS". Safe to re-run.
+ * By hand: send SMS / emails left pending (e.g. stored while the queue was
+ * unreachable). Normally the queue worker sends and retries them. Safe to
+ * re-run - each message is claimed before it's sent.
  */
 export default class SendMessages extends BaseCommand {
   static commandName = 'messages:send'
-  static description = 'Retry customer SMS and emails that are due'
+  static description = 'Send SMS and emails left pending (the queue worker normally does this)'
 
   static options: CommandOptions = {
     startApp: true,

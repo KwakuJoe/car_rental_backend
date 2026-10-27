@@ -39,6 +39,14 @@ export default await Env.create(new URL('../', import.meta.url), {
   */
   LIMITER_STORE: Env.schema.enum(['database', 'memory'] as const),
 
+  /*
+  |----------------------------------------------------------
+  | Queue: database (jobs in Postgres, run by `node ace queue:work`) or
+  | sync (run inline - tests). Default: database
+  |----------------------------------------------------------
+  */
+  QUEUE_DRIVER: Env.schema.enum.optional(['database', 'sync'] as const),
+
   // Cloudinary (file storage)
   /*
   |----------------------------------------------------------

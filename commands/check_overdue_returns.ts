@@ -2,9 +2,9 @@ import { BaseCommand } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 
 /**
- * Every 15 minutes: alert staff (Settings → Notifications) about cars past
- * their return time. Run from cron - see prompt-reference/setup_command.txt,
- * "SCHEDULED JOBS". Safe to re-run: each booking alerts once.
+ * Alert staff (Settings → Notifications) about cars past their return time.
+ * The queue runs this every 15 minutes (CheckOverdueReturnsJob); this command
+ * is for running it by hand. Safe to re-run: each booking alerts once.
  */
 export default class CheckOverdueReturns extends BaseCommand {
   static commandName = 'bookings:check-overdue'

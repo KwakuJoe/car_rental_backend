@@ -2,9 +2,9 @@ import { BaseCommand } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 
 /**
- * Daily vehicle-document expiry alerts - run from cron (see
- * prompt-reference/setup_command.txt, "SCHEDULED JOBS"). Safe to re-run: each
- * document + milestone alerts once.
+ * Vehicle-document expiry alerts. The queue runs this daily at 06:00 Accra
+ * time (CheckDocumentExpiriesJob); this command is for running it by hand.
+ * Safe to re-run: each document + milestone alerts once.
  */
 export default class CheckDocumentExpiries extends BaseCommand {
   static commandName = 'check:document-expiries'

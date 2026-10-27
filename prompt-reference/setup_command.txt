@@ -189,34 +189,44 @@ and can create staff accounts via POST /admin/users - new staff are
 assigned to the main branch automatically.
 
 
-SCHEDULED JOBS (required in production)
-------------------------------------------
-Timed work runs as ace commands from the server's cron (simple, survives
-restarts, no extra service). Add to the crontab of the user that runs the
-app (`crontab -e`), adjusting the path:
+BACKGROUND JOBS - THE QUEUE WORKER (required in production)
+--------------------------------------------------------------
+SMS / email and the timed checks run on the queue (@adonisjs/queue, database
+driver - jobs live in Postgres, no Redis). Run a worker next to the web
+server, always on:
 
-  # Vehicle document expiry alerts - daily at 06:00 Africa/Accra (= UTC)
-  0 6 * * * cd /srv/car_rental_backend/build && node ace check:document-expiries >> storage/logs/cron.log 2>&1
+  node ace queue:work
 
-  # Delete ID / vehicle-document uploads never saved onto a record (> 24h) - nightly at 02:00
-  0 2 * * * cd /srv/car_rental_backend/build && node ace files:cleanup >> storage/logs/cron.log 2>&1
+It sends every customer / staff SMS and email (retried after 1, 4, 16 and 60
+minutes if the provider fails - 5 tries, then marked failed) and runs:
 
-  # Expire unconfirmed bookings past their hold and free the car; alert staff
-  # about holds ending within 2 hours unpaid - every 5 minutes
-  */5 * * * * cd /srv/car_rental_backend/build && node ace bookings:expire-holds >> storage/logs/cron.log 2>&1
+  every 5 minutes   expire unpaid holds (frees the car); "hold ending" alerts
+  every 15 minutes  "car not returned" alerts
+  daily 06:00       vehicle document expiry alerts      (Africa/Accra)
+  nightly 02:00     delete uploads never saved onto a record (> 24h)
 
-  # Alert staff about cars past their return time - every 15 minutes
-  */15 * * * * cd /srv/car_rental_backend/build && node ace bookings:check-overdue >> storage/logs/cron.log 2>&1
+The schedules are registered when the web server starts and stored in the
+database, so they run once however many web servers there are. No cron
+needed. Each job is safe to re-run (alerts are de-duplicated per document /
+booking; each message is claimed before it's sent, so nothing goes out twice).
 
-  # Retry customer and staff SMS / emails that couldn't be sent straight away - every minute
-  * * * * * cd /srv/car_rental_backend/build && node ace messages:send >> storage/logs/cron.log 2>&1
+Env: QUEUE_DRIVER=database (the default). Tests use sync (.env.test).
+After deploying: node ace migration:run (creates queue_jobs / queue_schedules).
 
-Each job is safe to re-run: alerts are de-duplicated per document and
-milestone (30/14/7/1 days and the expiry day), so a missed or doubled run
-never spams staff, and the hold-ending and overdue alerts go out once per
-booking. messages:send is safe alongside the web server and on several
-servers: each message is claimed atomically before it's sent, so it never goes
-out twice; a send interrupted by a crash is retried after 10 minutes. Who gets staff SMS / email alerts is set in Settings → Notifications.
+On Railway: two services from the same repo and env variables -
+  web     start command: node bin/server.js   (after the build)
+  worker  start command: node ace queue:work
+(Low on budget? One service can run both, e.g. a start script that starts the
+worker in the background and then the server - keep them separate if you can,
+so a busy site never delays messages.) On a plain server, keep the worker up
+with systemd or pm2.
+
+By hand (the same work, e.g. to check something):
+  node ace bookings:expire-holds | bookings:check-overdue
+  node ace check:document-expiries | files:cleanup
+  node ace messages:send   (sends anything left pending - e.g. stored while the queue was down)
+
+Who gets staff SMS / email alerts is set in Settings → Notifications.
 
 
 OTHER OPERATIONAL COMMANDS

@@ -8,9 +8,8 @@ import OutboundMessage, { type MessageChannel } from '#models/outbound_message'
 import { LOGO_CID } from '#mails/email_layout'
 import env from '#start/env'
 
+/** Tries before giving up (the job retries 4 times after the first) */
 const MAX_ATTEMPTS = 5
-/** Wait before retry n (minutes): 1, 5, 15, 60 */
-const BACKOFF = [1, 5, 15, 60]
 /** A send claimed this long ago and never finished (the process died): try it again */
 const STUCK_AFTER_MINUTES = 10
 
@@ -75,11 +74,13 @@ async function businessLogo() {
 }
 
 /**
- * SMS and email to customers and staff. queue() stores the message and tries it
- * straight away without holding up the caller; whatever fails is retried by
- * `node ace messages:send` (cron, every minute) with growing gaps, up to 5
- * tries. Nothing is ever sent from tests, and a channel with no provider
- * set up is recorded as skipped - so dev and test runs can't text anyone.
+ * SMS and email to customers and staff. queue() stores the message, then a
+ * background job (SendMessageJob, run by `node ace queue:work`) sends it -
+ * the request that caused it never waits for a provider. Failed sends are
+ * retried by the queue with growing gaps (5 tries). Nothing is ever sent
+ * from tests, and a channel with no provider set up is recorded as skipped -
+ * so dev and test runs can't text anyone. outbound_messages stays the record
+ * of every message (sent, failed, why).
  */
 export default class MessageService {
   static async queue(message: NewMessage) {
@@ -93,22 +94,31 @@ export default class MessageService {
       bookingId: message.bookingId ?? null,
       status: 'pending',
       attempts: 0,
-      nextAttemptAt: DateTime.now(),
+      nextAttemptAt: null,
     })
-    // In the background: the request answers now, the retry job catches failures
-    void this.deliver(record.id).catch((error) =>
-      logger.error({ messageId: record.id, err: error?.message }, 'Message delivery crashed')
-    )
+    try {
+      // Imported here: the job imports this service
+      const { default: SendMessageJob } = await import('#jobs/send_message_job')
+      await SendMessageJob.dispatch({ messageId: record.id })
+    } catch (error) {
+      // The message is stored: `node ace messages:send` sends whatever is left pending
+      logger.error(
+        { messageId: record.id, err: (error as Error).message },
+        'Could not queue the message - it stays pending'
+      )
+    }
     return record
   }
 
   /**
    * One try at one message. Safe to call from several places at once (the
-   * request that queued it, the retry job, a second server): the first to
-   * switch it from pending to sending in one atomic update owns it; the
-   * others see it's taken and leave it alone - so nothing goes out twice.
+   * queue worker, `messages:send`, a second server): the first to switch it
+   * from pending to sending in one atomic update owns it; the others see
+   * it's taken and leave it alone - so nothing goes out twice.
+   * throwOnFailure (the job): a provider error is thrown so the queue
+   * retries; otherwise it's recorded and the message left pending.
    */
-  static async deliver(id: string) {
+  static async deliver(id: string, options: { throwOnFailure?: boolean } = {}) {
     const claimed = await db
       .from('outbound_messages')
       .where('id', id)
@@ -150,49 +160,51 @@ export default class MessageService {
           }
         })
       }
-      message.merge({
-        status: 'sent',
-        sentAt: DateTime.now(),
-        lastError: null,
-        nextAttemptAt: null,
-      })
+      message.merge({ status: 'sent', sentAt: DateTime.now(), lastError: null })
+      await message.save()
       logger.info(
         { messageId: message.id, channel: message.channel, kind: message.kind },
         'Message sent'
       )
+      return message
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error)
-      const giveUp = message.attempts >= MAX_ATTEMPTS
-      message.merge({
-        status: giveUp ? 'failed' : 'pending',
-        lastError: reason.slice(0, 1000),
-        nextAttemptAt: giveUp
-          ? null
-          : DateTime.now().plus({ minutes: BACKOFF[message.attempts - 1] ?? 60 }),
-      })
+      const out = message.attempts >= MAX_ATTEMPTS
+      // Back to pending (the next try can claim it) - or failed after the last one
+      message.merge({ status: out ? 'failed' : 'pending', lastError: reason.slice(0, 1000) })
+      await message.save()
       logger.warn(
         { messageId: message.id, channel: message.channel, attempt: message.attempts, reason },
-        giveUp ? 'Message failed - giving up' : 'Message failed - will retry'
+        out ? 'Message failed - giving up' : 'Message failed - will retry'
       )
+      if (options.throwOnFailure && !out) throw error
+      return message
     }
-    await message.save()
-    return message
+  }
+
+  /** The queue gave up on it (or it crashed): record it as failed unless it went out. */
+  static async giveUp(id: string) {
+    await db
+      .from('outbound_messages')
+      .where('id', id)
+      .whereIn('status', ['pending', 'sending'])
+      .update({ status: 'failed', updated_at: DateTime.now().toSQL() })
   }
 
   /**
-   * The retry job (`node ace messages:send`, every minute): first puts back
-   * sends that were claimed but never finished (the process died mid-send),
-   * then tries everything pending and due. Returns how many were tried.
+   * By hand (`node ace messages:send`): sends whatever is left pending - e.g.
+   * messages stored while the queue was unreachable - and puts back sends
+   * that were claimed but never finished (the process died mid-send).
+   * Returns how many were tried.
    */
   static async deliverDue() {
     await db
       .from('outbound_messages')
       .where('status', 'sending')
       .where('updated_at', '<', DateTime.now().minus({ minutes: STUCK_AFTER_MINUTES }).toSQL()!)
-      .update({ status: 'pending', next_attempt_at: DateTime.now().toSQL() })
+      .update({ status: 'pending' })
     const due = await OutboundMessage.query()
       .where('status', 'pending')
-      .where('next_attempt_at', '<=', DateTime.now().toSQL()!)
       .orderBy('created_at', 'asc')
       .limit(100)
     for (const message of due) await this.deliver(message.id)

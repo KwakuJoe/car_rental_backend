@@ -28,6 +28,7 @@ export default defineConfig({
     () => import('@adonisjs/core/commands'),
     () => import('@adonisjs/lucid/commands'),
     () => import('@adonisjs/session/commands'),
+    () => import('@adonisjs/queue/commands'),
   ],
 
   /*
@@ -55,6 +56,7 @@ export default defineConfig({
     () => import('#providers/api_provider'),
     () => import('@adonisjs/limiter/limiter_provider'),
     () => import('@adonisjs/mail/mail_provider'),
+    () => import('@adonisjs/queue/queue_provider'),
   ],
 
   /*
@@ -69,6 +71,11 @@ export default defineConfig({
     () => import('#start/routes'),
     () => import('#start/kernel'),
     () => import('#start/validator'),
+    // Registers the recurring jobs (stored in the database; the worker runs them)
+    {
+      file: () => import('#start/scheduler'),
+      environment: ['web'],
+    },
   ],
 
   /*
