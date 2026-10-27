@@ -25,6 +25,7 @@ import AvailabilityService from '#services/availability_service'
 import BookingService, { BookingError } from '#services/bookings/booking_service'
 import { CustomerStatusService } from '#services/customers/customer_status_service'
 import BookingMessages from '#services/messages/booking_messages'
+import StaffAlerts from '#services/messages/staff_alerts'
 import NotificationService from '#services/notification_service'
 import PaymentService, { normaliseRef } from '#services/payments/payment_service'
 import PricingService, { type Quote, QuoteError } from '#services/pricing/pricing_service'
@@ -657,6 +658,24 @@ export default class PublicBookingService {
     const owedNow =
       input.paymentPlan === 'full' ? booking.totalAmount : (booking.reservationFeeAmount ?? 0)
     await BookingMessages.received(booking, token, owedNow)
+    const about = await StaffAlerts.describe(booking)
+    await StaffAlerts.send('online_booking', {
+      bookingId: booking.id,
+      sms: `New online booking ${booking.reference}: ${about.customer} (${about.phone}), ${about.car}, ${about.pickup}. Waiting for ${formatMoney(owedNow)}.`,
+      email: {
+        subject: `New online booking ${booking.reference} - ${about.customer}`,
+        preheader: `${about.car}, ${about.pickup}. Waiting for ${formatMoney(owedNow)}.`,
+        eyebrow: { text: 'New online booking' },
+        heading: `${about.customer} booked the ${about.car}`,
+        paragraphs: [
+          `They're paying ${input.paymentPlan === 'full' ? 'in full' : 'the deposit'} by MoMo or bank transfer. The car is held${about.hold ? ` until ${about.hold}` : ''}.`,
+        ],
+        amount: { label: 'Expected now', value: formatMoney(owedNow) },
+        details: { rows: about.rows },
+        path: `/dashboard/bookings/${booking.id}`,
+        buttonLabel: 'Open the booking',
+      },
+    })
     return { booking, token }
   }
 
@@ -844,6 +863,29 @@ export default class PublicBookingService {
       title: `Payment to verify - ${booking.reference}`,
       body: `${formatMoney(amount)} by ${input.method === 'momo' ? 'MoMo' : 'bank transfer'}, ref ${payment.transactionRef}.`,
       link: '/dashboard/payments',
+    })
+    const about = await StaffAlerts.describe(booking)
+    const method = input.method === 'momo' ? 'MoMo' : 'bank transfer'
+    await StaffAlerts.send('payment_to_verify', {
+      bookingId: booking.id,
+      sms: `Payment to verify - ${booking.reference}: ${formatMoney(amount)} by ${method}, ref ${payment.transactionRef}, from ${about.customer}. Check the statement and verify it.`,
+      email: {
+        subject: `Payment to verify - ${booking.reference} (${formatMoney(amount)})`,
+        preheader: `${formatMoney(amount)} by ${method}, ref ${payment.transactionRef}.`,
+        eyebrow: { text: 'Payment to verify', color: '#f59e0b' },
+        heading: `${about.customer} says they've paid`,
+        paragraphs: [
+          'Check that this payment is in your MoMo or bank statement, then verify it in Payments → To verify. The customer is told as soon as you do.',
+        ],
+        amount: {
+          label: `By ${method}`,
+          value: formatMoney(amount),
+          note: `Transaction ID ${payment.transactionRef}`,
+        },
+        details: { rows: about.rows },
+        path: '/dashboard/payments',
+        buttonLabel: 'Verify the payment',
+      },
     })
     return payment
   }

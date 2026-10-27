@@ -452,6 +452,12 @@ router
               controllers.admin.ClosureDates,
               'destroy',
             ])
+
+            router.get('alert-recipients', [controllers.admin.AlertRecipients, 'index'])
+            router.post('alert-recipients', [controllers.admin.AlertRecipients, 'store'])
+            router.put('alert-recipients/:id', [controllers.admin.AlertRecipients, 'update'])
+            router.delete('alert-recipients/:id', [controllers.admin.AlertRecipients, 'destroy'])
+            router.post('alert-recipients/:id/test', [controllers.admin.AlertRecipients, 'test'])
           })
           .use(middleware.permission({ permissions: ['settings.manage'] }))
       })

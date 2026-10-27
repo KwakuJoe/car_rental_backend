@@ -11,6 +11,7 @@ import Customer from '#models/customer'
 import Extra from '#models/extra'
 import Notification from '#models/notification'
 import OutboundMessage from '#models/outbound_message'
+import AlertRecipient from '#models/alert_recipient'
 import Payment from '#models/payment'
 import PricingRule from '#models/pricing_rule'
 import RatePlan from '#models/rate_plan'
@@ -335,6 +336,70 @@ test.group('public website', (group) => {
       .post('/api/v1/public/bookings')
       .json(booking(listed.id, '0245556699', { website: 'https://spam.example' }))
     bot.assertStatus(422)
+  })
+
+  test('staff alerts go to the alert list, by the channels each person chose', async ({
+    client,
+    assert,
+  }) => {
+    const { listed } = await setup()
+    const ama = await AlertRecipient.create({
+      name: 'Ama Owner',
+      phone: '+233201112222',
+      email: 'ama@wynk.test',
+      alerts: { online_booking: ['sms', 'email'], hold_expiring: ['email'] },
+      active: true,
+    })
+    const kofi = await AlertRecipient.create({
+      name: 'Kofi Desk',
+      phone: null,
+      email: 'kofi@wynk.test',
+      alerts: { payment_to_verify: ['email'] },
+      active: true,
+    })
+    await AlertRecipient.create({
+      name: 'Switched off',
+      phone: '+233209998888',
+      email: null,
+      alerts: { online_booking: ['sms'] },
+      active: false,
+    })
+
+    const made = await client.post('/api/v1/public/bookings').json(booking(listed.id))
+    made.assertStatus(201)
+    const { reference, token } = json(made).data
+    const saved = await Booking.findByOrFail('reference', reference)
+
+    const staff = async (kind: string) => {
+      const messages = await OutboundMessage.query().where('kind', kind).orderBy('channel')
+      return messages.map((message) => `${message.channel}:${message.to}`)
+    }
+    assert.deepEqual(await staff('staff_online_booking'), [
+      'email:ama@wynk.test',
+      'sms:+233201112222',
+    ])
+    const sms = await OutboundMessage.findByOrFail({ kind: 'staff_online_booking', channel: 'sms' })
+    assert.include(sms.body, reference)
+    assert.include(sms.body, 'Esi Mensah')
+    const email = await OutboundMessage.findByOrFail({
+      kind: 'staff_online_booking',
+      channel: 'email',
+    })
+    assert.include(email.html!, `/dashboard/bookings/${saved.id}`)
+
+    // Hold ending, nothing paid: warned once, however often the job runs
+    const almost = saved.holdExpiresAt!.minus({ hours: 1 })
+    await BookingService.warnExpiringHolds(almost)
+    await BookingService.warnExpiringHolds(almost.plus({ minutes: 10 }))
+    assert.deepEqual(await staff('staff_hold_expiring'), ['email:ama@wynk.test'])
+
+    const paid = await client
+      .post(`/api/v1/public/bookings/${token}/payments`)
+      .json({ method: 'momo', transactionRef: '5512 3456 79' })
+    paid.assertStatus(201)
+    assert.deepEqual(await staff('staff_payment_to_verify'), [`email:${kofi.email}`])
+    assert.lengthOf(await staff('staff_booking_ended'), 0)
+    assert.isTrue(ama.active)
   })
 
   test('online booking can be switched off', async ({ client, assert }) => {

@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import VehicleDocument from '#models/vehicle_document'
 import NotificationService from '#services/notification_service'
+import StaffAlerts from '#services/messages/staff_alerts'
 import Notification from '#models/notification'
 
 export type ComplianceStatus = 'ok' | 'expiring_soon' | 'expired' | 'missing'
@@ -181,6 +182,37 @@ export default class DocumentComplianceService {
           : `The ${typeLabel} for ${vehicle} expires on ${expiry.toISODate()} - ${daysLeft} day${daysLeft === 1 ? '' : 's'} left.`,
         link: `/dashboard/cars/${doc.carId}?tab=documents`,
         dedupeKey,
+      })
+
+      await StaffAlerts.send('documents_expiring', {
+        sms: expiresToday
+          ? `The ${typeLabel} for ${vehicle} expires TODAY. Renew it before the car goes out.`
+          : `The ${typeLabel} for ${vehicle} expires on ${expiry.toFormat('d LLL yyyy')} (${daysLeft} day${daysLeft === 1 ? '' : 's'} left).`,
+        email: {
+          subject: expiresToday
+            ? `Expires today: ${typeLabel} - ${doc.car.registrationNo}`
+            : `${typeLabel} expiring in ${daysLeft} day${daysLeft === 1 ? '' : 's'} - ${doc.car.registrationNo}`,
+          preheader: `${vehicle}: ${typeLabel} expires ${expiry.toFormat('d LLL yyyy')}.`,
+          eyebrow: {
+            text: expiresToday ? 'Expires today' : 'Expiring soon',
+            color: expiresToday ? '#fb242f' : '#f59e0b',
+          },
+          heading: `Renew the ${typeLabel}`,
+          paragraphs: [
+            expiresToday
+              ? `The ${typeLabel} for ${vehicle} expires today. Renew it before the car goes out again.`
+              : `The ${typeLabel} for ${vehicle} expires on ${expiry.toFormat('d LLL yyyy')} - ${daysLeft} day${daysLeft === 1 ? '' : 's'} left.`,
+          ],
+          details: {
+            rows: [
+              { label: 'Car', value: vehicle },
+              { label: 'Document', value: typeLabel },
+              { label: 'Expires', value: expiry.toFormat('ccc d LLL yyyy') },
+            ],
+          },
+          path: `/dashboard/cars/${doc.carId}?tab=documents`,
+          buttonLabel: 'Open the car’s documents',
+        },
       })
 
       alertsCreated++

@@ -2,7 +2,9 @@ import app from '@adonisjs/core/services/app'
 import logger from '@adonisjs/core/services/logger'
 import mail from '@adonisjs/mail/services/main'
 import { DateTime } from 'luxon'
+import Business from '#models/business'
 import OutboundMessage, { type MessageChannel } from '#models/outbound_message'
+import { LOGO_CID } from '#mails/email_layout'
 import env from '#start/env'
 
 const MAX_ATTEMPTS = 5
@@ -45,8 +47,32 @@ async function sendSms(to: string, message: string) {
   }
 }
 
+/** The business logo's bytes for inline embedding, kept 10 minutes (it rarely changes). */
+let logoCache: { at: number; data: { content: Buffer; type: string } | null } | null = null
+async function businessLogo() {
+  if (logoCache && Date.now() - logoCache.at < 10 * 60_000) return logoCache.data
+  let data: { content: Buffer; type: string } | null = null
+  try {
+    const business = await Business.query().preload('logo').first()
+    const url = business?.logo?.url
+    if (url) {
+      const response = await fetch(url, { signal: AbortSignal.timeout(10_000) })
+      if (response.ok) {
+        data = {
+          content: Buffer.from(await response.arrayBuffer()),
+          type: response.headers.get('content-type') ?? 'image/png',
+        }
+      }
+    }
+  } catch (error) {
+    logger.warn({ err: (error as Error).message }, 'Could not load the logo for emails')
+  }
+  logoCache = { at: Date.now(), data }
+  return data
+}
+
 /**
- * SMS and email to customers. queue() stores the message and tries it
+ * SMS and email to customers and staff. queue() stores the message and tries it
  * straight away without holding up the caller; whatever fails is retried by
  * `node ace messages:send` (cron, every minute) with growing gaps, up to 5
  * tries. Nothing is ever sent from tests, and a channel with no provider
@@ -91,12 +117,23 @@ export default class MessageService {
       if (message.channel === 'sms') {
         await sendSms(message.to, message.body)
       } else {
+        // The branded layout points at the logo as cid:business-logo - attach it
+        const logo = message.html?.includes(`cid:${LOGO_CID}`) ? await businessLogo() : null
         await mail.send((email) => {
           email
             .to(message.to)
             .subject(message.subject ?? '')
             .text(message.body)
-          if (message.html) email.html(message.html)
+          if (message.html) {
+            // No logo to attach: drop the image rather than show a broken one
+            email.html(logo ? message.html : message.html.replace(/<img src="cid:[^>]*>/g, ''))
+          }
+          if (logo) {
+            email.embedData(logo.content, LOGO_CID, {
+              filename: `logo.${logo.type.split('/')[1] ?? 'png'}`,
+              contentType: logo.type,
+            })
+          }
         })
       }
       message.merge({

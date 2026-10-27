@@ -16,11 +16,13 @@ import type User from '#models/user'
 import VehicleDocument from '#models/vehicle_document'
 import AuditService from '#services/audit_service'
 import BookingMessages from '#services/messages/booking_messages'
+import StaffAlerts from '#services/messages/staff_alerts'
 import CancellationService from '#services/bookings/cancellation_service'
 import NumberingService from '#services/numbering_service'
 import PricingService, { type Quote, QuoteError } from '#services/pricing/pricing_service'
 import SettingsService from '#services/settings/settings_service'
 import { userCan } from '#helpers/permissions'
+import { formatMoney } from '#helpers/money'
 import type { createBookingValidator } from '#validators/booking'
 
 /** What staff send, or what the website sends (source "website", which staff can't pick). */
@@ -474,6 +476,7 @@ export default class BookingService {
         trx
       )
     })
+    await this.alertEnded(booking, 'cancelled', `${user.fullName ?? user.email}: ${reason}`)
     return booking
   }
 
@@ -512,6 +515,7 @@ export default class BookingService {
         trx
       )
     })
+    await this.alertEnded(booking, 'no_show')
     return booking
   }
 
@@ -549,7 +553,119 @@ export default class BookingService {
         )
       })
       if (booking.source === 'website') await BookingMessages.expired(booking)
+      await this.alertEnded(booking, 'expired')
     }
     return due.length
+  }
+
+  /** Staff alert: a booking ended without a rental (expired hold, cancelled, no-show). */
+  private static async alertEnded(
+    booking: Booking,
+    how: 'expired' | 'cancelled' | 'no_show',
+    note?: string
+  ) {
+    const about = await StaffAlerts.describe(booking)
+    const what = { expired: 'expired unpaid', cancelled: 'was cancelled', no_show: 'is a no-show' }[
+      how
+    ]
+    await StaffAlerts.send('booking_ended', {
+      bookingId: booking.id,
+      sms: `Booking ${booking.reference} ${what}: ${about.customer}, ${about.car}, ${about.pickup}. The car is free again.`,
+      email: {
+        subject: `Booking ${booking.reference} ${what}`,
+        preheader: `${about.customer} - ${about.car}, ${about.pickup}. The car is free again.`,
+        eyebrow: {
+          text: how === 'expired' ? 'Hold expired' : how === 'cancelled' ? 'Cancelled' : 'No-show',
+          color: '#9ca3af',
+        },
+        heading: `${booking.reference} ${what}`,
+        paragraphs: [
+          how === 'expired'
+            ? 'The hold ran out without a payment, so the car was released for other bookings.'
+            : how === 'cancelled'
+              ? `The booking was cancelled${note ? ` (${note})` : ''}. The car is free again.`
+              : 'The customer didn’t come for the car. The late charge in the terms applies.',
+          ...(booking.cancellationFeeAmount
+            ? [`Kept under the cancellation policy: ${formatMoney(booking.cancellationFeeAmount)}.`]
+            : []),
+        ],
+        details: { rows: about.rows },
+        path: `/dashboard/bookings/${booking.id}`,
+        buttonLabel: 'Open the booking',
+      },
+    })
+  }
+
+  /**
+   * Staff alert: online bookings whose hold ends within 2 hours with nothing
+   * paid or sent - a call might still save them. Once per booking; run with
+   * the hold expiry job.
+   */
+  static async warnExpiringHolds(now = DateTime.now()): Promise<number> {
+    const soon = await Booking.query()
+      .where('status', 'pending')
+      .whereNotNull('hold_expires_at')
+      .where('hold_expires_at', '>', now.toSQL()!)
+      .where('hold_expires_at', '<=', now.plus({ hours: 2 }).toSQL()!)
+      .whereNotExists((query) =>
+        query.from('payments').whereColumn('payments.booking_id', 'bookings.id')
+      )
+    let warned = 0
+    for (const booking of soon) {
+      const about = await StaffAlerts.describe(booking)
+      const left = Math.max(1, Math.round(booking.holdExpiresAt!.diff(now, 'minutes').minutes))
+      warned += await StaffAlerts.send('hold_expiring', {
+        bookingId: booking.id,
+        oncePerBooking: true,
+        sms: `Hold ending: ${booking.reference} (${about.customer}, ${about.phone}) expires in ${left} min with nothing paid. Call them?`,
+        email: {
+          subject: `Hold ending soon - ${booking.reference} (${about.customer})`,
+          preheader: `Expires ${about.hold} with nothing paid yet.`,
+          eyebrow: { text: 'Hold ending soon', color: '#f59e0b' },
+          heading: `${about.customer} hasn't paid yet`,
+          paragraphs: [
+            `The hold on ${booking.reference} ends at ${about.hold} (in about ${left} minutes) and no payment has come in. A quick call to ${about.phone} might save the booking.`,
+          ],
+          details: { rows: about.rows },
+          path: `/dashboard/bookings/${booking.id}`,
+          buttonLabel: 'Open the booking',
+        },
+      })
+    }
+    return warned
+  }
+
+  /**
+   * Staff alert: cars out on rent past their return time (plus the grace
+   * period in Settings). Once per booking. `node ace bookings:check-overdue`,
+   * every 15 minutes.
+   */
+  static async alertOverdueReturns(now = DateTime.now()): Promise<number> {
+    const grace = await SettingsService.get('booking.return_grace_minutes')
+    const late = await Booking.query()
+      .where('status', 'on_rent')
+      .where('return_at', '<', now.minus({ minutes: grace }).toSQL()!)
+    let alerted = 0
+    for (const booking of late) {
+      const about = await StaffAlerts.describe(booking)
+      alerted += await StaffAlerts.send('return_overdue', {
+        bookingId: booking.id,
+        oncePerBooking: true,
+        sms: `Overdue: ${about.car} (${booking.reference}) was due back ${about.returns}. Customer ${about.customer}, ${about.phone}.`,
+        email: {
+          subject: `Car not returned - ${booking.reference}`,
+          preheader: `${about.car} was due back ${about.returns}.`,
+          eyebrow: { text: 'Return overdue' },
+          heading: `${about.car} is overdue`,
+          paragraphs: [
+            `It was due back ${about.returns}. Contact ${about.customer} on ${about.phone} - late hours are charged at check-in under the terms.`,
+          ],
+          details: { rows: about.rows },
+          path: `/dashboard/bookings/${booking.id}`,
+          buttonLabel: 'Open the booking',
+        },
+      })
+    }
+    return alerted
   }
 }

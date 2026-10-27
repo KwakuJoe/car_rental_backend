@@ -201,16 +201,20 @@ app (`crontab -e`), adjusting the path:
   # Delete ID / vehicle-document uploads never saved onto a record (> 24h) - nightly at 02:00
   0 2 * * * cd /srv/car_rental_backend/build && node ace files:cleanup >> storage/logs/cron.log 2>&1
 
-  # Expire unconfirmed bookings past their hold and free the car - every 5 minutes
+  # Expire unconfirmed bookings past their hold and free the car; alert staff
+  # about holds ending within 2 hours unpaid - every 5 minutes
   */5 * * * * cd /srv/car_rental_backend/build && node ace bookings:expire-holds >> storage/logs/cron.log 2>&1
 
-  # Retry customer SMS / emails that couldn't be sent straight away - every minute
+  # Alert staff about cars past their return time - every 15 minutes
+  */15 * * * * cd /srv/car_rental_backend/build && node ace bookings:check-overdue >> storage/logs/cron.log 2>&1
+
+  # Retry customer and staff SMS / emails that couldn't be sent straight away - every minute
   * * * * * cd /srv/car_rental_backend/build && node ace messages:send >> storage/logs/cron.log 2>&1
 
 Each job is safe to re-run: alerts are de-duplicated per document and
 milestone (30/14/7/1 days and the expiry day), so a missed or doubled run
-never spams staff. New scheduled jobs (overdue rentals, hold expiry) get a
-line here as their modules are built.
+never spams staff, and the hold-ending and overdue alerts go out once per
+booking. Who gets staff SMS / email alerts is set in Settings → Notifications.
 
 
 OTHER OPERATIONAL COMMANDS
