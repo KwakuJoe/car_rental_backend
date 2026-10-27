@@ -204,6 +204,10 @@ For each module, in order:
 
 ## Rules the owner cares about
 - **Stop before committing if any test fails.** Fix it, or tell the owner; never commit red.
+  Run the tests and the commit as **separate steps**; a chained `test …; git commit` once
+  committed and pushed a failure.
+- e2e tests must not depend on today's weekday: the test office is closed on Sundays, so
+  pick dates that avoid them (see the extend step in `tests/e2e/bookings.spec.ts`).
 - **Never weaken a test** to make it pass.
 - **Never edit the owner's `.env` / `.env.local` files.** Tell them the exact lines to change.
   Recommended there: backend `HOST=127.0.0.1`; frontend `API_URL=http://127.0.0.1:3333`.
