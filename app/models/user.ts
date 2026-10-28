@@ -2,16 +2,18 @@ import { UserSchema } from '#database/schema'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
-import { type AccessToken, DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
+import type { AccessToken } from '@adonisjs/auth/access_tokens'
 import { belongsTo, column, manyToMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, ManyToMany } from '@adonisjs/lucid/types/relations'
 import Role from '#models/role'
 import Branch from '#models/branch'
 import { withUlid } from '#models/mixins/with_ulid'
+import { StaffTokensProvider } from '#services/staff_tokens_provider'
 
 export default class User extends compose(UserSchema, withAuthFinder(hash), withUlid) {
-  // Matches the frontend's session cookie lifetime - staff sign in again weekly.
-  static accessTokens = DbAccessTokensProvider.forModel(User, { expiresIn: '7 days' })
+  // 12 hours at most, and signed out after 2 idle hours (shared desk computers).
+  // The frontend's session cookie lasts as long.
+  static accessTokens = StaffTokensProvider.forStaff(User)
   declare currentAccessToken?: AccessToken
 
   /**

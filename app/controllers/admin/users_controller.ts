@@ -10,6 +10,7 @@ import {
   userFilterValidator,
 } from '#validators/user'
 import { generateTemporaryPassword } from '#services/temporary_password_service'
+import { signOutEverywhere } from '#services/staff_tokens_provider'
 import UserFilter from '#filters/user_filter'
 import AuditService from '#services/audit_service'
 
@@ -191,6 +192,8 @@ export default class UsersController {
       )
     })
 
+    // Deactivated: signed out everywhere now, not just refused from the next request
+    if (isActive === false) await signOutEverywhere(user)
     await user.load((preloader) => preloader.load('role').load('branches'))
 
     const transformed = await serialize(UserTransformer.transform(user))
@@ -219,6 +222,8 @@ export default class UsersController {
         trx
       )
     })
+    // Whoever was signed in as them (perhaps why it was reset) is signed out
+    await signOutEverywhere(user)
     await user.load((preloader) => preloader.load('role').load('branches'))
 
     const transformed = await serialize(UserTransformer.transform(user))

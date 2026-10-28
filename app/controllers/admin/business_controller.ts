@@ -5,6 +5,7 @@ import { updateBusinessValidator } from '#validators/business'
 import AuditService from '#services/audit_service'
 import FileService from '#services/file_service'
 import type File from '#models/file'
+import { forget } from '#services/memo'
 
 const AUDITED_FIELDS = [
   'name',
@@ -63,6 +64,7 @@ export default class BusinessController {
       business.vatNumber = null
     }
     await business.save()
+    forget('business')
     await AuditService.record(ctx, {
       action: 'business.updated',
       subject: { type: 'business', id: business.id, label: business.name },
@@ -117,6 +119,7 @@ export default class BusinessController {
     })
     business[image.column] = file.id
     await business.save()
+    forget('business')
     if (previous) await FileService.delete(previous)
 
     await AuditService.record(ctx, {
@@ -139,6 +142,7 @@ export default class BusinessController {
     if (previous) {
       business[image.column] = null
       await business.save()
+      forget('business')
       await FileService.delete(previous)
       await AuditService.record(ctx, {
         action: `business.${slot}_removed`,

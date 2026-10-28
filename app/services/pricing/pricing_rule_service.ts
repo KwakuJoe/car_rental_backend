@@ -1,5 +1,6 @@
 import type { DateTime } from 'luxon'
 import PricingRule from '#models/pricing_rule'
+import { memo, PRICING_TTL } from '#services/memo'
 
 export type RuleTargetCar = { categoryId: string; carId?: string | null }
 
@@ -29,7 +30,7 @@ const SPECIFICITY: Record<string, number> = { holiday: 3, season: 2, weekend: 1 
  */
 export class PricingRuleService {
   static activeRules(): Promise<PricingRule[]> {
-    return PricingRule.query().where('active', true)
+    return memo('pricing:rules', PRICING_TTL, () => PricingRule.query().where('active', true))
   }
 
   /** Does the rule's calendar (dates / weekdays) include this day? */

@@ -162,6 +162,30 @@ Update this list as modules land.
             version after Phase 4) - see M8.6
 
 
+HARDENING PASS (2026-10-28, before deployment prep)
+------------------------------------------------------------------------------
+  [x] Staff sessions: 12 hours at most, signed out after 2 idle hours (shared
+      desk computers). StaffTokensProvider; use is recorded by AuthMiddleware
+      unless the request is an open page refreshing itself (X-Background, set
+      by the frontend after a minute without input). Login page explains it.
+  [x] Signed out everywhere on password reset / deactivation; changing your
+      own password signs out your other devices (signOutEverywhere).
+  [x] Rate limits per visitor when hosted: the frontend sends X-Client-IP with
+      X-Proxy-Secret (backend PROXY_SECRET = frontend BACKEND_PROXY_SECRET -
+      REQUIRED in production); audit log and agreement signer IP use it too.
+  [x] Uploaders can't delete a file once it's part of a record
+      (FileService.inUse).
+  [x] Caching (services/memo.ts): settings + business profile 30s, cleared on
+      save; pricing reference data 3s (one search). Public dated car search
+      950 -> 38 queries for 36 cars; quote accepts a preloaded, checked car.
+  [x] Indexes: bookings/payments/customers created_at, payments.customer_id,
+      tokens by user/expiry, expenses.category_id, invoices.customer_id.
+  [x] Nightly clean-up also removes run-out sign-ins and expired rate-limit
+      rows; notifications list capped at 100.
+  [ ] Deployment prep: health-check endpoint, Railway services (web, worker),
+      env vars incl. PROXY_SECRET, DB SSL, backups.
+
+
 TESTING BACKLOG (owner asked to keep testing lean while building - 2026-10-26)
 ------------------------------------------------------------------------------
 Areas that got a minimal test (or only typecheck + one e2e run) and deserve a

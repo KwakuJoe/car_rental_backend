@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
 import AuditLog from '#models/audit_log'
+import { clientIp } from '#helpers/client_ip'
 import type User from '#models/user'
 
 type Snapshot = Record<string, unknown>
@@ -89,7 +90,7 @@ export default class AuditService {
         before,
         after,
         metadata: entry.metadata ? redact(entry.metadata) : null,
-        ip: ctx?.request.ip() ?? null,
+        ip: ctx ? clientIp(ctx) : null,
         userAgent: ctx?.request.header('user-agent')?.slice(0, 255) ?? null,
       },
       trx ? { client: trx } : undefined

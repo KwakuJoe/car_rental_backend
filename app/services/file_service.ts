@@ -1,3 +1,4 @@
+import db from '@adonisjs/lucid/services/db'
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary'
 import env from '#start/env'
 import { DateTime } from 'luxon'
@@ -335,6 +336,30 @@ export class FileService {
       .where('created_at', '<', cutoff.toSQL()!)
     for (const file of orphans) await this.delete(file)
     return orphans.length
+  }
+
+  /** Every column that points at a file: a file named in one of these is part of a record. */
+  private static readonly REFERENCES: [table: string, column: string][] = [
+    ['car_photos', 'file_id'],
+    ['vehicle_documents', 'file_id'],
+    ['customer_identities', 'front_file_id'],
+    ['customer_identities', 'back_file_id'],
+    ['inspections', 'signature_file_id'],
+    ['inspection_photos', 'file_id'],
+    ['car_damages', 'photo_file_id'],
+    ['businesses', 'logo_file_id'],
+    ['businesses', 'cover_file_id'],
+    ['payments', 'proof_file_id'],
+    ['expenses', 'receipt_file_id'],
+  ]
+
+  /** Is the file part of a saved record (attached, or named by one)? */
+  static async inUse(file: File): Promise<boolean> {
+    if (file.attachableId) return true
+    for (const [table, column] of this.REFERENCES) {
+      if (await db.from(table).where(column, file.id).first()) return true
+    }
+    return false
   }
 
   /**

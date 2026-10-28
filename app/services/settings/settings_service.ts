@@ -1,5 +1,6 @@
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import Setting from '#models/setting'
+import { forget, memo } from '#services/memo'
 import {
   isSettingKey,
   settingDefinitions,
@@ -57,11 +58,20 @@ export default class SettingsService {
     key: K,
     trx?: TransactionClientContract
   ): Promise<SettingValue<K>> {
-    const stored = await Setting.query(trx ? { client: trx } : undefined)
-      .where('key', key)
-      .whereNull('branch_id')
-      .first()
-    return (stored ? stored.value : settingDefinitions[key].default) as SettingValue<K>
+    // Inside a transaction: read it fresh (it may have just been changed)
+    if (trx) {
+      const stored = await Setting.query({ client: trx })
+        .where('key', key)
+        .whereNull('branch_id')
+        .first()
+      return (stored ? stored.value : settingDefinitions[key].default) as SettingValue<K>
+    }
+    // Otherwise from all settings, loaded in one query and kept 30 seconds
+    const stored = await memo('settings', 30_000, async () => {
+      const rows = await Setting.query().whereNull('branch_id')
+      return new Map(rows.map((row) => [row.key, row.value]))
+    })
+    return (stored.has(key) ? stored.get(key) : settingDefinitions[key].default) as SettingValue<K>
   }
 
   /** Every rule with its current value, in definition order. */
@@ -113,6 +123,8 @@ export default class SettingsService {
   ) {
     const before: Record<string, unknown> = {}
     const after: Record<string, unknown> = {}
+    forget('settings')
+    trx.after('commit', () => forget('settings'))
 
     for (const [rawKey, value] of Object.entries(values)) {
       const key = rawKey as SettingKey

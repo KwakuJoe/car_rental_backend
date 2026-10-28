@@ -471,8 +471,11 @@ export default class PublicBookingService {
     for (const car of cars) {
       if (dated) {
         try {
+          // Loaded and found free just above: no need to load or check it again
           const quote = await PricingService.quote({
             carId: car.id,
+            car,
+            knownAvailable: true,
             pickupAt: filters.pickupAt!,
             returnAt: filters.returnAt!,
             driveType: filters.driveType,

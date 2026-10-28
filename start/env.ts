@@ -38,6 +38,9 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   */
   LIMITER_STORE: Env.schema.enum(['database', 'memory'] as const),
+  // Shared with the Next.js frontend: proves its X-Client-IP header (the
+  // visitor's address) so rate limits count visitors, not the frontend server
+  PROXY_SECRET: Env.schema.string.optional(),
 
   /*
   |----------------------------------------------------------

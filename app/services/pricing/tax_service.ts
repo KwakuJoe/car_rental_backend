@@ -1,6 +1,6 @@
 import type { DateTime } from 'luxon'
 import Tax, { type ChargeType } from '#models/tax'
-import Business from '#models/business'
+import { currentBusiness, memo, PRICING_TTL } from '#services/memo'
 
 export type TaxableLine = {
   chargeType: ChargeType
@@ -33,17 +33,19 @@ export class TaxService {
   /** Active taxes in force on a day, in receipt order. */
   static activeOn(day: DateTime): Promise<Tax[]> {
     const date = day.toISODate()!
-    return Tax.query()
-      .where('active', true)
-      .where((q) => q.whereNull('effective_from').orWhere('effective_from', '<=', date))
-      .where((q) => q.whereNull('effective_to').orWhere('effective_to', '>=', date))
-      .orderBy('sort_order', 'asc')
-      .orderBy('name', 'asc')
+    return memo(`pricing:taxes:${date}`, PRICING_TTL, () =>
+      Tax.query()
+        .where('active', true)
+        .where((q) => q.whereNull('effective_from').orWhere('effective_from', '<=', date))
+        .where((q) => q.whereNull('effective_to').orWhere('effective_to', '>=', date))
+        .orderBy('sort_order', 'asc')
+        .orderBy('name', 'asc')
+    )
   }
 
   /** Whether tax is charged at all: the business profile's "VAT registered" (one source of truth). */
   static async isVatRegistered(): Promise<boolean> {
-    const business = await Business.query().first()
+    const business = await currentBusiness()
     return Boolean(business?.vatRegistered)
   }
 

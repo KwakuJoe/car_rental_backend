@@ -22,6 +22,7 @@ import DocumentComplianceService from '#services/document_compliance_service'
 import SettingsService from '#services/settings/settings_service'
 import { formatMoney as money } from '#helpers/money'
 import { userCan } from '#helpers/permissions'
+import { clientIp } from '#helpers/client_ip'
 
 export type Requirement = { code: string; label: string; ok: boolean; message: string | null }
 
@@ -320,7 +321,7 @@ export default class CheckOutService {
         signatureFileId: signature.id,
         signedName,
         signedAt: now,
-        signerIp: ctx.request.ip(),
+        signerIp: clientIp(ctx),
         signerDevice: ctx.request.header('user-agent')?.slice(0, 255) ?? null,
         completedAt: now,
         inspectedBy: user.id,

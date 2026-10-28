@@ -1,5 +1,4 @@
 import { DateTime } from 'luxon'
-import Business from '#models/business'
 import Car from '#models/car'
 import type Category from '#models/category'
 import ClosureDate from '#models/closure_date'
@@ -14,9 +13,14 @@ import AvailabilityService from '#services/availability_service'
 import PricingRuleService from '#services/pricing/pricing_rule_service'
 import TaxService, { type TaxLine } from '#services/pricing/tax_service'
 import SettingsService from '#services/settings/settings_service'
+import { currentBusiness, memo, PRICING_TTL } from '#services/memo'
 
 export type QuoteInput = {
   carId: string
+  /** The car already loaded with its category (a search passes the cars it found) */
+  car?: Car
+  /** The caller has just checked the car is free for these dates (a search) */
+  knownAvailable?: boolean
   pickupAt: DateTime
   returnAt: DateTime
   driveType: DriveType
@@ -114,7 +118,10 @@ export class PricingService {
     const warnings: QuoteWarning[] = []
 
     // ── The car ──────────────────────────────────────────────────────
-    const car = await Car.query().where('id', input.carId).preload('category').first()
+    const car =
+      input.car?.id === input.carId && input.car.category
+        ? input.car
+        : await Car.query().where('id', input.carId).preload('category').first()
     if (!car) throw new QuoteError('carId', 'That car was not found.')
     if (car.archivedAt)
       throw new QuoteError('carId', 'This car is archived and can no longer be booked.')
@@ -134,7 +141,7 @@ export class PricingService {
     }
 
     // ── Rental length ────────────────────────────────────────────────
-    const business = await Business.query().first()
+    const business = await currentBusiness()
     const zone = business?.timezone || 'Africa/Accra'
     const pickupAt = input.pickupAt.setZone(zone)
     const returnAt = input.returnAt.setZone(zone)
@@ -168,6 +175,7 @@ export class PricingService {
       })
     }
     if (
+      !input.knownAvailable &&
       !(await AvailabilityService.isCarAvailable(
         car.id,
         pickupAt,
@@ -182,11 +190,17 @@ export class PricingService {
     }
 
     // ── Rate per day ─────────────────────────────────────────────────
-    const plans = await RatePlan.query()
-      .where('category_id', category.id)
-      .where('drive_type', input.driveType)
-      .where('active', true)
-      .where((q) => q.whereNull('car_id').orWhere('car_id', car.id))
+    // The category's plans (shared by every car in a search), then this car's
+    const categoryPlans = await memo(
+      `pricing:plans:${category.id}:${input.driveType}`,
+      PRICING_TTL,
+      () =>
+        RatePlan.query()
+          .where('category_id', category.id)
+          .where('drive_type', input.driveType)
+          .where('active', true)
+    )
+    const plans = categoryPlans.filter((plan) => plan.carId === null || plan.carId === car.id)
     const [weeklyFrom, monthlyFrom] = await Promise.all([
       SettingsService.get('pricing.weekly_threshold_days'),
       SettingsService.get('pricing.monthly_threshold_days'),
@@ -321,10 +335,9 @@ export class PricingService {
 
     let protection: ProtectionPlan | null = null
     if (input.protectionPlanId === undefined) {
-      protection = await ProtectionPlan.query()
-        .where('is_default', true)
-        .where('active', true)
-        .first()
+      protection = await memo('pricing:default-protection', PRICING_TTL, () =>
+        ProtectionPlan.query().where('is_default', true).where('active', true).first()
+      )
     } else if (input.protectionPlanId !== null) {
       protection = await ProtectionPlan.find(input.protectionPlanId)
       if (!protection || !protection.active) {
@@ -343,10 +356,17 @@ export class PricingService {
     }
 
     // ── Handovers: delivery / collection / after hours ───────────────
-    const hours = await OpeningHour.query().where('branch_id', car.branchId)
-    const closures = await ClosureDate.query()
-      .where('branch_id', car.branchId)
-      .whereBetween('date', [pickupAt.toISODate()!, returnAt.toISODate()!])
+    const hours = await memo(`pricing:hours:${car.branchId}`, PRICING_TTL, () =>
+      OpeningHour.query().where('branch_id', car.branchId)
+    )
+    const closures = await memo(
+      `pricing:closures:${car.branchId}:${pickupAt.toISODate()}:${returnAt.toISODate()}`,
+      PRICING_TTL,
+      () =>
+        ClosureDate.query()
+          .where('branch_id', car.branchId)
+          .whereBetween('date', [pickupAt.toISODate()!, returnAt.toISODate()!])
+    )
     const officeAfterHoursFee = await SettingsService.get('booking.after_hours_fee')
 
     const handover = async (
@@ -462,7 +482,9 @@ export class PricingService {
     } else if ((await SettingsService.get('rental.mileage_policy')) === 'unlimited') {
       mileage = { unlimited: true, includedKm: null, excessKmAmount: null }
     } else {
-      const excessFee = await Fee.query().where('code', 'excess_km').where('active', true).first()
+      const excessFee = await memo('pricing:excess-km-fee', PRICING_TTL, () =>
+        Fee.query().where('code', 'excess_km').where('active', true).first()
+      )
       mileage = {
         unlimited: false,
         includedKm: (await SettingsService.get('rental.daily_km_allowance')) * rentalDays,

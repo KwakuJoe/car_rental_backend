@@ -256,6 +256,13 @@ export default class FilesController {
         message: 'You do not have permission to delete this file',
       })
     }
+    // The uploader may only take back an upload that isn't part of a record
+    // yet (ID scans, payment proofs and receipts are evidence once saved)
+    if (!isSuperAdmin && !canManageFleetFile && (await FileService.inUse(file))) {
+      return response.forbidden({
+        message: 'This file is part of a saved record and can’t be deleted.',
+      })
+    }
 
     await AuditService.record(ctx, {
       action: 'file.deleted',

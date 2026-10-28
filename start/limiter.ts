@@ -9,6 +9,7 @@
 */
 
 import limiter from '@adonisjs/limiter/services/main'
+import { clientIp, fromFrontend } from '#helpers/client_ip'
 
 /**
  * Brute-force protection for POST /auth/login: 5 attempts per minute for the
@@ -24,7 +25,7 @@ export const loginThrottle = limiter.define('login', (ctx) => {
     .allowRequests(5)
     .every('1 minute')
     .blockFor('15 minutes')
-    .usingKey(`login_${ctx.request.ip()}_${email}`)
+    .usingKey(`login_${clientIp(ctx)}_${email}`)
 })
 
 /**
@@ -32,8 +33,15 @@ export const loginThrottle = limiter.define('login', (ctx) => {
  * saying "I've paid" and looking a booking up are tight, per IP - each of
  * those holds a car, alerts staff or sends an SMS.
  */
+// The frontend's own page rendering (no visitor IP; cached for minutes) gets
+// a bigger allowance than one visitor
 export const publicReadThrottle = limiter.define('public_read', (ctx) =>
-  limiter.allowRequests(120).every('1 minute').usingKey(`public_read_${ctx.request.ip()}`)
+  fromFrontend(ctx) && !ctx.request.header('x-client-ip')
+    ? limiter.allowRequests(1000).every('1 minute').usingKey('public_read_frontend_server')
+    : limiter
+        .allowRequests(120)
+        .every('1 minute')
+        .usingKey(`public_read_${clientIp(ctx)}`)
 )
 
 export const publicBookThrottle = limiter.define('public_book', (ctx) =>
@@ -41,11 +49,14 @@ export const publicBookThrottle = limiter.define('public_book', (ctx) =>
     .allowRequests(5)
     .every('10 minutes')
     .blockFor('30 minutes')
-    .usingKey(`public_book_${ctx.request.ip()}`)
+    .usingKey(`public_book_${clientIp(ctx)}`)
 )
 
 export const publicPayThrottle = limiter.define('public_pay', (ctx) =>
-  limiter.allowRequests(10).every('10 minutes').usingKey(`public_pay_${ctx.request.ip()}`)
+  limiter
+    .allowRequests(10)
+    .every('10 minutes')
+    .usingKey(`public_pay_${clientIp(ctx)}`)
 )
 
 export const publicLookupThrottle = limiter.define('public_lookup', (ctx) =>
@@ -53,5 +64,5 @@ export const publicLookupThrottle = limiter.define('public_lookup', (ctx) =>
     .allowRequests(5)
     .every('15 minutes')
     .blockFor('30 minutes')
-    .usingKey(`public_lookup_${ctx.request.ip()}`)
+    .usingKey(`public_lookup_${clientIp(ctx)}`)
 )
