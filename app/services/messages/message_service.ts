@@ -4,7 +4,10 @@ import mail from '@adonisjs/mail/services/main'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
 import Business from '#models/business'
-import OutboundMessage, { type MessageChannel } from '#models/outbound_message'
+import OutboundMessage, {
+  type MessageAttachment,
+  type MessageChannel,
+} from '#models/outbound_message'
 import { LOGO_CID } from '#mails/email_layout'
 import env from '#start/env'
 
@@ -21,6 +24,8 @@ export type NewMessage = {
   subject?: string | null
   html?: string | null
   bookingId?: string | null
+  /** Email only: a document attached as a PDF */
+  attachment?: MessageAttachment | null
 }
 
 const smsConfigured = () => !!env.get('MNOTIFY_API_KEY')
@@ -73,6 +78,22 @@ async function businessLogo() {
   return data
 }
 
+/** The PDF for an attachment, built now (imported here: the PDF services import models that import this) */
+async function attachmentFile(attachment: MessageAttachment) {
+  const { default: InvoicePdfService } = await import('#services/invoices/invoice_pdf_service')
+  const { default: Invoice } = await import('#models/invoice')
+  const { default: CreditNote } = await import('#models/credit_note')
+  if (attachment.type === 'invoice') {
+    const invoice = await Invoice.findOrFail(attachment.id)
+    return {
+      content: await InvoicePdfService.invoice(invoice.id),
+      filename: `${invoice.number}.pdf`,
+    }
+  }
+  const note = await CreditNote.findOrFail(attachment.id)
+  return { content: await InvoicePdfService.creditNote(note.id), filename: `${note.number}.pdf` }
+}
+
 /**
  * SMS and email to customers and staff. queue() stores the message, then a
  * background job (SendMessageJob, run by `node ace queue:work`) sends it -
@@ -92,6 +113,7 @@ export default class MessageService {
       subject: message.subject ?? null,
       html: message.html ?? null,
       bookingId: message.bookingId ?? null,
+      attachment: message.attachment ?? null,
       status: 'pending',
       attempts: 0,
       nextAttemptAt: null,
@@ -143,6 +165,7 @@ export default class MessageService {
       } else {
         // The branded layout points at the logo as cid:business-logo - attach it
         const logo = message.html?.includes(`cid:${LOGO_CID}`) ? await businessLogo() : null
+        const file = message.attachment ? await attachmentFile(message.attachment) : null
         await mail.send((email) => {
           email
             .to(message.to)
@@ -156,6 +179,12 @@ export default class MessageService {
             email.embedData(logo.content, LOGO_CID, {
               filename: `logo.${logo.type.split('/')[1] ?? 'png'}`,
               contentType: logo.type,
+            })
+          }
+          if (file) {
+            email.attachData(file.content, {
+              filename: file.filename,
+              contentType: 'application/pdf',
             })
           }
         })

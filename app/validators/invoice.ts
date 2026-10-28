@@ -24,8 +24,16 @@ export const issueInvoiceValidator = vine.create({
   }),
   dueOn: vine.date({ formats: ['YYYY-MM-DD'] }),
   notes: optionalText(1000),
+  // Email the PDF here once issued
+  sendTo: vine.string().trim().email().maxLength(160).nullable().optional(),
 })
 
 export const creditNoteValidator = vine.create({
   reason: vine.string().trim().minLength(3).maxLength(300),
+  // Email the credit note here
+  sendTo: vine.string().trim().email().maxLength(160).nullable().optional(),
+})
+
+export const sendInvoiceValidator = vine.create({
+  to: vine.string().trim().email().maxLength(160),
 })

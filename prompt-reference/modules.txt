@@ -146,9 +146,11 @@ Update this list as modules land.
             one can be issued. Paid / balance / overdue read from the booking.
             PDFs (InvoicePdfService). Permissions invoices.view/manage.
             Frontend: Invoice section on the booking Payments tab, Invoices
-            page (Unpaid / Overdue / Paid / Cancelled). Not yet: partial
-            credit notes, one invoice for several bookings (corporate
-            accounts, Phase 8), emailing the PDF, GRA E-VAT.
+            page (Unpaid / Overdue / Paid / Cancelled). Emailed with the PDF
+            attached (on issue / cancel, or "Email the invoice" later;
+            outbound_messages.attachment - the PDF is built at send time).
+            Not yet: partial credit notes, one invoice for several bookings
+            (corporate accounts, Phase 8), GRA E-VAT.
   [x] M5.8  Expenses (2026-10-27) - approval, receipts, spending and
             earned-less-spent per car in Reports, expenses export.
   [x] M5.9  Exports (CSV / Excel) - with Reports.

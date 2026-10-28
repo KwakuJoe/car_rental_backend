@@ -180,6 +180,7 @@ export interface ApiDefinition {
       forBooking: typeof routes['admin.invoices.for_booking']
       store: typeof routes['admin.invoices.store']
       credit: typeof routes['admin.invoices.credit']
+      send: typeof routes['admin.invoices.send']
     }
     expenses: {
       index: typeof routes['admin.expenses.index']

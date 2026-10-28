@@ -1515,6 +1515,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['credit']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.invoices.send': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/invoices/:id/send'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/invoice').sendInvoiceValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/invoice').sendInvoiceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['send']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['send']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/invoices_controller').default['send']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.expenses.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/expenses'

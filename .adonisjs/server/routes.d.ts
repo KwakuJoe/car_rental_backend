@@ -120,6 +120,7 @@ export type ScannedRoutes = {
     'admin.invoices.for_booking': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.credit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.send': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.expenses.index': { paramsTuple?: []; params?: {} }
     'admin.expenses.options': { paramsTuple?: []; params?: {} }
     'admin.expenses.store': { paramsTuple?: []; params?: {} }
@@ -391,6 +392,7 @@ export type ScannedRoutes = {
     'admin.payments.void': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.credit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.invoices.send': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.expenses.store': { paramsTuple?: []; params?: {} }
     'admin.expenses.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.expenses.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

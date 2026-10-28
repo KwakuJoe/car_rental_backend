@@ -5,14 +5,17 @@ import Business from '#models/business'
 import CreditNote from '#models/credit_note'
 import Customer from '#models/customer'
 import Invoice from '#models/invoice'
+import OutboundMessage from '#models/outbound_message'
 import AuditService from '#services/audit_service'
 import { BookingError } from '#services/bookings/booking_service'
 import InvoicePdfService from '#services/invoices/invoice_pdf_service'
 import InvoiceService, { INVOICEABLE } from '#services/invoices/invoice_service'
+import InvoiceMessages from '#services/messages/invoice_messages'
 import {
   creditNoteValidator,
   issueInvoiceValidator,
   listInvoicesValidator,
+  sendInvoiceValidator,
 } from '#validators/invoice'
 
 const fail = (response: HttpContext['response'], error: BookingError) =>
@@ -28,7 +31,44 @@ async function today() {
   return { zone, today: DateTime.now().setZone(zone).toISODate()! }
 }
 
-const toJson = (invoice: Invoice, day: string) => ({
+type Emailed = {
+  to: string
+  document: 'invoice' | 'credit_note'
+  status: string
+  sentAt: string | null
+  createdAt: string
+  error: string | null
+}
+
+/** Each invoice's emails (the invoice and its credit note), newest first */
+async function emailsFor(rows: Invoice[]) {
+  const ids = rows.flatMap((invoice) =>
+    [invoice.id, invoice.creditNote?.id].filter(Boolean)
+  ) as string[]
+  const messages = ids.length
+    ? await OutboundMessage.query()
+        .where('channel', 'email')
+        .whereRaw(`attachment->>'id' = any(?)`, [ids])
+        .orderBy('created_at', 'desc')
+    : []
+  return (invoice: Invoice): Emailed[] =>
+    messages
+      .filter(
+        (message) =>
+          message.attachment?.id === invoice.id || message.attachment?.id === invoice.creditNote?.id
+      )
+      .map((message) => ({
+        to: message.to,
+        document: message.attachment!.type,
+        status: message.status,
+        sentAt: message.sentAt?.toISO() ?? null,
+        createdAt: message.createdAt.toISO()!,
+        error:
+          message.status === 'failed' || message.status === 'skipped' ? message.lastError : null,
+      }))
+}
+
+const toJson = (invoice: Invoice, day: string, emails: Emailed[] = []) => ({
   id: invoice.id,
   number: invoice.number,
   bookingId: invoice.bookingId,
@@ -60,6 +100,7 @@ const toJson = (invoice: Invoice, day: string) => ({
       }
     : null,
   standing: invoice.booking ? InvoiceService.standing(invoice, invoice.booking, day) : null,
+  emails,
 })
 
 const invoices = () => Invoice.query().preload('booking').preload('issuer').preload('creditNote')
@@ -116,6 +157,7 @@ export default class InvoicesController {
     const page = await query
       .orderBy('issued_at', 'desc')
       .paginate(payload.page ?? 1, payload.limit ?? 20)
+    const emails = await emailsFor(page.all())
 
     // Still to collect on every live invoice, whatever the filters
     const open = await notPaidUp(Invoice.query().preload('booking').where('status', 'issued'))
@@ -123,7 +165,7 @@ export default class InvoicesController {
     const overdue = standings.filter((row) => row.state === 'overdue')
     return response.ok({
       message: 'Invoices fetched successfully',
-      data: page.all().map((invoice) => toJson(invoice, day)),
+      data: page.all().map((invoice) => toJson(invoice, day, emails(invoice))),
       meta: {
         ...page.getMeta(),
         outstanding: {
@@ -141,12 +183,13 @@ export default class InvoicesController {
     const booking = await Booking.findOrFail(params.id)
     const { today: day } = await today()
     const rows = await invoices().where('booking_id', booking.id).orderBy('issued_at', 'desc')
+    const emails = await emailsFor(rows)
     const live = rows.some((invoice) => invoice.status === 'issued')
     const canIssue = INVOICEABLE.includes(booking.status) && booking.totalAmount > 0 && !live
     return response.ok({
       message: 'Booking invoices',
       data: {
-        invoices: rows.map((invoice) => toJson(invoice, day)),
+        invoices: rows.map((invoice) => toJson(invoice, day, emails(invoice))),
         draft: canIssue ? await InvoiceService.draft(booking) : null,
       },
     })
@@ -182,11 +225,10 @@ export default class InvoicesController {
           dueOn: invoice.dueOn.toISODate(),
         },
       })
-      const { today: day } = await today()
-      const saved = await invoices().where('id', invoice.id).firstOrFail()
+      if (payload.sendTo) await InvoiceMessages.invoice(invoice.id, payload.sendTo)
       return response.created({
-        message: `Invoice ${invoice.number} issued`,
-        data: toJson(saved, day),
+        message: `Invoice ${invoice.number} issued${payload.sendTo ? ` and emailed to ${payload.sendTo}` : ''}`,
+        data: await this.fresh(invoice.id),
       })
     } catch (error) {
       if (error instanceof BookingError) return fail(response, error)
@@ -196,7 +238,7 @@ export default class InvoicesController {
 
   async credit(ctx: HttpContext) {
     const { auth, params, request, response } = ctx
-    const { reason } = await request.validateUsing(creditNoteValidator)
+    const { reason, sendTo } = await request.validateUsing(creditNoteValidator)
     const invoice = await Invoice.findOrFail(params.id)
     try {
       const { note } = await InvoiceService.credit(invoice.id, reason, auth.getUserOrFail())
@@ -205,16 +247,41 @@ export default class InvoicesController {
         subject: { type: 'invoice', id: invoice.id, label: invoice.number },
         metadata: { creditNote: note.number, reason, totalAmount: note.totalAmount },
       })
-      const { today: day } = await today()
-      const saved = await invoices().where('id', invoice.id).firstOrFail()
+      if (sendTo) await InvoiceMessages.creditNote(note.id, sendTo)
       return response.ok({
         message: `Cancelled with credit note ${note.number}`,
-        data: toJson(saved, day),
+        data: await this.fresh(invoice.id),
       })
     } catch (error) {
       if (error instanceof BookingError) return fail(response, error)
       throw error
     }
+  }
+
+  /** Email the invoice - or, once cancelled, its credit note - with the PDF attached. */
+  async send(ctx: HttpContext) {
+    const { params, request, response } = ctx
+    const { to } = await request.validateUsing(sendInvoiceValidator)
+    const invoice = await Invoice.query().where('id', params.id).preload('creditNote').firstOrFail()
+    const credited = invoice.status === 'credited' && invoice.creditNote
+    if (credited) await InvoiceMessages.creditNote(invoice.creditNote.id, to)
+    else await InvoiceMessages.invoice(invoice.id, to)
+    await AuditService.record(ctx, {
+      action: 'invoice.emailed',
+      subject: { type: 'invoice', id: invoice.id, label: invoice.number },
+      metadata: { to, document: credited ? invoice.creditNote.number : invoice.number },
+    })
+    return response.ok({
+      message: `${credited ? invoice.creditNote.number : invoice.number} is on its way to ${to}`,
+      data: await this.fresh(invoice.id),
+    })
+  }
+
+  private async fresh(id: string) {
+    const { today: day } = await today()
+    const saved = await invoices().where('id', id).firstOrFail()
+    const emails = await emailsFor([saved])
+    return toJson(saved, day, emails(saved))
   }
 
   async pdf({ params, response }: HttpContext) {

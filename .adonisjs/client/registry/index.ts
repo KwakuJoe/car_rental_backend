@@ -702,6 +702,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"invoices"],[1,"id"],[0,"credit-note"]],
     types: placeholder as Registry['admin.invoices.credit']['types'],
   },
+  'admin.invoices.send': {
+    methods: ["POST"],
+    pattern: '/api/v1/admin/invoices/:id/send',
+    tokens: [[0,"api"],[0,"v1"],[0,"admin"],[0,"invoices"],[1,"id"],[0,"send"]],
+    types: placeholder as Registry['admin.invoices.send']['types'],
+  },
   'admin.expenses.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/expenses',

@@ -1198,8 +1198,10 @@ export class OpeningHourSchema extends BaseModel {
 }
 
 export class OutboundMessageSchema extends BaseModel {
-  static $columns = ['attempts', 'body', 'bookingId', 'channel', 'createdAt', 'html', 'id', 'kind', 'lastError', 'nextAttemptAt', 'sentAt', 'status', 'subject', 'to', 'updatedAt'] as const
+  static $columns = ['attachment', 'attempts', 'body', 'bookingId', 'channel', 'createdAt', 'html', 'id', 'kind', 'lastError', 'nextAttemptAt', 'sentAt', 'status', 'subject', 'to', 'updatedAt'] as const
   $columns = OutboundMessageSchema.$columns
+  @column()
+  declare attachment: any | null
   @column()
   declare attempts: number
   @column()

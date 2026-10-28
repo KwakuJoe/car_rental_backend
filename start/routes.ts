@@ -325,6 +325,7 @@ router
           .group(() => {
             router.post('bookings/:id/invoices', [controllers.admin.Invoices, 'store'])
             router.post('invoices/:id/credit-note', [controllers.admin.Invoices, 'credit'])
+            router.post('invoices/:id/send', [controllers.admin.Invoices, 'send'])
           })
           .use(middleware.permission({ permissions: ['invoices.manage'] }))
 

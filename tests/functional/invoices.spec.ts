@@ -6,6 +6,7 @@ import Business from '#models/business'
 import Car from '#models/car'
 import Category from '#models/category'
 import Customer from '#models/customer'
+import OutboundMessage from '#models/outbound_message'
 import Permission from '#models/permission'
 import RatePlan from '#models/rate_plan'
 import Role from '#models/role'
@@ -146,10 +147,17 @@ test.group('invoices & credit notes', (group) => {
 
     const issued = await client
       .post(`/api/v1/admin/bookings/${booking.id}/invoices`)
-      .json({ billTo, dueOn: inDays(7), notes: 'PO 4471' })
+      .json({ billTo, dueOn: inDays(7), notes: 'PO 4471', sendTo: 'accounts@acme.test' })
       .loginAs(ctx.owner)
     issued.assertStatus(201)
     const invoice = json(issued).data
+    // Emailed with the PDF attached (never actually sent from tests)
+    assert.equal(invoice.emails.length, 1)
+    assert.include(invoice.emails[0], { to: 'accounts@acme.test', document: 'invoice' })
+    const email = await OutboundMessage.query().where('kind', 'invoice').firstOrFail()
+    assert.deepEqual(email.attachment, { type: 'invoice', id: invoice.id })
+    assert.equal(email.subject, `Invoice ${invoice.number} from Wynk`)
+    assert.equal(email.bookingId, booking.id)
     const year = DateTime.now().setZone('Africa/Accra').year
     assert.equal(invoice.number, `INV-${year}-00001`)
     assert.equal(invoice.totalAmount, booking.totalAmount)
@@ -186,10 +194,30 @@ test.group('invoices & credit notes', (group) => {
     // Cancel with a credit note; it can't be cancelled twice
     const credited = await client
       .post(`/api/v1/admin/invoices/${invoice.id}/credit-note`)
-      .json({ reason: 'Wrong company name' })
+      .json({ reason: 'Wrong company name', sendTo: 'accounts@acme.test' })
       .loginAs(ctx.owner)
     credited.assertStatus(200)
     const cancelled = json(credited).data
+    assert.deepEqual(
+      cancelled.emails.map((row: { document: string }) => row.document),
+      ['credit_note', 'invoice']
+    )
+
+    // Sending again: a cancelled invoice sends its credit note
+    const resent = await client
+      .post(`/api/v1/admin/invoices/${invoice.id}/send`)
+      .json({ to: 'finance@acme.test' })
+      .loginAs(ctx.owner)
+    resent.assertStatus(200)
+    assert.include(json(resent).data.emails[0], {
+      to: 'finance@acme.test',
+      document: 'credit_note',
+    })
+    const viewerSend = await client
+      .post(`/api/v1/admin/invoices/${invoice.id}/send`)
+      .json({ to: 'finance@acme.test' })
+      .loginAs(ctx.viewer)
+    viewerSend.assertStatus(403)
     assert.equal(cancelled.status, 'credited')
     assert.equal(cancelled.creditNote.number, `CN-${year}-00001`)
     assert.equal(cancelled.standing.state, 'credited')
