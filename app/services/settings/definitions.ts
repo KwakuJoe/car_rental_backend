@@ -370,6 +370,14 @@ export const settingDefinitions = {
   },
 
   // ── Customer reminders (SMS, and email when they gave one) ──
+  'reminders.staff_booking_confirmation': {
+    group: 'reminders',
+    type: 'boolean',
+    label: 'Confirmation for phone and walk-in bookings',
+    description:
+      'When staff confirm a booking, the customer gets its details by SMS and email: car, pick-up, balance and what to bring. Website bookings always get theirs.',
+    default: true,
+  },
   'reminders.pickup_hours_before': {
     group: 'reminders',
     type: 'integer',

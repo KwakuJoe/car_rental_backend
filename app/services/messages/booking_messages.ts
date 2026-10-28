@@ -12,6 +12,8 @@ import {
   type EmailContent,
 } from '#mails/branded_message'
 import MessageService from '#services/messages/message_service'
+import OutboundMessage from '#models/outbound_message'
+import SettingsService from '#services/settings/settings_service'
 import { formatMoney } from '#helpers/money'
 
 const GREEN = '#16a34a'
@@ -299,6 +301,66 @@ export default class BookingMessages {
           ...(url ? { button: { label: 'View my booking', url } } : {}),
           notes: [
             'Bring your Ghana Card (or passport) and your driving licence. We’ll inspect the car with you before you drive off.',
+          ],
+        }
+      )
+    } catch (error) {
+      this.failed(booking, error)
+    }
+  }
+
+  /**
+   * A booking made by staff (phone, walk-in, WhatsApp) is confirmed: its
+   * details in writing - online bookings get theirs from paymentVerified.
+   * Once per booking; off with reminders.staff_booking_confirmation.
+   */
+  static async staffConfirmed(booking: Booking) {
+    if (booking.publicTokenEncrypted || booking.source === 'website') return
+    try {
+      if (!(await SettingsService.get('reminders.staff_booking_confirmation'))) return
+      const already = await OutboundMessage.query()
+        .where('booking_id', booking.id)
+        .where('kind', 'staff_booking_confirmed')
+        .first()
+      if (already) return
+      const c = await this.context(booking)
+      const balance = Math.max(0, booking.balanceAmount)
+      const selfDrive = booking.driveType === 'self_drive'
+      const place = booking.deliveryZoneId
+        ? `we bring it to you (${c.where.replace('Delivered - ', '')})`
+        : `at our office${c.brand.address ? `, ${c.brand.address}` : ''}`
+      const bring = selfDrive
+        ? 'Bring your Ghana Card (or passport) and driving licence.'
+        : 'Bring your Ghana Card (or passport).'
+      await this.send(
+        booking,
+        'staff_booking_confirmed',
+        `${c.name}: Hi ${c.first}, booking ${booking.reference} is confirmed. ${c.car}, pick-up ${c.pickup}, ${place}. Return ${c.returns}.${balance ? ` Balance ${formatMoney(balance)} at pick-up.` : ''} ${bring}${c.brand.phone ? ` Questions? ${c.brand.phone}` : ''}`,
+        {
+          subject: `Booking confirmed - ${booking.reference}`,
+          preheader: `Your ${c.car} is booked for ${c.pickup}.`,
+          eyebrow: { text: 'Confirmed', color: GREEN },
+          heading: `You’re booked, ${c.first}`,
+          paragraphs: [
+            `Thanks for booking with ${c.name}. Your ${c.car} will be ready ${c.pickup} - ${place}.`,
+          ],
+          amount: balance
+            ? {
+                label: 'Balance at pick-up',
+                value: formatMoney(balance),
+                note: booking.depositAmount
+                  ? `Plus a refundable security deposit of ${formatMoney(booking.depositAmount)}.`
+                  : undefined,
+              }
+            : {
+                label: 'Paid',
+                value: formatMoney(booking.totalAmount),
+                note: 'Thank you - nothing more to pay.',
+              },
+          details: this.trip(booking, c),
+          notes: [
+            `${bring} We’ll inspect the car with you before you ${selfDrive ? 'drive off' : 'set off'}.`,
+            `Need to change something? Call or WhatsApp us${c.brand.phone ? ` on ${c.brand.phone}` : ''} and quote ${booking.reference}.`,
           ],
         }
       )

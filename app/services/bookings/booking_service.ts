@@ -351,6 +351,7 @@ export default class BookingService {
         )
         return created
       })
+      if (booking.status === 'confirmed') await BookingMessages.staffConfirmed(booking)
       return { booking, warnings }
     } catch (error: any) {
       // 23P01: exclusion_violation - someone else took the car first
@@ -445,6 +446,9 @@ export default class BookingService {
       },
       trx
     )
+    // Phone / walk-in bookings: the customer gets the details once it's saved
+    // (awaited by the commit, so the message is stored before the request answers)
+    trx.after('commit', () => BookingMessages.staffConfirmed(booking))
   }
 
   /** Cancel with the policy fee worked out (refunds themselves are Phase 5). */

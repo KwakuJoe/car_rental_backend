@@ -17,7 +17,8 @@ test('command files only import app code lazily inside run()', async ({ assert }
     if (!file.endsWith('.ts')) continue
     const source = await readFile(`${dir}${file}`, 'utf-8')
     const offending = [
-      ...source.matchAll(/^import\s.+from\s+'(#(?:models|services|database)\/[^']+)'/gm),
+      // `import type` is erased at build time, so it loads nothing
+      ...source.matchAll(/^import\s(?!type\s).+from\s+'(#(?:models|services|database)\/[^']+)'/gm),
     ]
       .map((match) => match[1])
       .filter((path) => !ALLOWED_TOP_LEVEL.includes(path))
