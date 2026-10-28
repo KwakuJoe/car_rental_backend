@@ -285,6 +285,7 @@ export default class IncidentsController {
       action: 'incident.created',
       subject: { type: 'incident', id: incident.id, label: incident.number },
       after: { type: incident.type, carId: incident.carId, bookingId: incident.bookingId },
+      metadata: { bookingChosenByHand: !!payload.bookingId },
     })
     const car = `${incident.car.make} ${incident.car.model} (${incident.car.registrationNo})`
     const happened = incident.occurredAt.setZone(tz).toFormat('ccc d LLL, HH:mm')
@@ -333,6 +334,7 @@ export default class IncidentsController {
       action: 'incident.updated',
       subject: { type: 'incident', id: result.value.id, label: result.value.number },
       after: { claimStatus: result.value.claimStatus, bookingId: result.value.bookingId },
+      metadata: { bookingChosenByHand: !!payload.bookingId },
     })
     const incident = await incidents().where('id', result.value.id).firstOrFail()
     return response.ok({ message: 'Incident updated', data: incidentJson(incident) })
@@ -444,6 +446,7 @@ export default class IncidentsController {
       action: 'fine.created',
       subject: { type: 'traffic_fine', id: fine.id, label: fine.offence },
       after: { carId: fine.carId, bookingId: fine.bookingId, amount: fine.amount },
+      metadata: { bookingChosenByHand: !!payload.bookingId },
     })
     return response.created({
       message: fine.booking
@@ -465,6 +468,7 @@ export default class IncidentsController {
       action: 'fine.updated',
       subject: { type: 'traffic_fine', id: result.value.id, label: result.value.offence },
       after: { bookingId: result.value.bookingId, amount: result.value.amount },
+      metadata: { bookingChosenByHand: !!payload.bookingId },
     })
     return response.ok({
       message: 'Fine updated',

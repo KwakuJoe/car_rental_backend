@@ -242,6 +242,55 @@ test.group('damage, accidents & traffic fines', (group) => {
     future.assertStatus(422)
   })
 
+  test('staff can choose the booking by hand (handed over but never checked out)', async ({
+    client,
+    assert,
+  }) => {
+    const ctx = await setup()
+    const created = await client
+      .post('/api/v1/admin/bookings')
+      .json({
+        customerId: ctx.customer.id,
+        carId: ctx.car.id,
+        pickupAt: at(30),
+        returnAt: at(33),
+        driveType: 'self_drive',
+        source: 'phone',
+        confirm: true,
+      })
+      .loginAs(ctx.owner)
+    const booking = json(created).data
+    const fields = {
+      carId: ctx.car.id,
+      offence: 'Red light',
+      issuedAt: at(-1, '10:00'),
+      amount: 20_000,
+    }
+
+    // Not matched automatically (it's only confirmed) - chosen by hand instead
+    const auto = json(
+      await client.post('/api/v1/admin/traffic-fines').json(fields).loginAs(ctx.viewer)
+    ).data
+    assert.isNull(auto.bookingId)
+    const chosen = await client
+      .post('/api/v1/admin/traffic-fines')
+      .json({ ...fields, bookingId: booking.id })
+      .loginAs(ctx.viewer)
+    chosen.assertStatus(201)
+    assert.equal(json(chosen).data.bookingId, booking.id)
+    const charged = await client
+      .post(`/api/v1/admin/traffic-fines/${json(chosen).data.id}/charge`)
+      .loginAs(ctx.viewer)
+    charged.assertStatus(200)
+
+    // Another car's booking, or a cancelled one, is refused
+    const wrongCar = await client
+      .post('/api/v1/admin/traffic-fines')
+      .json({ ...fields, carId: ctx.second.id, bookingId: booking.id })
+      .loginAs(ctx.viewer)
+    wrongCar.assertStatus(422)
+  })
+
   test('an accident: matched booking, team alert, charged up to the excess', async ({
     client,
     assert,

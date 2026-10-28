@@ -17,6 +17,11 @@ import { userCan } from '#helpers/permissions'
 
 /** Bookings where the car actually went out */
 const WENT_OUT = ['on_rent', 'returned', 'closed']
+/**
+ * Staff can also pick a confirmed booking by hand: the car was handed over
+ * but never checked out in the app.
+ */
+const CHARGEABLE = ['confirmed', ...WENT_OUT]
 
 export type FineInput = {
   carId: string
@@ -85,8 +90,8 @@ export default class IncidentService {
       .where('id', bookingId)
       .forUpdate()
       .firstOrFail()
-    if (!WENT_OUT.includes(booking.status)) {
-      throw new BookingError('bookingId', 'Only a booking where the car went out can be charged.')
+    if (!CHARGEABLE.includes(booking.status)) {
+      throw new BookingError('bookingId', 'Only a confirmed or rented booking can be charged.')
     }
     const row = await BookingCharge.create(
       {
@@ -135,6 +140,9 @@ export default class IncidentService {
     const booking = await Booking.find(bookingId, { client: trx })
     if (!booking || booking.carId !== carId) {
       throw new BookingError('bookingId', 'That booking wasn’t for this car.')
+    }
+    if (!CHARGEABLE.includes(booking.status)) {
+      throw new BookingError('bookingId', 'Choose a booking where the car was handed over.')
     }
     return booking.id
   }
