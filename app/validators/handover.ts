@@ -44,7 +44,8 @@ export const damageValidator = vine.create({
 })
 
 export const completeCheckOutValidator = vine.create({
-  signatureFileId: vine.string(),
+  // Optional while signature uploads are switched off: the typed name records acceptance
+  signatureFileId: vine.string().nullable().optional(),
   signedName: vine.string().trim().minLength(2).maxLength(150),
 })
 

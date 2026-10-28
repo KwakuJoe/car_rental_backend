@@ -324,20 +324,10 @@ async function checkedOut(client: any, ctx: Awaited<ReturnType<typeof setup>>) {
       paymentOverrideReason: 'Pays on return',
     })
     .loginAs(owner)
-  const signature = await File.create({
-    disk: 'cloudinary',
-    path: 'wynk/signature/2',
-    url: 'https://res.cloudinary.com/test/signature/2.png',
-    originalName: 'signature.png',
-    mime: 'image/png',
-    size: 1000,
-    purpose: 'signature',
-    isPrivate: true,
-    metadata: {},
-  })
+  // No drawn signature: the typed name is enough while signature uploads are off
   const done = await client
     .post(`/api/v1/admin/bookings/${id}/check-out/complete`)
-    .json({ signatureFileId: signature.id, signedName: 'Ama Owusu' })
+    .json({ signedName: 'Ama Owusu' })
     .loginAs(owner)
   done.assertStatus(200)
   return { id, total: json(created).data.totalAmount as number }

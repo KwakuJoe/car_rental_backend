@@ -240,7 +240,7 @@ export default class CheckOutService {
     ctx: HttpContext,
     booking: Booking,
     inspection: Inspection,
-    input: { signatureFileId: string; signedName: string },
+    input: { signatureFileId?: string | null; signedName: string },
     user: User
   ) {
     if (inspection.status === 'completed') {
@@ -251,8 +251,9 @@ export default class CheckOutService {
     if (failing.length) {
       throw new BookingError(failing[0].code, failing[0].message!)
     }
-    const signature = await File.find(input.signatureFileId)
-    if (!signature || signature.purpose !== 'signature') {
+    // shortcut: a drawn signature is optional while signature uploads are off; require it again once Cloudinary signing works
+    const signature = input.signatureFileId ? await File.find(input.signatureFileId) : null
+    if (input.signatureFileId && (!signature || signature.purpose !== 'signature')) {
       throw new BookingError('signatureFileId', 'The customer needs to sign.')
     }
     const terms = await TermsVersion.current()
@@ -305,7 +306,7 @@ export default class CheckOutService {
     ctx: HttpContext,
     booking: Booking,
     inspection: Inspection,
-    signature: File,
+    signature: File | null,
     terms: TermsVersion,
     agreementHash: string,
     signedName: string,
@@ -318,7 +319,7 @@ export default class CheckOutService {
         status: 'completed',
         termsVersionId: terms.id,
         agreementHash,
-        signatureFileId: signature.id,
+        signatureFileId: signature?.id ?? null,
         signedName,
         signedAt: now,
         signerIp: clientIp(ctx),
@@ -327,9 +328,11 @@ export default class CheckOutService {
         inspectedBy: user.id,
       })
       await inspection.save()
-      await File.query({ client: trx })
-        .where('id', signature.id)
-        .update({ attachable_type: 'inspection', attachable_id: inspection.id })
+      if (signature) {
+        await File.query({ client: trx })
+          .where('id', signature.id)
+          .update({ attachable_type: 'inspection', attachable_id: inspection.id })
+      }
 
       const car = await Car.findOrFail(booking.carId, { client: trx })
       if (inspection.odometerKm! > car.currentOdometerKm) {

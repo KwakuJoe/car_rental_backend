@@ -435,7 +435,11 @@ export default class HandoverPdfService {
           characterSpacing: 0.5,
         })
       const placeholder =
-        index === 0 ? '(signature on file)' : 'Handed the car over with the customer'
+        index === 0
+          ? out.signatureFileId
+            ? '(signature on file)'
+            : '(accepted by typed name)'
+          : 'Handed the car over with the customer'
       let drawn = false
       if (item.image) {
         try {
