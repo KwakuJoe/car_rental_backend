@@ -338,6 +338,33 @@ router
           })
           .use(middleware.permission({ permissions: ['maintenance.manage'] }))
 
+        // Damage, accidents & traffic fines (M8.2)
+        router
+          .group(() => {
+            router.get('incidents/match', [controllers.admin.Incidents, 'match'])
+            router.get('incidents', [controllers.admin.Incidents, 'incidents'])
+            router.get('incidents/:id', [controllers.admin.Incidents, 'showIncident'])
+            router.get('traffic-fines', [controllers.admin.Incidents, 'fines'])
+            router.get('damages', [controllers.admin.Incidents, 'damages'])
+          })
+          .use(middleware.permission({ permissions: ['incidents.view'] }))
+        router
+          .group(() => {
+            router.post('incidents', [controllers.admin.Incidents, 'storeIncident'])
+            router.put('incidents/:id', [controllers.admin.Incidents, 'updateIncident'])
+            router.post('incidents/:id/charge', [controllers.admin.Incidents, 'chargeIncident'])
+            router.post('incidents/:id/close', [controllers.admin.Incidents, 'closeIncident'])
+            router.post('incidents/:id/reopen', [controllers.admin.Incidents, 'reopenIncident'])
+            router.post('traffic-fines', [controllers.admin.Incidents, 'storeFine'])
+            router.put('traffic-fines/:id', [controllers.admin.Incidents, 'updateFine'])
+            router.post('traffic-fines/:id/charge', [controllers.admin.Incidents, 'chargeFine'])
+            router.post('traffic-fines/:id/pay', [controllers.admin.Incidents, 'payFine'])
+            router.post('traffic-fines/:id/cancel', [controllers.admin.Incidents, 'cancelFine'])
+            router.post('damages/:id/resolve', [controllers.admin.Incidents, 'resolveDamage'])
+            router.post('damages/:id/reopen', [controllers.admin.Incidents, 'reopenDamage'])
+          })
+          .use(middleware.permission({ permissions: ['incidents.manage'] }))
+
         // Invoices & credit notes (M5.6)
         router
           .group(() => {

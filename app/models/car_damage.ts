@@ -2,7 +2,9 @@ import { CarDamageSchema } from '#database/schema'
 import { compose } from '@adonisjs/core/helpers'
 import { belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import Car from '#models/car'
 import File from '#models/file'
+import Inspection from '#models/inspection'
 import { withUlid } from '#models/mixins/with_ulid'
 
 /** Zones of the top-view car diagram (frontend draws the same ones) */
@@ -33,7 +35,20 @@ export const DAMAGE_ZONES = [
 export const DAMAGE_TYPES = ['scratch', 'dent', 'crack', 'chip', 'missing_part'] as const
 export const DAMAGE_SEVERITIES = ['minor', 'moderate', 'major'] as const
 
+export const DAMAGE_RESOLUTIONS = ['repaired', 'accepted_wear'] as const
+export type DamageResolution = (typeof DAMAGE_RESOLUTIONS)[number]
+
+/** A mark on a car (from check-out / check-in); open until repaired or accepted as wear. */
 export default class CarDamage extends compose(CarDamageSchema, withUlid) {
+  declare resolution: DamageResolution | null
+
   @belongsTo(() => File, { foreignKey: 'photoFileId' })
   declare photo: BelongsTo<typeof File>
+
+  @belongsTo(() => Car)
+  declare car: BelongsTo<typeof Car>
+
+  /** The check-out or check-in where it was found */
+  @belongsTo(() => Inspection, { foreignKey: 'reportedInspectionId' })
+  declare inspection: BelongsTo<typeof Inspection>
 }

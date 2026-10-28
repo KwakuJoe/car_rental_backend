@@ -462,7 +462,7 @@ export class CarAllocationSchema extends BaseModel {
 }
 
 export class CarDamageSchema extends BaseModel {
-  static $columns = ['carId', 'createdAt', 'createdBy', 'id', 'note', 'photoFileId', 'repairedAt', 'reportedInspectionId', 'severity', 'type', 'updatedAt', 'x', 'y', 'zone'] as const
+  static $columns = ['carId', 'createdAt', 'createdBy', 'id', 'note', 'photoFileId', 'repairedAt', 'repairedJobCardId', 'reportedInspectionId', 'resolution', 'resolutionNote', 'severity', 'type', 'updatedAt', 'x', 'y', 'zone'] as const
   $columns = CarDamageSchema.$columns
   @column()
   declare carId: string
@@ -479,7 +479,13 @@ export class CarDamageSchema extends BaseModel {
   @column.dateTime()
   declare repairedAt: DateTime | null
   @column()
+  declare repairedJobCardId: string | null
+  @column()
   declare reportedInspectionId: string | null
+  @column()
+  declare resolution: string | null
+  @column()
+  declare resolutionNote: string | null
   @column()
   declare severity: string
   @column()
@@ -1017,6 +1023,59 @@ export class FileSchema extends BaseModel {
   declare url: string
 }
 
+export class IncidentSchema extends BaseModel {
+  static $columns = ['bookingId', 'branchId', 'carId', 'chargeId', 'claimAmount', 'claimNo', 'claimStatus', 'closedAt', 'createdAt', 'createdBy', 'description', 'driverName', 'id', 'location', 'notes', 'number', 'occurredAt', 'photoFileIds', 'policeReportNo', 'repairEstimateAmount', 'status', 'thirdParty', 'type', 'updatedAt'] as const
+  $columns = IncidentSchema.$columns
+  @column()
+  declare bookingId: string | null
+  @column()
+  declare branchId: string
+  @column()
+  declare carId: string
+  @column()
+  declare chargeId: string | null
+  @column()
+  declare claimAmount: number | null
+  @column()
+  declare claimNo: string | null
+  @column()
+  declare claimStatus: string
+  @column.dateTime()
+  declare closedAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare description: string
+  @column()
+  declare driverName: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare location: string | null
+  @column()
+  declare notes: string | null
+  @column()
+  declare number: string
+  @column.dateTime()
+  declare occurredAt: DateTime
+  @column()
+  declare photoFileIds: any
+  @column()
+  declare policeReportNo: string | null
+  @column()
+  declare repairEstimateAmount: number | null
+  @column()
+  declare status: string
+  @column()
+  declare thirdParty: any | null
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class InspectionPhotoSchema extends BaseModel {
   static $columns = ['angle', 'createdAt', 'fileId', 'id', 'inspectionId', 'updatedAt'] as const
   $columns = InspectionPhotoSchema.$columns
@@ -1131,7 +1190,7 @@ export class InvoiceSchema extends BaseModel {
 }
 
 export class JobCardSchema extends BaseModel {
-  static $columns = ['allocationId', 'branchId', 'cancelReason', 'carId', 'completedAt', 'completedBy', 'createdAt', 'createdBy', 'doneBy', 'expectedBackAt', 'expenseId', 'garageName', 'id', 'lines', 'mechanicName', 'notes', 'number', 'odometerKm', 'openedAt', 'problem', 'scheduleIds', 'status', 'title', 'totalAmount', 'type', 'updatedAt'] as const
+  static $columns = ['allocationId', 'branchId', 'cancelReason', 'carId', 'completedAt', 'completedBy', 'createdAt', 'createdBy', 'damageIds', 'doneBy', 'expectedBackAt', 'expenseId', 'garageName', 'id', 'incidentId', 'lines', 'mechanicName', 'notes', 'number', 'odometerKm', 'openedAt', 'problem', 'scheduleIds', 'status', 'title', 'totalAmount', 'type', 'updatedAt'] as const
   $columns = JobCardSchema.$columns
   @column()
   declare allocationId: string | null
@@ -1150,6 +1209,8 @@ export class JobCardSchema extends BaseModel {
   @column()
   declare createdBy: string | null
   @column()
+  declare damageIds: any
+  @column()
   declare doneBy: string
   @column.dateTime()
   declare expectedBackAt: DateTime | null
@@ -1159,6 +1220,8 @@ export class JobCardSchema extends BaseModel {
   declare garageName: string | null
   @column({ isPrimary: true })
   declare id: string
+  @column()
+  declare incidentId: string | null
   @column()
   declare lines: any
   @column()
@@ -1691,6 +1754,49 @@ export class TermsVersionSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare version: number
+}
+
+export class TrafficFineSchema extends BaseModel {
+  static $columns = ['adminFeeAmount', 'amount', 'bookingId', 'branchId', 'cancelReason', 'carId', 'chargeId', 'createdAt', 'createdBy', 'expenseId', 'fileId', 'id', 'issuedAt', 'location', 'notes', 'offence', 'reference', 'status', 'updatedAt'] as const
+  $columns = TrafficFineSchema.$columns
+  @column()
+  declare adminFeeAmount: number
+  @column()
+  declare amount: number
+  @column()
+  declare bookingId: string | null
+  @column()
+  declare branchId: string
+  @column()
+  declare cancelReason: string | null
+  @column()
+  declare carId: string
+  @column()
+  declare chargeId: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare expenseId: string | null
+  @column()
+  declare fileId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column.dateTime()
+  declare issuedAt: DateTime
+  @column()
+  declare location: string | null
+  @column()
+  declare notes: string | null
+  @column()
+  declare offence: string
+  @column()
+  declare reference: string | null
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
 }
 
 export class UserSchema extends BaseModel {

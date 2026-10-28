@@ -46,6 +46,9 @@ export default class JobCard extends compose(JobCardSchema, withUlid) {
   @column({ prepare: json })
   declare scheduleIds: string[]
 
+  @column({ prepare: json })
+  declare damageIds: string[]
+
   @belongsTo(() => Car)
   declare car: BelongsTo<typeof Car>
 

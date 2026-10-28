@@ -171,6 +171,20 @@ Update this list as modules land.
             channel). Permissions maintenance.view / maintenance.manage.
             Frontend: Fleet → Maintenance, car Maintenance tab, calendar
             "In the garage".
+  [x] M8.2  Damage, accidents & traffic fines (2026-10-28). Damage register =
+            car_damages from check-out/in, now resolved as repaired (by hand
+            or by a job card's damage_ids on completion) or fair wear.
+            Incidents INC- (accident / theft / breakdown / police stop /
+            other; police report, third party, insurance claim, photos;
+            "Accident or incident" staff alert). Traffic fines (offence,
+            ticket, amount + admin fee, notice scan). Both matched to the
+            booking that had the car (actual pick-up/return times). Charging
+            the customer adds a booking charge (code damage / traffic_fine);
+            a closed booking goes back to returned. Incident charge above the
+            protection excess needs bookings.override + a reason. A fine the
+            business pays = car expense (Fines & penalties). Job cards link to
+            an incident. Permissions incidents.view / incidents.manage.
+            Frontend: Fleet -> Incidents & fines, car "Damage & incidents" tab.
   [ ] M8.6  vehicle usage chart on the Odometer tab (after M8.1, or a simple
             version after Phase 4) - see M8.6
 

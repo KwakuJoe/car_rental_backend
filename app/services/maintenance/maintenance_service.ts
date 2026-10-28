@@ -3,6 +3,7 @@ import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
 import Car from '#models/car'
 import CarAllocation from '#models/car_allocation'
+import CarDamage from '#models/car_damage'
 import Expense, { type ExpensePaidVia } from '#models/expense'
 import ExpenseCategory from '#models/expense_category'
 import JobCard, {
@@ -12,10 +13,12 @@ import JobCard, {
   type JobCardType,
   type JobDoneBy,
 } from '#models/job_card'
+import Incident from '#models/incident'
 import MaintenanceSchedule from '#models/maintenance_schedule'
 import OdometerLog from '#models/odometer_log'
 import type User from '#models/user'
 import { BookingError } from '#services/bookings/booking_service'
+import IncidentService from '#services/incidents/incident_service'
 import NumberingService from '#services/numbering_service'
 import { userCan } from '#helpers/permissions'
 
@@ -34,6 +37,10 @@ export type JobCardInput = {
   expectedBackAt: DateTime | null
   lines: Omit<JobCardLine, 'amount'>[]
   scheduleIds: string[]
+  /** Damage marks on the car this repairs (marked repaired when completed) */
+  damageIds: string[]
+  /** The accident / incident this repairs */
+  incidentId: string | null
   notes: string | null
 }
 
@@ -148,11 +155,34 @@ export default class MaintenanceService {
     return rows
   }
 
+  /** The damage and incident must be this car's */
+  private static async assertLinks(
+    trx: TransactionClientContract,
+    carId: string,
+    input: JobCardInput
+  ) {
+    if (input.damageIds.length) {
+      const damages = await CarDamage.query({ client: trx })
+        .where('car_id', carId)
+        .whereIn('id', input.damageIds)
+      if (damages.length !== new Set(input.damageIds).size) {
+        throw new BookingError('damageIds', 'Choose damage recorded on this car.')
+      }
+    }
+    if (input.incidentId) {
+      const incident = await Incident.find(input.incidentId, { client: trx })
+      if (!incident || incident.carId !== carId) {
+        throw new BookingError('incidentId', 'That incident was with another car.')
+      }
+    }
+  }
+
   static async open(carId: string, input: JobCardInput, user: User) {
     return db.transaction(async (trx) => {
       const car = await Car.findOrFail(carId, { client: trx })
       if (car.archivedAt) throw new BookingError('carId', 'This car is archived.')
       await this.schedulesFor(trx, car.id, input.scheduleIds)
+      await this.assertLinks(trx, car.id, input)
       const lines = priced(input.lines)
       const card = new JobCard().useTransaction(trx)
       card.merge({
@@ -172,6 +202,8 @@ export default class MaintenanceService {
         lines,
         totalAmount: total(lines),
         scheduleIds: input.scheduleIds,
+        damageIds: input.damageIds,
+        incidentId: input.incidentId,
         notes: input.notes,
         createdBy: user.id,
       })
@@ -195,6 +227,7 @@ export default class MaintenanceService {
         throw new BookingError('status', 'Use Complete or Cancel for that.')
       }
       await this.schedulesFor(trx, card.carId, input.scheduleIds)
+      await this.assertLinks(trx, card.carId, input)
       const lines = priced(input.lines)
 
       // The block follows the expected-back time
@@ -244,6 +277,8 @@ export default class MaintenanceService {
         lines,
         totalAmount: total(lines),
         scheduleIds: input.scheduleIds,
+        damageIds: input.damageIds,
+        incidentId: input.incidentId,
         notes: input.notes,
       })
       await card.save()
@@ -291,6 +326,15 @@ export default class MaintenanceService {
         schedule.lastDoneOn = done.startOf('day')
         schedule.nextDueOn = this.nextDue(done, schedule.intervalMonths)
         await schedule.save()
+      }
+
+      // The damage it fixed is no longer open
+      for (const damageId of card.damageIds) {
+        await IncidentService.resolveDamage(
+          damageId,
+          { resolution: 'repaired', note: card.number, jobCardId: card.id },
+          trx
+        )
       }
 
       const odometer = input.odometerKm ?? card.odometerKm

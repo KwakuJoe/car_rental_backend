@@ -1567,6 +1567,227 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['cancelJobCard']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.incidents.match': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/incidents/match'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/incident').matchBookingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['match']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['match']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['match']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.incidents': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/incidents'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/incident').listIncidentsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['incidents']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['incidents']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['incidents']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.show_incident': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/incidents/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['showIncident']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['showIncident']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['showIncident']>>>
+    }
+  }
+  'admin.incidents.fines': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/traffic-fines'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/incident').listFinesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['fines']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['fines']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['fines']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.damages': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/damages'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/incident').listDamagesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['damages']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['damages']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['damages']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.store_incident': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/incidents'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/incident').incidentValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/incident').incidentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['storeIncident']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['storeIncident']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['storeIncident']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.update_incident': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/incidents/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/incident').incidentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/incident').incidentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['updateIncident']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['updateIncident']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['updateIncident']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.charge_incident': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/incidents/:id/charge'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/incident').chargeIncidentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/incident').chargeIncidentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['chargeIncident']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['chargeIncident']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['chargeIncident']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.close_incident': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/incidents/:id/close'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['closeIncident']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['closeIncident']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['closeIncident']>>>
+    }
+  }
+  'admin.incidents.reopen_incident': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/incidents/:id/reopen'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['reopenIncident']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['reopenIncident']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['reopenIncident']>>>
+    }
+  }
+  'admin.incidents.store_fine': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/traffic-fines'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/incident').fineValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/incident').fineValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['storeFine']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['storeFine']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['storeFine']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.update_fine': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/traffic-fines/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/incident').fineValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/incident').fineValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['updateFine']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['updateFine']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['updateFine']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.charge_fine': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/traffic-fines/:id/charge'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['chargeFine']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['chargeFine']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['chargeFine']>>>
+    }
+  }
+  'admin.incidents.pay_fine': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/traffic-fines/:id/pay'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/incident').payFineValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/incident').payFineValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['payFine']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['payFine']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['payFine']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.cancel_fine': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/traffic-fines/:id/cancel'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/incident').reasonValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/incident').reasonValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['cancelFine']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['cancelFine']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['cancelFine']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.resolve_damage': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/damages/:id/resolve'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/incident').resolveDamageValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/incident').resolveDamageValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['resolveDamage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['resolveDamage']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['resolveDamage']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.incidents.reopen_damage': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/damages/:id/reopen'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['reopenDamage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['reopenDamage']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/incidents_controller').default['reopenDamage']>>>
+    }
+  }
   'admin.invoices.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/invoices'

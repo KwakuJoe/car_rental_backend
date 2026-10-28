@@ -65,6 +65,8 @@ const jobCardFields = {
     .maxLength(100)
     .optional(),
   scheduleIds: vine.array(vine.string()).maxLength(50).optional(),
+  damageIds: vine.array(vine.string()).maxLength(50).optional(),
+  incidentId: vine.string().nullable().optional(),
   notes: optionalText(2000),
 }
 

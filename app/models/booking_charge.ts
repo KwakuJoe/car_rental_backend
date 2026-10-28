@@ -12,6 +12,7 @@ export const CHARGE_CODES = [
   'missing_item',
   'cleaning',
   'smoking',
+  'traffic_fine',
   'other',
 ] as const
 export type ChargeCode = (typeof CHARGE_CODES)[number]

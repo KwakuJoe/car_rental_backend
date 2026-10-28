@@ -124,6 +124,23 @@ export type ScannedRoutes = {
     'admin.maintenance.update_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.maintenance.complete_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.maintenance.cancel_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.match': { paramsTuple?: []; params?: {} }
+    'admin.incidents.incidents': { paramsTuple?: []; params?: {} }
+    'admin.incidents.show_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.fines': { paramsTuple?: []; params?: {} }
+    'admin.incidents.damages': { paramsTuple?: []; params?: {} }
+    'admin.incidents.store_incident': { paramsTuple?: []; params?: {} }
+    'admin.incidents.update_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.charge_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.close_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.reopen_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.store_fine': { paramsTuple?: []; params?: {} }
+    'admin.incidents.update_fine': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.charge_fine': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.pay_fine': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.cancel_fine': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.resolve_damage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.reopen_damage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.index': { paramsTuple?: []; params?: {} }
     'admin.invoices.pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.credit_note_pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -256,6 +273,11 @@ export type ScannedRoutes = {
     'admin.maintenance.schedules': { paramsTuple?: []; params?: {} }
     'admin.maintenance.job_cards': { paramsTuple?: []; params?: {} }
     'admin.maintenance.show_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.match': { paramsTuple?: []; params?: {} }
+    'admin.incidents.incidents': { paramsTuple?: []; params?: {} }
+    'admin.incidents.show_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.fines': { paramsTuple?: []; params?: {} }
+    'admin.incidents.damages': { paramsTuple?: []; params?: {} }
     'admin.invoices.index': { paramsTuple?: []; params?: {} }
     'admin.invoices.pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.credit_note_pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -338,6 +360,11 @@ export type ScannedRoutes = {
     'admin.maintenance.schedules': { paramsTuple?: []; params?: {} }
     'admin.maintenance.job_cards': { paramsTuple?: []; params?: {} }
     'admin.maintenance.show_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.match': { paramsTuple?: []; params?: {} }
+    'admin.incidents.incidents': { paramsTuple?: []; params?: {} }
+    'admin.incidents.show_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.fines': { paramsTuple?: []; params?: {} }
+    'admin.incidents.damages': { paramsTuple?: []; params?: {} }
     'admin.invoices.index': { paramsTuple?: []; params?: {} }
     'admin.invoices.pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.credit_note_pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -410,6 +437,16 @@ export type ScannedRoutes = {
     'admin.maintenance.open_job_card': { paramsTuple?: []; params?: {} }
     'admin.maintenance.complete_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.maintenance.cancel_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.store_incident': { paramsTuple?: []; params?: {} }
+    'admin.incidents.charge_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.close_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.reopen_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.store_fine': { paramsTuple?: []; params?: {} }
+    'admin.incidents.charge_fine': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.pay_fine': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.cancel_fine': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.resolve_damage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.reopen_damage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.credit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.send': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -450,6 +487,8 @@ export type ScannedRoutes = {
     'admin.bookings.assign_driver': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.maintenance.update_schedule': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.maintenance.update_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.update_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.incidents.update_fine': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.expenses.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.save': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.checkIn.save': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

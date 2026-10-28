@@ -3,7 +3,8 @@ import { DateTime } from 'luxon'
 import { ulid } from 'ulid'
 import Business from '#models/business'
 
-export type DocumentType = 'booking' | 'receipt' | 'refund' | 'invoice' | 'credit_note' | 'job_card'
+export type DocumentType =
+  'booking' | 'receipt' | 'refund' | 'invoice' | 'credit_note' | 'job_card' | 'incident'
 
 /** Receipts, refund notes, invoices and credit notes have their own series; bookings use the business prefix. */
 const SERIES_PREFIX: Partial<Record<DocumentType, string>> = {
@@ -12,6 +13,7 @@ const SERIES_PREFIX: Partial<Record<DocumentType, string>> = {
   invoice: 'INV',
   credit_note: 'CN',
   job_card: 'JC',
+  incident: 'INC',
 }
 
 /**

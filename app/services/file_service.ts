@@ -332,6 +332,8 @@ export class FileService {
         'vehicle_document',
         'receipt_proof',
         'expense_receipt',
+        'incident_photo',
+        'fine_document',
       ])
       .where('created_at', '<', cutoff.toSQL()!)
     for (const file of orphans) await this.delete(file)

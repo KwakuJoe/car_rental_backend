@@ -264,6 +264,20 @@ export const permissionData = [
     description: 'Set service schedules, open and complete job cards (takes cars off the road)',
   },
 
+  // incidents
+  {
+    name: 'View incidents',
+    slug: 'incidents.view',
+    group: 'incidents',
+    description: 'See the damage register, accidents and traffic fines',
+  },
+  {
+    name: 'Manage incidents',
+    slug: 'incidents.manage',
+    group: 'incidents',
+    description: 'Record accidents and fines, charge them to the customer, mark damage repaired',
+  },
+
   // invoices
   {
     name: 'View invoices',
@@ -364,6 +378,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'invoices.manage',
     'maintenance.view',
     'maintenance.manage',
+    'incidents.view',
+    'incidents.manage',
   ],
   'front-desk': [
     'fleet.view',
@@ -385,6 +401,7 @@ export const rolePermissionMap: Record<string, string[]> = {
     'invoices.view',
     'invoices.manage',
     'maintenance.view',
+    'incidents.view',
   ],
   'fleet': [
     'fleet.view',
@@ -398,6 +415,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'expenses.manage',
     'maintenance.view',
     'maintenance.manage',
+    'incidents.view',
+    'incidents.manage',
   ],
   'driver': [],
   'accountant': [
@@ -416,5 +435,6 @@ export const rolePermissionMap: Record<string, string[]> = {
     'invoices.view',
     'invoices.manage',
     'maintenance.view',
+    'incidents.view',
   ],
 }

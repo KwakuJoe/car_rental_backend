@@ -90,6 +90,8 @@ const jobCardJson = (card: JobCard) => ({
   lines: card.lines,
   totalAmount: card.totalAmount,
   scheduleIds: card.scheduleIds,
+  damageIds: card.damageIds,
+  incidentId: card.incidentId,
   expenseId: card.expenseId,
   expenseStatus: card.expense?.status ?? null,
   notes: card.notes,
@@ -135,6 +137,8 @@ function jobInput(
       : null,
     lines: payload.lines ?? [],
     scheduleIds: [...new Set(payload.scheduleIds ?? [])],
+    damageIds: [...new Set(payload.damageIds ?? [])],
+    incidentId: payload.incidentId ?? null,
     notes: payload.notes ?? null,
   }
 }

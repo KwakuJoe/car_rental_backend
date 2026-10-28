@@ -59,6 +59,11 @@ async function canAccessPrivateFile(user: User, file: File): Promise<boolean> {
     return checkSlug('expenses.view')
   }
 
+  // Accident photos and fine notices: whoever deals with incidents
+  if (file.purpose === 'incident_photo' || file.purpose === 'fine_document') {
+    return checkSlug('incidents.view')
+  }
+
   if (file.purpose === 'receipt_proof') {
     return checkSlug('payments.view')
   }
@@ -82,9 +87,9 @@ export default class FilesController {
       'inspection_photo',
       'signature',
     ].includes(purpose)
-    // A receipt is a phone photo or a PDF
+    // A receipt or a fine notice is a phone photo or a PDF
     const allowedExtensions =
-      purpose === 'expense_receipt'
+      purpose === 'expense_receipt' || purpose === 'fine_document' || purpose === 'incident_photo'
         ? [...FileService.IMAGE_EXTENSIONS, 'pdf']
         : isImagePurpose
           ? FileService.IMAGE_EXTENSIONS

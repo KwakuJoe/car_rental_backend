@@ -24,6 +24,8 @@ export const FILE_PURPOSES = [
   'receipt_proof',
   'expense_receipt',
   'inspection_photo',
+  'incident_photo',
+  'fine_document',
   'other',
 ] as const
 
@@ -44,6 +46,8 @@ export const PRIVATE_PURPOSES: readonly FilePurpose[] = [
   'signature',
   'receipt_proof',
   'expense_receipt',
+  'incident_photo',
+  'fine_document',
 ] as const
 
 export default class File extends compose(FileSchema, withUlid) {

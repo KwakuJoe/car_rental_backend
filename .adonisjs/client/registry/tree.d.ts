@@ -185,6 +185,25 @@ export interface ApiDefinition {
       completeJobCard: typeof routes['admin.maintenance.complete_job_card']
       cancelJobCard: typeof routes['admin.maintenance.cancel_job_card']
     }
+    incidents: {
+      match: typeof routes['admin.incidents.match']
+      incidents: typeof routes['admin.incidents.incidents']
+      showIncident: typeof routes['admin.incidents.show_incident']
+      fines: typeof routes['admin.incidents.fines']
+      damages: typeof routes['admin.incidents.damages']
+      storeIncident: typeof routes['admin.incidents.store_incident']
+      updateIncident: typeof routes['admin.incidents.update_incident']
+      chargeIncident: typeof routes['admin.incidents.charge_incident']
+      closeIncident: typeof routes['admin.incidents.close_incident']
+      reopenIncident: typeof routes['admin.incidents.reopen_incident']
+      storeFine: typeof routes['admin.incidents.store_fine']
+      updateFine: typeof routes['admin.incidents.update_fine']
+      chargeFine: typeof routes['admin.incidents.charge_fine']
+      payFine: typeof routes['admin.incidents.pay_fine']
+      cancelFine: typeof routes['admin.incidents.cancel_fine']
+      resolveDamage: typeof routes['admin.incidents.resolve_damage']
+      reopenDamage: typeof routes['admin.incidents.reopen_damage']
+    }
     invoices: {
       index: typeof routes['admin.invoices.index']
       pdf: typeof routes['admin.invoices.pdf']

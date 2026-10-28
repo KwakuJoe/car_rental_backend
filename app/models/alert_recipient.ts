@@ -46,6 +46,12 @@ export const STAFF_ALERTS = [
     defaults: ['email'],
   },
   {
+    key: 'incident_reported',
+    label: 'Accident or incident',
+    description: 'An accident, theft, breakdown or police stop was recorded against a car.',
+    defaults: ['sms', 'email'],
+  },
+  {
     key: 'maintenance_due',
     label: 'Service due',
     description: 'A car’s scheduled service is coming up or overdue.',
