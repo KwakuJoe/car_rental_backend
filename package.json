@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "license": "MIT",
+  "engines": {
+    "node": "24.x"
+  },
   "exports": {
     "./data": "./.adonisjs/client/data.d.ts",
     "./registry": "./.adonisjs/client/registry/index.ts"
@@ -11,6 +14,7 @@
   "scripts": {
     "start": "node bin/server.js",
     "build": "node ace build",
+    "release": "node build/ace.js migration:run --force && node build/ace.js db:seed --files database/seeders/role_permission_seeder.js",
     "dev": "node ace serve --hmr",
     "test": "node ace test",
     "lint": "eslint .",

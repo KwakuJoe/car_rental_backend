@@ -214,9 +214,11 @@ booking; each message is claimed before it's sent, so nothing goes out twice).
 Env: QUEUE_DRIVER=database (the default). Tests use sync (.env.test).
 After deploying: node ace migration:run (creates queue_jobs / queue_schedules).
 
-On Railway: two services from the same repo and env variables -
-  web     start command: node bin/server.js   (after the build)
-  worker  start command: node ace queue:work
+On Railway: two services from the same repo, set up by railway.json (web:
+build, migrations + role seeder before each deploy, health check on /) and
+railway.worker.json (worker: node build/ace.js queue:work - set the worker
+service's "Config file path" to /railway.worker.json). See RAILWAY DEPLOYMENT
+below for the variables.
 (Low on budget? One service can run both, e.g. a start script that starts the
 worker in the background and then the server - keep them separate if you can,
 so a busy site never delays messages.) On a plain server, keep the worker up
@@ -280,3 +282,51 @@ QUICK REFERENCE: FULL INSTALL, START TO FINISH
   createdb car_rental_db_test
   NODE_ENV=test node ace migration:run
   node ace test
+
+
+RAILWAY DEPLOYMENT
+======================
+One Railway project per business (the one-business-per-install model).
+
+1. New project -> add PostgreSQL. Railway's Postgres user can create the
+   btree_gist / pg_trgm extensions, so migrations work as-is.
+2. Add a service from this repo, name it "web". railway.json does the rest:
+   build (npm run build), then before each deploy: migrations + the role
+   seeder, then node build/bin/server.js, health check on /.
+   Settings -> Networking -> generate a domain, target port 3333.
+3. Add a second service from the same repo, name it "worker".
+   Settings -> Config file path: /railway.worker.json (runs queue:work, no
+   domain, no health check).
+4. Variables. Put these in Project -> Shared Variables and share them with
+   both services (the worker boots the same app and validates the same env):
+
+     NODE_ENV=production
+     HOST=::                         (IPv4 + IPv6, for Railway's private network)
+     PORT=3333
+     TZ=UTC
+     LOG_LEVEL=info
+     APP_KEY=<node ace generate:key --show>
+     APP_URL=https://<web domain>
+     SESSION_DRIVER=cookie
+     LIMITER_STORE=database
+     QUEUE_DRIVER=database
+     PROXY_SECRET=<long random string, same as the frontend's BACKEND_PROXY_SECRET>
+     DB_HOST=${{Postgres.PGHOST}}
+     DB_PORT=${{Postgres.PGPORT}}
+     DB_USER=${{Postgres.PGUSER}}
+     DB_PASSWORD=${{Postgres.PGPASSWORD}}
+     DB_DATABASE=${{Postgres.PGDATABASE}}
+     CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET
+     WEBSITE_URL, MNOTIFY_*, MAIL_FROM_*, SMTP_*   (optional, see .env.example)
+
+   Cloudinary is required in practice: Railway's disk is wiped on every
+   deploy, and uploads go to Cloudinary only.
+5. Once the first deploy is green, create the owner (interactive, so from
+   your machine with the Railway CLI):
+     railway link            # pick the project and the web service
+     railway ssh             # a shell in the running web container
+     node build/ace.js business:create
+
+The frontend should call the API over the private network
+(http://web.railway.internal:3333) or the public domain; either way it
+must send PROXY_SECRET so rate limits count visitors, not the frontend.
