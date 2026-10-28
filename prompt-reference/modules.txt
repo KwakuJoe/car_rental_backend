@@ -158,6 +158,19 @@ Update this list as modules land.
             customer submits transaction ID - with the public site); daily
             cash-up (M5.7) - skipped for now by the owner (2026-10-27), the
             day's cash is in Reports; refund approval over a limit
+  [x] M8.1  Maintenance (2026-10-28), by TIME (owner's choice): schedules
+            per car (every N months, remind N days ahead; add for chosen cars
+            or a whole category); job cards JC- (service / repair / accident /
+            inspection / other; outside garage or own mechanic; parts +
+            labour lines). "Off the road" = a 'maintenance' car allocation
+            until expected back (409 naming the booking in the way). Complete:
+            frees the car, moves covered schedules on, logs the odometer,
+            records the cost as a car expense (Servicing / Repairs). Daily
+            06:00 check: bell per schedule milestone + one summary SMS/email
+            via the "Service due" staff alert (on/off per person, per
+            channel). Permissions maintenance.view / maintenance.manage.
+            Frontend: Fleet → Maintenance, car Maintenance tab, calendar
+            "In the garage".
   [ ] M8.6  vehicle usage chart on the Odometer tab (after M8.1, or a simple
             version after Phase 4) - see M8.6
 

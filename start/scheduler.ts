@@ -10,6 +10,7 @@
 */
 import logger from '@adonisjs/core/services/logger'
 import CheckDocumentExpiriesJob from '#jobs/check_document_expiries_job'
+import CheckMaintenanceDueJob from '#jobs/check_maintenance_due_job'
 import CheckOverdueReturnsJob from '#jobs/check_overdue_returns_job'
 import CleanupFilesJob from '#jobs/cleanup_files_job'
 import ExpireHoldsJob from '#jobs/expire_holds_job'
@@ -21,6 +22,11 @@ try {
   await SendRemindersJob.schedule({}).id('send-reminders').every('15m').run()
   await CheckDocumentExpiriesJob.schedule({})
     .id('check-document-expiries')
+    .cron('0 6 * * *')
+    .timezone('Africa/Accra')
+    .run()
+  await CheckMaintenanceDueJob.schedule({})
+    .id('check-maintenance-due')
     .cron('0 6 * * *')
     .timezone('Africa/Accra')
     .run()

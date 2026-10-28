@@ -29,6 +29,7 @@ export const controllers = {
     Handover: () => import('#controllers/admin/handover_controller'),
     Invoices: () => import('#controllers/admin/invoices_controller'),
     Lookups: () => import('#controllers/admin/lookups_controller'),
+    Maintenance: () => import('#controllers/admin/maintenance_controller'),
     Notifications: () => import('#controllers/admin/notifications_controller'),
     OpeningHours: () => import('#controllers/admin/opening_hours_controller'),
     Payments: () => import('#controllers/admin/payments_controller'),

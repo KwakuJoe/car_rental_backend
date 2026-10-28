@@ -250,6 +250,20 @@ export const permissionData = [
     description: 'Cancel a payment recorded by mistake (with a reason; it stays on record)',
   },
 
+  // maintenance
+  {
+    name: 'View maintenance',
+    slug: 'maintenance.view',
+    group: 'maintenance',
+    description: 'See service schedules and job cards',
+  },
+  {
+    name: 'Manage maintenance',
+    slug: 'maintenance.manage',
+    group: 'maintenance',
+    description: 'Set service schedules, open and complete job cards (takes cars off the road)',
+  },
+
   // invoices
   {
     name: 'View invoices',
@@ -348,6 +362,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'expenses.approve',
     'invoices.view',
     'invoices.manage',
+    'maintenance.view',
+    'maintenance.manage',
   ],
   'front-desk': [
     'fleet.view',
@@ -368,6 +384,7 @@ export const rolePermissionMap: Record<string, string[]> = {
     'payments.refund',
     'invoices.view',
     'invoices.manage',
+    'maintenance.view',
   ],
   'fleet': [
     'fleet.view',
@@ -379,6 +396,8 @@ export const rolePermissionMap: Record<string, string[]> = {
     'handover.checkin',
     'expenses.view',
     'expenses.manage',
+    'maintenance.view',
+    'maintenance.manage',
   ],
   'driver': [],
   'accountant': [
@@ -396,5 +415,6 @@ export const rolePermissionMap: Record<string, string[]> = {
     'expenses.approve',
     'invoices.view',
     'invoices.manage',
+    'maintenance.view',
   ],
 }

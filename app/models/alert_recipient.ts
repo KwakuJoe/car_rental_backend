@@ -45,6 +45,12 @@ export const STAFF_ALERTS = [
     description: 'Insurance, roadworthy or other papers are about to run out.',
     defaults: ['email'],
   },
+  {
+    key: 'maintenance_due',
+    label: 'Service due',
+    description: 'A car’s scheduled service is coming up or overdue.',
+    defaults: ['email'],
+  },
 ] as const
 
 export type StaffAlertKey = (typeof STAFF_ALERTS)[number]['key']

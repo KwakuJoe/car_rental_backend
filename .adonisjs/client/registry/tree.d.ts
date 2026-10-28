@@ -173,6 +173,18 @@ export interface ApiDefinition {
       overview: typeof routes['admin.reports.overview']
       export: typeof routes['admin.reports.export']
     }
+    maintenance: {
+      schedules: typeof routes['admin.maintenance.schedules']
+      jobCards: typeof routes['admin.maintenance.job_cards']
+      showJobCard: typeof routes['admin.maintenance.show_job_card']
+      storeSchedule: typeof routes['admin.maintenance.store_schedule']
+      updateSchedule: typeof routes['admin.maintenance.update_schedule']
+      destroySchedule: typeof routes['admin.maintenance.destroy_schedule']
+      openJobCard: typeof routes['admin.maintenance.open_job_card']
+      updateJobCard: typeof routes['admin.maintenance.update_job_card']
+      completeJobCard: typeof routes['admin.maintenance.complete_job_card']
+      cancelJobCard: typeof routes['admin.maintenance.cancel_job_card']
+    }
     invoices: {
       index: typeof routes['admin.invoices.index']
       pdf: typeof routes['admin.invoices.pdf']

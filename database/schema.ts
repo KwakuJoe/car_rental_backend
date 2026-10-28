@@ -1130,6 +1130,92 @@ export class InvoiceSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class JobCardSchema extends BaseModel {
+  static $columns = ['allocationId', 'branchId', 'cancelReason', 'carId', 'completedAt', 'completedBy', 'createdAt', 'createdBy', 'doneBy', 'expectedBackAt', 'expenseId', 'garageName', 'id', 'lines', 'mechanicName', 'notes', 'number', 'odometerKm', 'openedAt', 'problem', 'scheduleIds', 'status', 'title', 'totalAmount', 'type', 'updatedAt'] as const
+  $columns = JobCardSchema.$columns
+  @column()
+  declare allocationId: string | null
+  @column()
+  declare branchId: string
+  @column()
+  declare cancelReason: string | null
+  @column()
+  declare carId: string
+  @column.dateTime()
+  declare completedAt: DateTime | null
+  @column()
+  declare completedBy: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare doneBy: string
+  @column.dateTime()
+  declare expectedBackAt: DateTime | null
+  @column()
+  declare expenseId: string | null
+  @column()
+  declare garageName: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare lines: any
+  @column()
+  declare mechanicName: string | null
+  @column()
+  declare notes: string | null
+  @column()
+  declare number: string
+  @column()
+  declare odometerKm: number | null
+  @column.dateTime()
+  declare openedAt: DateTime
+  @column()
+  declare problem: string | null
+  @column()
+  declare scheduleIds: any
+  @column()
+  declare status: string
+  @column()
+  declare title: string
+  @column()
+  declare totalAmount: number
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class MaintenanceScheduleSchema extends BaseModel {
+  static $columns = ['active', 'carId', 'createdAt', 'createdBy', 'id', 'intervalMonths', 'lastDoneOn', 'nextDueOn', 'notes', 'remindDaysBefore', 'task', 'updatedAt'] as const
+  $columns = MaintenanceScheduleSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare carId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare intervalMonths: number
+  @column.date()
+  declare lastDoneOn: DateTime | null
+  @column.date()
+  declare nextDueOn: DateTime
+  @column()
+  declare notes: string | null
+  @column()
+  declare remindDaysBefore: number
+  @column()
+  declare task: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class NotificationSchema extends BaseModel {
   static $columns = ['body', 'createdAt', 'dedupeKey', 'id', 'link', 'readAt', 'title', 'type', 'updatedAt', 'userId'] as const
   $columns = NotificationSchema.$columns

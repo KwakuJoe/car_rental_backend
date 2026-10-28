@@ -114,6 +114,16 @@ export type ScannedRoutes = {
     'admin.payments.void': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.reports.overview': { paramsTuple?: []; params?: {} }
     'admin.reports.export': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'admin.maintenance.schedules': { paramsTuple?: []; params?: {} }
+    'admin.maintenance.job_cards': { paramsTuple?: []; params?: {} }
+    'admin.maintenance.show_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.maintenance.store_schedule': { paramsTuple?: []; params?: {} }
+    'admin.maintenance.update_schedule': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.maintenance.destroy_schedule': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.maintenance.open_job_card': { paramsTuple?: []; params?: {} }
+    'admin.maintenance.update_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.maintenance.complete_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.maintenance.cancel_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.index': { paramsTuple?: []; params?: {} }
     'admin.invoices.pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.credit_note_pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -243,6 +253,9 @@ export type ScannedRoutes = {
     'admin.payments.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.reports.overview': { paramsTuple?: []; params?: {} }
     'admin.reports.export': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'admin.maintenance.schedules': { paramsTuple?: []; params?: {} }
+    'admin.maintenance.job_cards': { paramsTuple?: []; params?: {} }
+    'admin.maintenance.show_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.index': { paramsTuple?: []; params?: {} }
     'admin.invoices.pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.credit_note_pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -322,6 +335,9 @@ export type ScannedRoutes = {
     'admin.payments.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.reports.overview': { paramsTuple?: []; params?: {} }
     'admin.reports.export': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'admin.maintenance.schedules': { paramsTuple?: []; params?: {} }
+    'admin.maintenance.job_cards': { paramsTuple?: []; params?: {} }
+    'admin.maintenance.show_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.index': { paramsTuple?: []; params?: {} }
     'admin.invoices.pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.credit_note_pdf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -390,6 +406,10 @@ export type ScannedRoutes = {
     'admin.payments.verify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.payments.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.payments.void': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.maintenance.store_schedule': { paramsTuple?: []; params?: {} }
+    'admin.maintenance.open_job_card': { paramsTuple?: []; params?: {} }
+    'admin.maintenance.complete_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.maintenance.cancel_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.credit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.invoices.send': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -428,6 +448,8 @@ export type ScannedRoutes = {
     'admin.customer_identities.update': { paramsTuple: [ParamValue,ParamValue]; params: {'customerId': ParamValue,'id': ParamValue} }
     'admin.bookings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.bookings.assign_driver': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.maintenance.update_schedule': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.maintenance.update_job_card': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.expenses.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.save': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.checkIn.save': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -458,6 +480,7 @@ export type ScannedRoutes = {
     'admin.car_blocks.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.vehicle_documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'carId': ParamValue,'id': ParamValue} }
     'admin.customers.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.maintenance.destroy_schedule': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.handover.remove_damage': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'damageId': ParamValue} }
     'admin.checkIn.removeDamage': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'damageId': ParamValue} }
     'admin.pricing_rules.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

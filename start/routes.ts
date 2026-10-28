@@ -309,6 +309,35 @@ router
           .get('exports/:type', [controllers.admin.Reports, 'export'])
           .use(middleware.permission({ permissions: ['exports.run'] }))
 
+        // Maintenance (M8.1)
+        router
+          .group(() => {
+            router.get('maintenance/schedules', [controllers.admin.Maintenance, 'schedules'])
+            router.get('job-cards', [controllers.admin.Maintenance, 'jobCards'])
+            router.get('job-cards/:id', [controllers.admin.Maintenance, 'showJobCard'])
+          })
+          .use(middleware.permission({ permissions: ['maintenance.view'] }))
+        router
+          .group(() => {
+            router.post('maintenance/schedules', [controllers.admin.Maintenance, 'storeSchedule'])
+            router.put('maintenance/schedules/:id', [
+              controllers.admin.Maintenance,
+              'updateSchedule',
+            ])
+            router.delete('maintenance/schedules/:id', [
+              controllers.admin.Maintenance,
+              'destroySchedule',
+            ])
+            router.post('job-cards', [controllers.admin.Maintenance, 'openJobCard'])
+            router.put('job-cards/:id', [controllers.admin.Maintenance, 'updateJobCard'])
+            router.post('job-cards/:id/complete', [
+              controllers.admin.Maintenance,
+              'completeJobCard',
+            ])
+            router.post('job-cards/:id/cancel', [controllers.admin.Maintenance, 'cancelJobCard'])
+          })
+          .use(middleware.permission({ permissions: ['maintenance.manage'] }))
+
         // Invoices & credit notes (M5.6)
         router
           .group(() => {

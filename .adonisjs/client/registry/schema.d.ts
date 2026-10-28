@@ -1437,6 +1437,136 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/reports_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.maintenance.schedules': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/maintenance/schedules'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/maintenance').listSchedulesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['schedules']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['schedules']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['schedules']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.maintenance.job_cards': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/job-cards'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/maintenance').listJobCardsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['jobCards']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['jobCards']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['jobCards']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.maintenance.show_job_card': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/admin/job-cards/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['showJobCard']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['showJobCard']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['showJobCard']>>>
+    }
+  }
+  'admin.maintenance.store_schedule': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/maintenance/schedules'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/maintenance').createScheduleValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/maintenance').createScheduleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['storeSchedule']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['storeSchedule']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['storeSchedule']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.maintenance.update_schedule': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/maintenance/schedules/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/maintenance').updateScheduleValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/maintenance').updateScheduleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['updateSchedule']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['updateSchedule']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['updateSchedule']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.maintenance.destroy_schedule': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/admin/maintenance/schedules/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['destroySchedule']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['destroySchedule']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['destroySchedule']>>>
+    }
+  }
+  'admin.maintenance.open_job_card': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/job-cards'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/maintenance').openJobCardValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/maintenance').openJobCardValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['openJobCard']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['openJobCard']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['openJobCard']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.maintenance.update_job_card': {
+    methods: ["PUT"]
+    pattern: '/api/v1/admin/job-cards/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/maintenance').updateJobCardValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/maintenance').updateJobCardValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['updateJobCard']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['updateJobCard']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['updateJobCard']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.maintenance.complete_job_card': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/job-cards/:id/complete'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/maintenance').completeJobCardValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/maintenance').completeJobCardValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['completeJobCard']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['completeJobCard']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['completeJobCard']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.maintenance.cancel_job_card': {
+    methods: ["POST"]
+    pattern: '/api/v1/admin/job-cards/:id/cancel'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/maintenance').cancelJobCardValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/maintenance').cancelJobCardValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['cancelJobCard']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['cancelJobCard']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin/maintenance_controller').default['cancelJobCard']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.invoices.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/admin/invoices'
