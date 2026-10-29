@@ -122,6 +122,11 @@ export default class MessageService {
       // Imported here: the job imports this service
       const { default: SendMessageJob } = await import('#jobs/send_message_job')
       await SendMessageJob.dispatch({ messageId: record.id })
+      // No recipient details in the logs - the message log in the dashboard has them
+      logger.info(
+        { messageId: record.id, channel: record.channel, kind: record.kind },
+        'Message queued - the worker (node ace queue:work) sends it'
+      )
     } catch (error) {
       // The message is stored: `node ace messages:send` sends whatever is left pending
       logger.error(
@@ -151,11 +156,19 @@ export default class MessageService {
     const message = await OutboundMessage.findOrFail(id)
     const configured = message.channel === 'sms' ? smsConfigured() : emailConfigured()
     if (app.inTest || !configured) {
-      message.merge({
-        status: 'skipped',
-        lastError: app.inTest ? 'Not sent from tests' : `No ${message.channel} provider set up`,
-      })
+      const reason = app.inTest
+        ? 'Not sent from tests'
+        : message.channel === 'sms'
+          ? 'SMS isn’t set up on the server (MNOTIFY_API_KEY is empty)'
+          : 'Email isn’t set up on the server (SMTP_HOST is empty)'
+      message.merge({ status: 'skipped', lastError: reason })
       await message.save()
+      if (!app.inTest) {
+        logger.warn(
+          { messageId: message.id, channel: message.channel, kind: message.kind },
+          `Message skipped - ${reason}`
+        )
+      }
       return message
     }
     message.attempts += 1
@@ -209,6 +222,26 @@ export default class MessageService {
       if (options.throwOnFailure && !out) throw error
       return message
     }
+  }
+
+  /** What the server can send with, for the message log's warnings */
+  static providers() {
+    return { email: emailConfigured(), sms: smsConfigured() }
+  }
+
+  /** Send a failed or skipped message again (e.g. after setting up email or topping up SMS credit). */
+  static async retry(id: string) {
+    const message = await OutboundMessage.findOrFail(id)
+    if (!['failed', 'skipped'].includes(message.status)) return message
+    message.merge({ status: 'pending', attempts: 0, lastError: null, nextAttemptAt: null })
+    await message.save()
+    const { default: SendMessageJob } = await import('#jobs/send_message_job')
+    await SendMessageJob.dispatch({ messageId: message.id })
+    logger.info(
+      { messageId: message.id, channel: message.channel, kind: message.kind },
+      'Message queued again'
+    )
+    return message
   }
 
   /** The queue gave up on it (or it crashed): record it as failed unless it went out. */

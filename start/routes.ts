@@ -557,6 +557,8 @@ router
               'destroy',
             ])
 
+            router.get('messages', [controllers.admin.Messages, 'index'])
+            router.post('messages/:id/retry', [controllers.admin.Messages, 'retry'])
             router.get('alert-recipients', [controllers.admin.AlertRecipients, 'index'])
             router.post('alert-recipients', [controllers.admin.AlertRecipients, 'store'])
             router.put('alert-recipients/:id', [controllers.admin.AlertRecipients, 'update'])
