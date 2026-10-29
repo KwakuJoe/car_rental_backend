@@ -88,6 +88,25 @@ export default class MessagesController {
     })
   }
 
+  /** One message in full: the whole text, the email as sent (HTML), the raw error, its history. */
+  async show({ params, response }: HttpContext) {
+    const message = await OutboundMessage.findOrFail(params.id)
+    const booking = message.bookingId
+      ? await Booking.query().where('id', message.bookingId).select('id', 'reference').first()
+      : null
+    const references = new Map(booking ? [[booking.id, booking.reference]] : [])
+    return response.ok({
+      message: 'Message',
+      data: {
+        ...toJson(message, references),
+        body: message.body,
+        html: message.html,
+        updatedAt: message.updatedAt.toISO(),
+        nextAttemptAt: message.nextAttemptAt?.toISO() ?? null,
+      },
+    })
+  }
+
   async retry(ctx: HttpContext) {
     const message = await MessageService.retry(ctx.params.id)
     await AuditService.record(ctx, {

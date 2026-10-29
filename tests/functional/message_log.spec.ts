@@ -58,6 +58,12 @@ test.group('message log', (group) => {
       'Email isn’t set up on the server (SMTP_HOST is empty)'
     )
 
+    // One in full
+    const one = await client.get(`/api/v1/admin/messages/${skipped.id}`).loginAs(owner)
+    one.assertStatus(200)
+    assert.equal(json(one).data.body, 'Hello')
+    assert.equal(json(one).data.subject, 'Booking confirmed - WYK-2026-00001')
+
     const retried = await client.post(`/api/v1/admin/messages/${skipped.id}/retry`).loginAs(owner)
     retried.assertStatus(200)
     await skipped.refresh()

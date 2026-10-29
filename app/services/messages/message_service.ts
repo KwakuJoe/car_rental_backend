@@ -48,9 +48,15 @@ async function sendSms(to: string, message: string) {
       signal: AbortSignal.timeout(15_000),
     }
   )
-  const body = (await response.json().catch(() => ({}))) as { status?: string }
+  const body = (await response.json().catch(() => ({}))) as {
+    status?: string
+    error?: string
+    message?: string
+  }
   if (!response.ok || body.status !== 'success') {
-    throw new Error(`mNotify refused it: ${JSON.stringify(body).slice(0, 300)}`)
+    // Their words, not their JSON - staff read this in the message log
+    const reason = body.error ?? body.message ?? `HTTP ${response.status}`
+    throw new Error(`mNotify refused it: ${String(reason).slice(0, 300)}`)
   }
 }
 

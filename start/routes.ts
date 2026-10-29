@@ -558,6 +558,7 @@ router
             ])
 
             router.get('messages', [controllers.admin.Messages, 'index'])
+            router.get('messages/:id', [controllers.admin.Messages, 'show'])
             router.post('messages/:id/retry', [controllers.admin.Messages, 'retry'])
             router.get('alert-recipients', [controllers.admin.AlertRecipients, 'index'])
             router.post('alert-recipients', [controllers.admin.AlertRecipients, 'store'])
